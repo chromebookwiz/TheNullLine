@@ -4,20 +4,20 @@
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg?style=for-the-badge)](https://creativecommons.org/licenses/by/4.0/)
 
 > **k · k = 0**
-> *One equation. Twelve devices. Three minds. A thousand ships. A million gardens.*
+> *One equation. Scalable devices. Three minds. A thousand ships. A million gardens.*
 
 ## 🌌 Overview
 
-The Null Line Project is a "photonic" web application dedicated to the systematic exploitation of null billiard dynamics. Built with Next.js and Three.js, this repository serves as a digital archive and interactive portal for the technical specifications, roadmap, and conceptual frameworks of a 1,000-year plan for interstellar civilization.
+The Null Line Project is a "photonic" web application dedicated to the systematic exploitation of null billiard dynamics. Built with Next.js and Three.js, this repository serves as a digital archive and interactive portal for the technical specifications of a 1,000-year plan for interstellar civilization.
 
 ## ✨ Key Features
 
-- **3D Photonic Core**: An interactive Three.js model of the Null Sphere Computer chip (8 glowing glass spheres in an E8 topology).
-- **Geometric Circular Scrolling**: A custom file navigation system inspired by $q/p$ billiard orbits, featuring elliptical 3D perspective and mouse-wheel control.
-- **Unified Document Viewer**: Seamless support for `.txt`, `.docx` (via `mammoth.js`), and `.pdf` files.
-- **Draggable Design Outline**: A glassmorphic overlay detailing the project's dependency map and strategic objectives.
+- **3D Photonic Core**: An interactive Three.js simulation of a Phase-Resonator (AEM Trinity Logic), utilizing top-down topological manifold collapse for zero-latency calculation.
+- **Snapping 2D Orbital Wheel**: A custom navigation system where every scroll step precisely snaps an encrypted text to the bottom-most center position.
+- **Multi-Window OS**: Support for multiple simultaneous draggable windows with coordinated Z-indexing, allowing for complex document comparison and simulation control.
+- **Robust Document Engine**: Highly compatible viewers for `.txt`, `.docx`, and `.pdf` files, optimized for esoteric readability.
+- **Harmonic Background Orbits**: Real-time canvas rendering of star polygons ($q/p$) color-coded by vertex frequency.
 - **SEO & AI Indexed**: Every document is accessible via dynamic routes (`/docs/[slug]`) and fully indexable by search engines and AI crawlers.
-- **Photonic Aesthetics**: A custom design system featuring glassmorphism, deep space palettes, and dynamic canvas-rendered star polygons.
 
 ## 🛠️ Technology Stack
 
