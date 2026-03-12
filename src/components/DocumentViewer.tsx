@@ -21,7 +21,7 @@ interface ViewerProps {
   embedded?: boolean;
 }
 
-export default function DocumentViewer({ file, onClose, embedded }: ViewerProps) {
+const DocumentViewerComponent = ({ file, onClose, embedded }: ViewerProps) => {
   const [content, setContent] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -62,7 +62,7 @@ export default function DocumentViewer({ file, onClose, embedded }: ViewerProps)
 
   const innerContent = (
     <div className={cn(
-      "flex-1 p-6 md:p-12 bg-black/5 min-h-0",
+      "flex-1 p-6 md:p-12 bg-white min-h-0",
       embedded ? "h-auto overflow-visible" : "overflow-y-auto h-full"
     )}>
       {loading ? (
@@ -78,7 +78,7 @@ export default function DocumentViewer({ file, onClose, embedded }: ViewerProps)
         <embed 
           src={`${file.path}#toolbar=0&navpanes=0&scrollbar=0`}
           type="application/pdf"
-          className="w-full h-full rounded-lg border-none bg-white/5 min-h-[500px]"
+          className="w-full h-full rounded-lg border-none bg-white min-h-[500px]"
         />
       ) : file.type === 'docx' ? (
         <div 
@@ -122,11 +122,11 @@ export default function DocumentViewer({ file, onClose, embedded }: ViewerProps)
         initial={{ scale: 0.98, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.98, opacity: 0 }}
-        className="w-full max-w-5xl h-[85vh] esoteric-glass rounded-3xl overflow-hidden flex flex-col relative border border-black/20"
+        className="w-full max-w-5xl h-[85vh] esoteric-glass rounded-3xl overflow-hidden flex flex-col relative border border-black/20 shadow-[0_0_100px_rgba(0,0,0,0.15)]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="p-4 md:px-8 flex items-center justify-between border-b border-black/5 bg-white/5">
+        <div className="p-4 md:px-8 flex items-center justify-between border-b border-black/5 bg-white shrink-0">
           <div className="flex items-center gap-4">
             <div className="w-8 h-8 rounded-full border border-black/20 flex items-center justify-center text-black/60">
               <FileText size={16} />
@@ -139,18 +139,10 @@ export default function DocumentViewer({ file, onClose, embedded }: ViewerProps)
             <a 
               href={`/docs/${encodeURIComponent(file.path.split('/').pop() || '')}`} 
               target="_blank"
-              className="p-2 hover:bg-white/10 rounded-full transition-colors opacity-60 hover:opacity-100"
+              className="p-2 hover:bg-black/5 rounded-full transition-colors opacity-60 hover:opacity-100"
               title="Direct Link (SEO)"
             >
               <ExternalLink size={20} />
-            </a>
-            <a 
-              href={file.path} 
-              download 
-              className="p-2 hover:bg-black/10 rounded-full transition-colors text-black/40 hover:text-black"
-              title="Download"
-            >
-              <Download size={20} />
             </a>
             <button 
               onClick={onClose}
@@ -164,4 +156,9 @@ export default function DocumentViewer({ file, onClose, embedded }: ViewerProps)
       </motion.div>
     </motion.div>
   );
-}
+};
+
+const DocumentViewer = React.memo(DocumentViewerComponent);
+DocumentViewer.displayName = 'DocumentViewer';
+
+export default DocumentViewer;

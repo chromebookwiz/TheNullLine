@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useMemo, useState, useEffect } from 'react';
+import React, { useRef, useMemo, useState, useEffect, useCallback } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { PerspectiveCamera, Environment, Sphere, Line, OrbitControls, Float } from '@react-three/drei';
 import * as THREE from 'three';
@@ -9,8 +9,6 @@ const MAX_POINTS = 400;
 
 // Mapping numbers to geometric "perfect" orbits
 function getOrbit(value: number) {
-  // Simplistic mapping: q = value + some base symmetry
-  // For p, we pick something that looks "esoteric" but stable
   const q = Math.max(3, Math.round(value));
   let p = 1;
   for (let i = Math.floor(q / 2); i > 0; i--) {
@@ -26,9 +24,11 @@ function gcd(a: number, b: number): number {
   return b === 0 ? a : gcd(b, a % b);
 }
 
-function RaySystem({ q, p, isSolving }: { q: number, p: number, isSolving: boolean }) {
+const RaySystem = React.memo(function RaySystem({ q, p, isSolving }: { q: number, p: number, isSolving: boolean }) {
   const groupRef = useRef<THREE.Group>(null);
   const coreRef = useRef<THREE.Mesh>(null);
+  
+  // Calculate stable target points
   const targetPoints = useMemo(() => {
     const pnts: THREE.Vector3[] = [];
     const radius = 1.5;
@@ -43,8 +43,26 @@ function RaySystem({ q, p, isSolving }: { q: number, p: number, isSolving: boole
     return pnts;
   }, [q, p]);
 
-  // Current points that will lerp to targetPoints
-  const [currentPoints, setCurrentPoints] = useState<THREE.Vector3[]>(targetPoints);
+  // Use a ref for current positions to handle dynamic count changes safely
+  const currentPointsRef = useRef<THREE.Vector3[]>(targetPoints);
+  const [pointsToRender, setPointsToRender] = useState<THREE.Vector3[]>(targetPoints);
+
+  // Solving phase search simulation state
+  const [searchOrbit, setSearchOrbit] = useState({ q, p });
+
+  useEffect(() => {
+    if (isSolving) {
+      const interval = setInterval(() => {
+        setSearchOrbit({
+          q: Math.floor(Math.random() * 12) + 3,
+          p: Math.floor(Math.random() * 5) + 1
+        });
+      }, 100);
+      return () => clearInterval(interval);
+    } else {
+      setSearchOrbit({ q, p });
+    }
+  }, [isSolving, q, p]);
 
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
@@ -61,68 +79,90 @@ function RaySystem({ q, p, isSolving }: { q: number, p: number, isSolving: boole
     }
 
     // Smoothed transition
-    const lerpSpeed = isSolving ? 0.02 : 0.15;
-    const newPoints = targetPoints.map((target, i) => {
-      const current = currentPoints[i] || new THREE.Vector3();
+    const lerpSpeed = isSolving ? 0.05 : 0.15;
+    const activeTarget = isSolving ? getOrbitSearchPoints(searchOrbit.q, searchOrbit.p) : targetPoints;
+    
+    // Ensure we have enough points in the current ref
+    if (currentPointsRef.current.length !== activeTarget.length) {
+      const diff = activeTarget.length - currentPointsRef.current.length;
+      if (diff > 0) {
+        for(let i=0; i<diff; i++) currentPointsRef.current.push(new THREE.Vector3(0,0,0));
+      } else {
+        currentPointsRef.current = currentPointsRef.current.slice(0, activeTarget.length);
+      }
+    }
+
+    const nextPoints = activeTarget.map((target, i) => {
+      const current = currentPointsRef.current[i] || new THREE.Vector3();
       
-      // If solving, add chaotic jitter
       if (isSolving) {
         const noise = new THREE.Vector3(
-          (Math.random() - 0.5) * 0.2,
-          (Math.random() - 0.5) * 0.2,
-          (Math.random() - 0.5) * 0.2
+          (Math.random() - 0.5) * 0.1,
+          (Math.random() - 0.5) * 0.1,
+          (Math.random() - 0.5) * 0.1
         );
-        return current.clone().lerp(target.clone().add(noise), 0.1);
+        return current.clone().lerp(target.clone().add(noise), 0.2);
       }
       
       return current.clone().lerp(target, lerpSpeed);
     });
-    setCurrentPoints(newPoints);
+
+    currentPointsRef.current = nextPoints;
+    setPointsToRender([...nextPoints]);
   });
+
+  function getOrbitSearchPoints(sq: number, sp: number) {
+    const pnts: THREE.Vector3[] = [];
+    const radius = 1.5;
+    for (let i = 0; i <= sq; i++) {
+        const angle = (i * sp * 2 * Math.PI) / sq;
+        pnts.push(new THREE.Vector3(
+            radius * Math.cos(angle),
+            radius * Math.sin(angle),
+            0
+        ));
+    }
+    return pnts;
+  }
 
   return (
     <group ref={groupRef}>
-      {/* The Whisper Gallery Sphere */}
       <Sphere args={[2, 64, 64]}>
         <meshPhysicalMaterial 
           color="white" 
           transparent 
-          opacity={0.03} 
-          transmission={0.95}
+          opacity={0.02} 
+          transmission={0.98}
           thickness={0.5}
           roughness={0}
         />
       </Sphere>
 
-      {/* Internal Intersection Beams */}
-      {currentPoints.slice(0, q).map((pnt, i) => (
+      {pointsToRender.slice(0, pointsToRender.length - 1).map((pnt, i) => (
         <Line
           key={`beam-${i}`}
           points={[new THREE.Vector3(0,0,0), pnt]}
           color="white"
           lineWidth={0.5}
           transparent
-          opacity={isSolving ? 0.5 : 0.1}
+          opacity={isSolving ? 0.4 : 0.05}
         />
       ))}
 
-      {/* Waveform Trace */}
       <Line
-        points={currentPoints}
+        points={pointsToRender}
         color="white" 
-        lineWidth={isSolving ? 3 : 1.5}
+        lineWidth={isSolving ? 2 : 1.2}
         transparent
-        opacity={isSolving ? 0.9 : 0.5}
+        opacity={isSolving ? 0.8 : 0.4}
       />
       
-      {/* Quantized Vertices */}
-      {currentPoints.slice(0, q).map((pnt, i) => (
-        <Sphere key={i} position={pnt} args={[isSolving ? 0.05 : 0.03, 16, 16]}>
+      {pointsToRender.slice(0, pointsToRender.length - 1).map((pnt, i) => (
+        <Sphere key={i} position={pnt} args={[isSolving ? 0.04 : 0.025, 16, 16]}>
           <meshBasicMaterial color="white" transparent opacity={0.8} />
         </Sphere>
       ))}
 
-      {/* The Intersection Core (The Collapse Point) */}
       <Sphere ref={coreRef} args={[0.15, 32, 32]}>
         <meshBasicMaterial color="white" transparent opacity={0.3} />
       </Sphere>
@@ -130,9 +170,9 @@ function RaySystem({ q, p, isSolving }: { q: number, p: number, isSolving: boole
       <pointLight intensity={isSolving ? 2 : 0.5} color="white" />
     </group>
   );
-}
+});
 
-export default function PhotonicComputer() {
+const PhotonicComputerComponent = () => {
   const [input, setInput] = useState("");
   const [result, setResult] = useState<number | null>(null);
   const [isSolving, setIsSolving] = useState(false);
@@ -144,10 +184,8 @@ export default function PhotonicComputer() {
 
     setIsSolving(true);
     
-    // Attempt to evaluate simple math
     setTimeout(() => {
       try {
-        // Safe evaluation of simple arithmetic
         const sanitized = input.replace(/[^-+*/().0-9]/g, '');
         // eslint-disable-next-line no-eval
         const val = eval(sanitized);
@@ -160,14 +198,14 @@ export default function PhotonicComputer() {
         console.error("Math error", err);
       }
       setIsSolving(false);
-    }, 1500); 
+    }, 2000); 
   };
 
   return (
-    <div className="w-full h-full relative flex flex-col items-center justify-center">
-      <div className="flex-1 w-full">
+    <div className="w-full h-full relative flex flex-col items-center justify-center bg-black">
+      <div className="flex-1 w-full scale-110">
         <Canvas dpr={[1, 2]}>
-          <PerspectiveCamera makeDefault position={[0, 0, 12]} fov={25} />
+          <PerspectiveCamera makeDefault position={[0, 0, 10]} fov={25} />
           <OrbitControls enablePan={false} autoRotate={!isSolving} autoRotateSpeed={0.5} />
           
           <ambientLight intensity={0.5} />
@@ -181,38 +219,47 @@ export default function PhotonicComputer() {
         </Canvas>
       </div>
 
-      {/* Symbolic Console Overlay */}
-      <div className="absolute inset-x-0 bottom-0 p-6 flex flex-col items-center gap-4 bg-black/80 border-t border-white/10 backdrop-blur-md">
-        <form onSubmit={handleSolve} className="w-full max-w-xs relative">
+      <div className="absolute inset-x-0 bottom-0 p-8 flex flex-col items-center gap-6 bg-black/90 border-t border-white/5 backdrop-blur-xl">
+        <form onSubmit={handleSolve} className="w-full max-w-sm relative group">
           <input 
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="◊.ENTER_EQUATION"
-            className="w-full bg-transparent border-b border-white/20 py-2 px-1 text-[10px] uppercase tracking-[0.4em] text-white focus:outline-none focus:border-white transition-colors"
+            className="w-full bg-transparent border-b border-white/10 py-3 px-1 text-[11px] uppercase tracking-[0.5em] text-white focus:outline-none focus:border-white/40 transition-all text-center"
           />
           <button 
             type="submit"
-            className="absolute right-0 bottom-2 text-[10px] text-white/40 hover:text-white transition-colors tracking-widest"
+            className="absolute right-0 bottom-3 text-[9px] text-white/30 hover:text-white transition-colors tracking-[0.3em] font-bold"
           >
             [EXEC]
           </button>
         </form>
 
-        <div className="flex items-center gap-6">
-            <div className="text-[8px] tracking-[0.5em] text-white/20 uppercase">
-                Status: {isSolving ? "◊.SOLVING" : "◊.IDLE"}
+        <div className="flex items-center gap-10">
+            <div className="flex flex-col items-center gap-1">
+              <div className="text-[7px] tracking-[0.4em] text-white/20 uppercase">Core Status</div>
+              <div className="text-[9px] tracking-[0.3em] text-white/60 uppercase">{isSolving ? "◊.COLLAPSING" : "◊.STABLE"}</div>
             </div>
+            
             {result !== null && (
-                <div className="text-[10px] tracking-[0.4em] text-white uppercase border-l border-white/20 pl-6">
-                    Res: {result}
+                <div className="flex flex-col items-center gap-1 border-x border-white/10 px-10">
+                  <div className="text-[7px] tracking-[0.4em] text-white/20 uppercase">Resultant</div>
+                  <div className="text-[11px] tracking-[0.2em] text-white font-bold">{result}</div>
                 </div>
             )}
-            <div className="text-[8px] tracking-[0.5em] text-white/20 uppercase">
-                Orbit: {orbit.q}/{orbit.p}
+
+            <div className="flex flex-col items-center gap-1">
+              <div className="text-[7px] tracking-[0.4em] text-white/20 uppercase">Manifold</div>
+              <div className="text-[9px] tracking-[0.3em] text-white/60 uppercase">{orbit.q}:{orbit.p}</div>
             </div>
         </div>
       </div>
     </div>
   );
-}
+};
+
+const PhotonicComputer = React.memo(PhotonicComputerComponent);
+PhotonicComputer.displayName = 'PhotonicComputer';
+
+export default PhotonicComputer;

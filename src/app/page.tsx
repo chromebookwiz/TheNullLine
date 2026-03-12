@@ -106,10 +106,11 @@ export default function Home() {
                 title="◊.DOCS_PRC"
                 isOpen={true}
                 onClose={() => closeWindow(win.id)}
+                className="w-[450px] shadow-xl"
                 style={{ zIndex: win.zIndex }}
                 onPointerDown={() => bringToFront(win.id)}
               >
-                <div className="space-y-6 p-6">
+                <div className="space-y-6 p-8 bg-white h-full">
                   <section className="border-l border-black/20 pl-4">
                     <div className="text-[10px] tracking-[0.5em] text-black/40 mb-2">[.AEM_LOGIC]</div>
                     <p className="text-[11px] font-mono text-black/80 leading-relaxed text-left">

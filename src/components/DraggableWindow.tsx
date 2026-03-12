@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, GripHorizontal, ChevronRight, Maximize2, Minimize2 } from 'lucide-react';
+import { X, Minimize2, Maximize2, GripHorizontal } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -11,68 +11,77 @@ function cn(...inputs: ClassValue[]) {
 }
 
 interface DraggableWindowProps {
+  children: React.ReactNode;
   title: string;
   isOpen: boolean;
   onClose: () => void;
-  children: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
   onPointerDown?: () => void;
 }
 
-export default function DraggableWindow({ 
-  title, isOpen, onClose, children, className, style, onPointerDown 
+const DraggableWindow = React.memo(function DraggableWindow({ 
+  children, 
+  title, 
+  onClose, 
+  className, 
+  style, 
+  onPointerDown 
 }: DraggableWindowProps) {
   const [isMinimized, setIsMinimized] = useState(false);
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          drag
-          dragMomentum={false}
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.98 }}
-          style={{ position: 'fixed', ...style }}
-          onPointerDown={onPointerDown}
-          className={cn("bottom-24 right-8 shadow-2xl transition-all duration-300", className || "w-80 md:w-96")}
-        >
-          <div className={cn("esoteric-glass rounded-2xl overflow-hidden border border-black/20 flex flex-col h-full", !className && "max-h-[700px]")}>
-            {/* Header / Drag Handle */}
-            <div className="bg-black/5 px-4 py-2 flex items-center justify-between cursor-move border-b border-black/5 shrink-0">
-              <div className="flex items-center gap-3">
-                <GripHorizontal className="text-black/20" size={14} />
-                <span className="text-[9px] uppercase tracking-[0.3em] font-light text-black/60">{title}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <button 
-                  onClick={() => setIsMinimized(!isMinimized)}
-                  className="p-1.5 hover:bg-black/10 rounded-lg transition-colors text-black/40 hover:text-black"
-                >
-                  {isMinimized ? <Maximize2 size={12} /> : <Minimize2 size={12} />}
-                </button>
-                <button 
-                  onClick={onClose}
-                  className="p-1.5 hover:bg-red-500/20 hover:text-red-400 rounded-lg transition-colors text-black/40"
-                >
-                  <X size={12} />
-                </button>
-              </div>
+    <div className="absolute inset-0 pointer-events-none z-40">
+      <motion.div
+        drag
+        dragMomentum={false}
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        style={style}
+        onPointerDown={onPointerDown}
+        className={cn(
+          "bottom-24 right-8 shadow-2xl transition-shadow duration-300 will-change-transform transform-gpu pointer-events-auto",
+          className || "w-80 md:w-96"
+        )}
+      >
+        <div className={cn("esoteric-glass rounded-2xl overflow-hidden border border-black/20 flex flex-col h-full", !className && "max-h-[700px]")}>
+          {/* Header / Drag Handle */}
+          <div className="bg-black/5 px-4 py-2 flex items-center justify-between cursor-move border-b border-black/5 shrink-0">
+            <div className="flex items-center gap-3">
+              <GripHorizontal className="text-black/20" size={14} />
+              <span className="text-[9px] uppercase tracking-[0.3em] font-light text-black/60">{title}</span>
             </div>
-
-            {/* Content */}
-            <motion.div 
-              animate={{ height: isMinimized ? 0 : (className?.includes('h-') ? '100%' : 'auto'), opacity: isMinimized ? 0 : 1 }}
-              className="flex-1 min-h-0 overflow-y-auto custom-scrollbar"
-            >
-              <div className="p-0 text-sm leading-relaxed text-black/80 h-full">
-                {children}
-              </div>
-            </motion.div>
+            <div className="flex items-center gap-1">
+              <button 
+                onClick={(e) => { e.stopPropagation(); setIsMinimized(!isMinimized); }}
+                className="p-1.5 hover:bg-black/10 rounded-lg transition-colors text-black/40 hover:text-black"
+              >
+                {isMinimized ? <Maximize2 size={12} /> : <Minimize2 size={12} />}
+              </button>
+              <button 
+                onClick={(e) => { e.stopPropagation(); onClose(); }}
+                className="p-1.5 hover:bg-red-500/20 hover:text-red-400 rounded-lg transition-colors text-black/40"
+              >
+                <X size={12} />
+              </button>
+            </div>
           </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+
+          {/* Content */}
+          <motion.div 
+            animate={{ height: isMinimized ? 0 : (className?.includes('h-') ? '100%' : 'auto'), opacity: isMinimized ? 0 : 1 }}
+            className="flex-1 min-h-0 overflow-y-auto custom-scrollbar bg-white"
+          >
+            <div className="p-0 text-sm leading-relaxed text-black/80 h-full">
+              {children}
+            </div>
+          </motion.div>
+        </div>
+      </motion.div>
+    </div>
   );
-}
+});
+
+DraggableWindow.displayName = 'DraggableWindow';
+
+export default DraggableWindow;

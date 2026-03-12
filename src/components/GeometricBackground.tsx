@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 
-export default function GeometricBackground() {
+const GeometricBackgroundComponent = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -35,13 +35,10 @@ export default function GeometricBackground() {
       rotation: number,
       drawCircle = true
     ) => {
-      // Map frequency (q) to visible spectrum color (approx 300-0 HSL)
-      // Low q (3) = Red/Warm, High q (13+) = Violet/Cool
       const hue = Math.max(0, 300 - (q * 20)); 
       const color = `hsla(${hue}, 70%, 50%, 0.15)`;
       const circleColor = `hsla(${hue}, 70%, 50%, 0.05)`;
 
-      // Draw outer boundary circle
       if (drawCircle) {
         ctx.beginPath();
         ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
@@ -70,13 +67,12 @@ export default function GeometricBackground() {
       const centerY = height / 2;
       const baseRadius = Math.min(width, height) * 0.38; 
 
-      const speed = time * 0.0001; // Uniform speed
+      const speed = time * 0.0001; 
 
-      // Strictly alternating directions for Every size increase
-      drawStarPolygon(centerX, centerY, baseRadius * 0.4, 3, 1, speed);     // Smallest, positive
-      drawStarPolygon(centerX, centerY, baseRadius * 0.7, 5, 2, -speed);    // Med-small, negative
-      drawStarPolygon(centerX, centerY, baseRadius, 8, 3, speed);           // Med-large, positive
-      drawStarPolygon(centerX, centerY, baseRadius * 1.3, 13, 5, -speed);   // Largest, negative
+      drawStarPolygon(centerX, centerY, baseRadius * 0.4, 3, 1, speed);     
+      drawStarPolygon(centerX, centerY, baseRadius * 0.7, 5, 2, -speed);    
+      drawStarPolygon(centerX, centerY, baseRadius, 8, 3, speed);           
+      drawStarPolygon(centerX, centerY, baseRadius * 1.3, 13, 5, -speed);   
 
       animationFrameId = requestAnimationFrame(animate);
     };
@@ -95,4 +91,9 @@ export default function GeometricBackground() {
       className="fixed inset-0 pointer-events-none z-[-2] opacity-80"
     />
   );
-}
+};
+
+const GeometricBackground = React.memo(GeometricBackgroundComponent);
+GeometricBackground.displayName = 'GeometricBackground';
+
+export default GeometricBackground;

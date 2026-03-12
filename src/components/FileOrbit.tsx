@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { FileText, File as FileIcon, ChevronRight, X, Info, Cpu, LayoutGrid } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
@@ -45,13 +45,13 @@ const FILES: NullFile[] = [
   { name: "The Null Line Project", type: "txt", path: "/docs/TheNullLineProject.txt" },
 ].filter(f => f !== null) as NullFile[];
 
-export default function FileOrbit({ 
+const FileOrbitComponent = ({ 
   onFileSelect, 
   onActivate 
 }: { 
   onFileSelect: (file: NullFile) => void,
   onActivate: () => void
-}) {
+}) => {
   const [hovered, setHovered] = useState<number | null>(null);
   const [targetIndex, setTargetIndex] = useState(0);
   const total = FILES.length;
@@ -72,9 +72,6 @@ export default function FileOrbit({
 
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
-      // User request: Scroll Up (deltaY < 0) -> Rotate Right (Clockwise).
-      // Clockwise rotation means rotation angle INCREASES.
-      // targetIndex must DECREASE for rotation angle to increase: 90 - ( (targetIndex-1) * 360/total )
       if (e.deltaY < 0) {
         setTargetIndex(prev => prev - 1);
       } else {
@@ -168,7 +165,7 @@ export default function FileOrbit({
       {/* The Wheel - Container Rotation Strategy */}
       <motion.div 
         style={{ rotate: rotationSmooth }}
-        className="relative w-[520px] h-[520px] rounded-full border border-black/[0.03] flex items-center justify-center pointer-events-none"
+        className="relative w-[520px] h-[520px] rounded-full border border-black/[0.03] flex items-center justify-center pointer-events-none will-change-transform transform-gpu"
       >
         {FILES.map((file, i) => {
           const itemAngle = (i * 360) / total;
@@ -180,7 +177,6 @@ export default function FileOrbit({
               style={{
                 width: 50,
                 height: 50,
-                // Static positioning on the circle
                 left: `calc(50% + ${radius * Math.cos((itemAngle * Math.PI) / 180)}px - 25px)`,
                 top: `calc(50% + ${radius * Math.sin((itemAngle * Math.PI) / 180)}px - 25px)`,
               }}
@@ -191,7 +187,6 @@ export default function FileOrbit({
                 isHovered={hovered === i}
                 onSelect={() => onFileSelect(file)}
                 onHoverChange={(h) => setHovered(h ? i : null)}
-                // Counter-rotate to stay upright
                 parentRotation={rotationSmooth}
               />
             </motion.div>
@@ -204,7 +199,7 @@ export default function FileOrbit({
       <div className="absolute w-[530px] h-[530px] rounded-full border border-black/[0.01] -z-10" />
     </div>
   );
-}
+};
 
 function OrbitItem({ 
   file, isSelected, isHovered, onSelect, onHoverChange, parentRotation 
@@ -212,7 +207,6 @@ function OrbitItem({
   file: NullFile, isSelected: boolean, isHovered: boolean, onSelect: () => void, 
   onHoverChange: (h: boolean) => void, parentRotation: any 
 }) {
-  // We apply the negative of parentRotation to keep the icon upright
   const counterRotate = useTransform(parentRotation, (r: number) => -r);
 
   return (
@@ -226,8 +220,8 @@ function OrbitItem({
       }}
       className={cn(
         "w-14 h-14 rounded-full esoteric-glass flex items-center justify-center pointer-events-auto transition-all duration-300",
-        isSelected ? "border-black/60 text-black shadow-[0_0_30px_rgba(0,0,0,0.15)] scale-125 z-50 bg-[#FAF9F6]" : 
-        isHovered ? "border-black/30 text-black scale-115 shadow-xl z-40 bg-[#FAF9F6]/50" : 
+        isSelected ? "border-black/60 text-black shadow-[0_0_30px_rgba(0,0,0,0.15)] scale-125 z-50 bg-white" : 
+        isHovered ? "border-black/30 text-black scale-115 shadow-xl z-40 bg-white/50" : 
         "text-black/10 border-black/5"
       )}
     >
@@ -248,3 +242,8 @@ function OrbitItem({
     </motion.button>
   );
 }
+
+const FileOrbit = React.memo(FileOrbitComponent);
+FileOrbit.displayName = 'FileOrbit';
+
+export default FileOrbit;
