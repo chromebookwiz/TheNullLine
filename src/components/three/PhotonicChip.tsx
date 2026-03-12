@@ -4,6 +4,8 @@ import React, { useRef, useMemo, useState, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { PerspectiveCamera, OrbitControls, Sphere, PointMaterial } from '@react-three/drei';
 import * as THREE from 'three';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Info, X, Zap, Cpu, Atom } from 'lucide-react';
 
 const NUM_PARTICLES = 1000;
 
@@ -43,11 +45,13 @@ const RaySystem = React.memo(function RaySystem({ q, p, isSolving }: { q: number
             (Math.random() - 0.5) * 4,
             (Math.random() - 0.5) * 4
         ));
-        velocities.push(new THREE.Vector3(
-            (Math.random() - 0.5) * 0.12,
-            (Math.random() - 0.5) * 0.12,
-            (Math.random() - 0.5) * 0.12
-        ));
+        // Null rays: velocity vector magnitude is strictly part of the null condition
+        const v = new THREE.Vector3(
+            (Math.random() - 0.5),
+            (Math.random() - 0.5),
+            (Math.random() - 0.5)
+        ).normalize().multiplyScalar(0.08); // Fixed "speed of light" for the simulation
+        velocities.push(v);
     }
     return { pnts, velocities };
   }, []);
@@ -101,36 +105,33 @@ const RaySystem = React.memo(function RaySystem({ q, p, isSolving }: { q: number
       const vel = particles.velocities[i];
 
       if (isSolving) {
-        // Chaos swarm logic
+        // NULL RAY DYNAMICS: Constant velocity straight-line segments
         particle.add(vel);
         
-        // Bounce off sphere wall (radius=2)
+        // Specular reflection at R=radius (Boundary Localization)
         if (particle.length() > radius) {
-            particle.normalize().multiplyScalar(radius);
-            vel.reflect(particle.clone().normalize()).multiplyScalar(0.95);
+            const normal = particle.clone().normalize();
+            particle.copy(normal).multiplyScalar(radius);
+            vel.reflect(normal); // Perfect reflection
+            // Add slight "wave" jitter to represent probabilistic search
+            vel.add(new THREE.Vector3(
+                (Math.random()-0.5)*0.01,
+                (Math.random()-0.5)*0.01,
+                (Math.random()-0.5)*0.01
+            )).normalize().multiplyScalar(0.08);
         }
-        
-        // Small random perturbations
-        vel.x += (Math.random() - 0.5) * 0.008;
-        vel.y += (Math.random() - 0.5) * 0.008;
-        vel.z += (Math.random() - 0.5) * 0.008;
-        vel.clampLength(0.01, 0.06);
-
       } else {
-        // SEQUENTIAL COLLAPSE: Outside Nodes -> Lines
-        // Dividing particles: 
-        // 40% stay at vertices
-        // 60% distribute along rays
+        // TOPOLOGICAL COLLAPSE: Snap to Mass M=Q
         const segmentIdx = i % raySegments.length;
         const segment = raySegments[segmentIdx];
         
         let target;
-        if (i % 10 < 4) {
-          // Snap to vertex
+        if (i % 10 < 3) {
+          // Snap to vertex (ADE Root Nodes)
           target = targetVertices[segmentIdx];
         } else {
-          // Flow along ray
-          const progress = ((i + t * 0.5) % 10) / 10;
+          // "Bleed" along ray path (Null Momentum Alignment)
+          const progress = ((i + t * 0.45) % 10) / 10;
           target = new THREE.Vector3().copy(segment.start).lerp(segment.end, progress);
         }
         
@@ -186,10 +187,11 @@ const RaySystem = React.memo(function RaySystem({ q, p, isSolving }: { q: number
         }
     }
 
-    // Core pulsing & System Rotation
     if (groupRef.current) {
       groupRef.current.rotation.y += (isSolving ? 0.02 : 0.005);
+      groupRef.current.rotation.z += (isSolving ? 0.01 : 0.002);
     }
+    
     if (coreRef.current) {
       const s = isSolving ? 0.8 + Math.sin(t * 15) * 0.2 : 0.3;
       coreRef.current.scale.setScalar(s);
@@ -230,7 +232,7 @@ const RaySystem = React.memo(function RaySystem({ q, p, isSolving }: { q: number
         <meshBasicMaterial color="white" transparent opacity={0.15} />
       </Sphere>
 
-      <pointLight intensity={isSolving ? 1.2 : 0.3} />
+      <pointLight intensity={isSolving ? 1.2 : 0.3} color="white" />
     </group>
   );
 });
@@ -240,6 +242,7 @@ export default function PhotonicComputer() {
   const [result, setResult] = useState<number | null>(null);
   const [isSolving, setIsSolving] = useState(false);
   const [orbit, setOrbit] = useState({ q: 8, p: 3 });
+  const [showTheory, setShowTheory] = useState(false);
 
   const handleSolve = (e: React.FormEvent) => {
     e.preventDefault();
@@ -264,11 +267,11 @@ export default function PhotonicComputer() {
   };
 
   return (
-    <div className="w-full h-full relative flex flex-col items-center justify-center bg-black overflow-hidden select-none">
+    <div className="w-full h-full relative flex flex-col items-center justify-center bg-black overflow-hidden select-none font-mono">
+      {/* 3D Simulation Layer */}
       <div className="flex-1 w-full scale-125 md:scale-110">
         <Canvas gl={{ antialias: false, powerPreference: "high-performance" }} dpr={[1, 1.5]}>
           <PerspectiveCamera makeDefault position={[0, 0, 8]} fov={25} />
-          {/* Zoom loop fix: constrain min/max distance tightly */}
           <OrbitControls 
             enablePan={false} 
             autoRotate={!isSolving} 
@@ -282,6 +285,88 @@ export default function PhotonicComputer() {
         </Canvas>
       </div>
 
+      {/* Theory Overlay Toggle */}
+      <button 
+        onClick={() => setShowTheory(true)}
+        className="absolute top-6 right-6 z-50 p-3 bg-black border border-white/20 text-white/40 hover:text-white hover:border-white/50 transition-all group rounded-full"
+        title="Theoretical Framework"
+      >
+        <Info size={16} className="group-hover:scale-110 transition-transform" />
+      </button>
+
+      {/* Scientific Overlay */}
+      <AnimatePresence>
+        {showTheory && (
+          <motion.div 
+            initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
+            animate={{ opacity: 1, backdropFilter: "blur(20px)" }}
+            exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
+            className="absolute inset-0 z-[100] flex items-center justify-center p-4 md:p-12 bg-black/60"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="w-full max-w-2xl max-h-[85vh] bg-white border border-black shadow-[20px_20px_0px_0px_rgba(0,0,0,0.1)] flex flex-col relative"
+            >
+              <div className="p-4 border-b border-black flex items-center justify-between bg-black text-white">
+                <div className="flex items-center gap-3">
+                  <Atom size={16} className="text-white/60" />
+                  <span className="text-[10px] tracking-[0.3em] font-bold">◊.THEORETICAL_FRAMEWORK</span>
+                </div>
+                <button onClick={() => setShowTheory(false)} className="hover:rotate-90 transition-transform">
+                  <X size={16} />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-8 md:p-10 space-y-8 text-black custom-scrollbar">
+                <section>
+                  <h3 className="text-[11px] font-bold tracking-[0.2em] mb-4 flex items-center gap-2">
+                    <Zap size={12} className="text-black/30" /> 1. THE NULL CONDITION
+                  </h3>
+                  <p className="text-[10px] leading-6 tracking-wide text-black/60 uppercase">
+                    THE FUNDAMENTAL PRIMITIVE IS THE <span className="text-black font-bold">NULL RAY</span>—A MASSLESS trajectory 
+                    IN MINKOWSKI SPACE GOVERNED BY THE METRIC η = DIAG(-1, +1, +1, +1). 
+                    COMPUTING IS THE <span className="text-black font-bold">TOPOLOGICAL LOCALIZATION</span> OF NULL MOMENTUM.
+                  </p>
+                </section>
+
+                <section>
+                  <h3 className="text-[11px] font-bold tracking-[0.2em] mb-4 flex items-center gap-2">
+                    <Atom size={12} className="text-black/30" /> 2. NULL BILLIARDS & MASS
+                  </h3>
+                  <p className="text-[10px] leading-6 tracking-wide text-black/60 uppercase">
+                    PHOTONS TRAPPED IN THE WAVEFORM MANIFOLD REFLECT AT ANGLE α. 
+                    WHEN <span className="font-bold text-black">α = Pπ/Q</span>, THE RAY CLOSES INTO A PERIODIC ORBIT. 
+                    SPATIAL MOMENTA CANCEL BY SYMMETRY, WHILST ENERGY ACCUMULATES. 
+                    MASS <span className="font-bold text-black">M=Q</span> EMERGES FROM LIGHT via THE PERIODIC SNAP.
+                  </p>
+                </section>
+
+                <section>
+                  <h3 className="text-[11px] font-bold tracking-[0.2em] mb-4 flex items-center gap-2">
+                    <Cpu size={12} className="text-black/30" /> 3. ADE TOPOLOGY
+                  </h3>
+                  <p className="text-[10px] leading-6 tracking-wide text-black/60 uppercase">
+                    STABLE STATES ARE CLASSIFIED BY <span className="font-bold text-black">ADE DYNKIN DIAGRAMS</span>. 
+                    E8 (240-STATE) ACTS AS THE SPECTRAL OPERATOR. WAVEFORM COLLAPSE IS THE SNAP FROM 
+                    CHAOTIC SWARM TO LATTICE ROOT—A GEOMETRIC ISOMORPHISM TO THE CRITICAL ZEROS OF THE 
+                    COMPLETED <span className="font-bold text-black">RIEMANN ZETA FUNCTION</span>.
+                  </p>
+                </section>
+
+                <section className="pt-6 border-t border-black/5">
+                  <p className="text-[9px] text-black/30 leading-5 italic">
+                    Derived from "NullBilliards: Emergent Mass and the Spectral Operator" (Nathan Noll, 2026).
+                  </p>
+                </section>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Main UI Layer */}
       <div className="absolute inset-x-0 bottom-0 p-6 md:p-8 flex flex-col items-center gap-6 bg-black/95 border-t border-white/5 backdrop-blur-2xl">
         <form onSubmit={handleSolve} className="w-full max-w-sm relative group">
           <input 
@@ -319,6 +404,18 @@ export default function PhotonicComputer() {
             </div>
         </div>
       </div>
+
+      <style jsx global>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(0,0,0,0.1);
+        }
+      `}</style>
     </div>
   );
 }
