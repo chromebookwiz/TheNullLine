@@ -54,7 +54,7 @@ export default function DraggableWindow({ title, isOpen, onClose, children }: Dr
               animate={{ height: isMinimized ? 0 : 'auto', opacity: isMinimized ? 0 : 1 }}
               className="overflow-y-auto custom-scrollbar"
             >
-              <div className="p-5 text-sm leading-relaxed text-foreground/80">
+              <div className="p-5 text-sm leading-relaxed text-black/80">
                 {children}
               </div>
             </motion.div>
