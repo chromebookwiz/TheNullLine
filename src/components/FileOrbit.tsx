@@ -138,10 +138,10 @@ export default function FileOrbit({
           const x = radius * Math.cos(angle);
           const y = radius * Math.sin(angle);
           
-          // Calculate opacity based on position (faded at the back)
-          const zIndex = Math.round(y + radius);
-          const opacity = 0.2 + ((y + radius) / (2 * radius)) * 0.8;
-          const scale = 0.9 + ((y + radius) / (2 * radius)) * 0.3;
+          // Pure 2D Circle - No depth logic
+          const zIndex = 10;
+          const opacity = 1;
+          const scale = 1;
           const isSelected = activeIndex === i;
 
           return (
@@ -150,20 +150,18 @@ export default function FileOrbit({
               initial={false}
               animate={{ 
                 x: x,
-                y: y, // Pure flat 2D circle
-                scale: scale,
+                y: y,
+                scale: hovered === i ? 1.2 : scale,
                 opacity: opacity,
               }}
-              style={{ zIndex }}
-              whileHover={{ scale: 1.3, opacity: 1, zIndex: 1000 }}
-              transition={{ type: "spring", stiffness: 100, damping: 20 }}
+              style={{ zIndex: hovered === i ? 100 : zIndex }}
+              transition={{ type: "spring", stiffness: 120, damping: 20 }}
               onMouseEnter={() => setHovered(i)}
               onMouseLeave={() => setHovered(null)}
               onClick={() => onFileSelect(file)}
               className={cn(
                 "absolute w-10 h-10 rounded-full esoteric-glass flex items-center justify-center transition-all duration-300",
-                isSelected ? "border-black/60 text-black shadow-[0_0_30px_rgba(0,0,0,0.15)] scale-110" : 
-                hovered === i ? "border-black/40 text-black" : "text-black/30 border-black/5"
+                isSelected ? "border-black/60 text-black shadow-[0_0_20px_rgba(0,0,0,0.1)]" : "text-black/30 border-black/5"
               )}
             >
               {file.type === 'pdf' ? <FileIcon size={20} /> : file.type === 'app' ? <Cpu size={20} className="animate-pulse" /> : <FileText size={20} />}

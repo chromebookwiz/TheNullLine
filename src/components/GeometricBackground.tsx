@@ -65,11 +65,11 @@ export default function GeometricBackground() {
 
       const speed = time * 0.0001; // Uniform speed
 
-      // Stark counter-rotating orbits with uniform speed and phase alignment
-      drawStarPolygon(centerX, centerY, baseRadius, 8, 3, speed);
-      drawStarPolygon(centerX, centerY, baseRadius * 0.7, 5, 2, -speed);
-      drawStarPolygon(centerX, centerY, baseRadius * 1.3, 13, 5, speed);
-      drawStarPolygon(centerX, centerY, baseRadius * 0.4, 3, 1, -speed);
+      // Strictly alternating directions for Every size increase
+      drawStarPolygon(centerX, centerY, baseRadius * 0.4, 3, 1, speed);     // Smallest, positive
+      drawStarPolygon(centerX, centerY, baseRadius * 0.7, 5, 2, -speed);    // Med-small, negative
+      drawStarPolygon(centerX, centerY, baseRadius, 8, 3, speed);           // Med-large, positive
+      drawStarPolygon(centerX, centerY, baseRadius * 1.3, 13, 5, -speed);   // Largest, negative
 
       animationFrameId = requestAnimationFrame(animate);
     };
