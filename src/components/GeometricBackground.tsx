@@ -35,16 +35,23 @@ export default function GeometricBackground() {
       rotation: number,
       drawCircle = true
     ) => {
+      // Map frequency (q) to visible spectrum color (approx 300-0 HSL)
+      // Low q (3) = Red/Warm, High q (13+) = Violet/Cool
+      const hue = Math.max(0, 300 - (q * 20)); 
+      const color = `hsla(${hue}, 70%, 50%, 0.15)`;
+      const circleColor = `hsla(${hue}, 70%, 50%, 0.05)`;
+
       // Draw outer boundary circle
       if (drawCircle) {
         ctx.beginPath();
         ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(0, 0, 0, 0.05)';
+        ctx.strokeStyle = circleColor;
         ctx.stroke();
       }
 
       ctx.beginPath();
-      ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5;
       for (let i = 0; i <= q; i++) {
         const angle = (i * p * 2 * Math.PI) / q + rotation;
         const x = centerX + radius * Math.cos(angle);

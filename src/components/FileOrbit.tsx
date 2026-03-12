@@ -53,35 +53,39 @@ export default function FileOrbit({
   onActivate: () => void
 }) {
   const [hovered, setHovered] = useState<number | null>(null);
-  const [rotation, setRotation] = useState(0);
+  const rotationRaw = useMotionValue(0);
+  const rotationSmooth = useSpring(rotationRaw, { stiffness: 60, damping: 25 });
   const [activeIndex, setActiveIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Sync active index with smooth rotation
   useEffect(() => {
-    // Find item closest to the bottom (max Y)
-    const total = FILES.length;
-    const angleOffset = (rotation * Math.PI) / 180;
-    let maxYa = -Infinity;
-    let bestIdx = 0;
+    const unsub = rotationSmooth.on("change", (latest) => {
+      const total = FILES.length;
+      const angleOffset = (latest * Math.PI) / 180;
+      let maxYa = -Infinity;
+      let bestIdx = 0;
 
-    FILES.forEach((_, i) => {
-      const angle = (i * 2 * Math.PI) / total + angleOffset;
-      const y = Math.sin(angle);
-      if (y > maxYa) {
-        maxYa = y;
-        bestIdx = i;
+      FILES.forEach((_, i) => {
+        const angle = (i * 2 * Math.PI) / total + angleOffset;
+        const y = Math.sin(angle);
+        if (y > maxYa) {
+          maxYa = y;
+          bestIdx = i;
+        }
+      });
+
+      if (bestIdx !== activeIndex) {
+        setActiveIndex(bestIdx);
       }
     });
-
-    if (bestIdx !== activeIndex) {
-      setActiveIndex(bestIdx);
-    }
-  }, [rotation, activeIndex]);
+    return unsub;
+  }, [rotationSmooth, activeIndex]);
 
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
-      // Increased sensitivity for cleaner spin
-      setRotation(prev => prev - e.deltaY * 0.2);
+      // Direct rotation based on wheel delta
+      rotationRaw.set(rotationRaw.get() - e.deltaY * 0.4); 
     };
 
     let touchY = 0;
@@ -91,7 +95,7 @@ export default function FileOrbit({
 
     const handleTouchMove = (e: TouchEvent) => {
       const deltaY = touchY - e.touches[0].clientY;
-      setRotation(prev => prev - deltaY * 0.5);
+      rotationRaw.set(rotationRaw.get() - deltaY * 2);
       touchY = e.touches[0].clientY;
     };
 

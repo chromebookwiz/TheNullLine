@@ -88,6 +88,16 @@ export default function Home() {
           </section>
 
           <section className="border-l border-black/20 pl-4 bg-black/5 py-4 pr-4 rounded-r-lg">
+            <div className="text-[10px] tracking-[0.5em] text-black/40 mb-3">[.TRINITY_SUPERIORITY]</div>
+            <p className="text-[11px] font-mono text-black/80 leading-relaxed text-left">
+              Unlike <strong>Binary Architecture</strong> (0/1), Trinity Computing utilizes <strong>AEM Phase-Resonance</strong>. 
+              Existing methods suffer from the "Electron Bottleneck"—heat and latency caused by physical cargo movement. 
+              <br/><br/>
+              Trinity logic collapses high-dimensional equations into stable geometric orbits instantly. We don't <em>calculate</em> the answer; we evolve the manifold until the answer is the only stable state remaining. This provides <strong>Zero-Latency Convergence</strong>.
+            </p>
+          </section>
+
+          <section className="border-l border-black/20 pl-4 bg-black/5 py-4 pr-4 rounded-r-lg">
             <div className="text-[10px] tracking-[0.5em] text-black/40 mb-3">[.PRC_EXAMPLE: (7 + 3) * 123]</div>
             <div className="space-y-4 text-[10px] font-mono text-black/90 tracking-wider">
               <div className="flex gap-3">

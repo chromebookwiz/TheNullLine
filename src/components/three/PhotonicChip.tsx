@@ -31,7 +31,7 @@ function RaySystem({ q, p, isSolving }: { q: number, p: number, isSolving: boole
   
   const points = useMemo(() => {
     const pnts: THREE.Vector3[] = [];
-    const radius = 1.8;
+    const radius = 1.5;
     // We draw the star polygon path
     for (let i = 0; i <= q * 2; i++) {
         const angle = (i * p * 2 * Math.PI) / q;
@@ -54,7 +54,7 @@ function RaySystem({ q, p, isSolving }: { q: number, p: number, isSolving: boole
 
   return (
     <group ref={groupRef}>
-      <Sphere args={[1.8, 64, 64]}>
+      <Sphere args={[1.5, 64, 64]}>
         <meshPhysicalMaterial 
           color="white" 
           transparent 
@@ -117,7 +117,7 @@ export default function PhotonicComputer() {
     <div className="w-full h-full relative flex flex-col items-center justify-center">
       <div className="flex-1 w-full">
         <Canvas dpr={[1, 2]}>
-          <PerspectiveCamera makeDefault position={[0, 0, 10]} fov={30} />
+          <PerspectiveCamera makeDefault position={[0, 0, 12]} fov={25} />
           <OrbitControls enablePan={false} autoRotate={!isSolving} autoRotateSpeed={0.5} />
           
           <ambientLight intensity={0.5} />
