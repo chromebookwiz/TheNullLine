@@ -26,23 +26,23 @@ export default function DraggableWindow({ title, isOpen, onClose, children }: Dr
           style={{ position: 'fixed', zIndex: 100 }}
           className="bottom-24 right-8 w-80 md:w-96 shadow-2xl"
         >
-          <div className="esoteric-glass rounded-2xl overflow-hidden border border-white/20 flex flex-col max-h-[700px]">
+          <div className="esoteric-glass rounded-2xl overflow-hidden border border-black/20 flex flex-col max-h-[700px]">
             {/* Header / Drag Handle */}
-            <div className="bg-white/5 px-4 py-2 flex items-center justify-between cursor-move border-b border-white/5">
+            <div className="bg-black/5 px-4 py-2 flex items-center justify-between cursor-move border-b border-black/5">
               <div className="flex items-center gap-3">
-                <GripHorizontal className="text-white/20" size={14} />
-                <span className="text-[9px] uppercase tracking-[0.3em] font-light text-white/60">{title}</span>
+                <GripHorizontal className="text-black/20" size={14} />
+                <span className="text-[9px] uppercase tracking-[0.3em] font-light text-black/60">{title}</span>
               </div>
               <div className="flex items-center gap-1">
                 <button 
                   onClick={() => setIsMinimized(!isMinimized)}
-                  className="p-1.5 hover:bg-white/10 rounded-lg transition-colors text-white/40 hover:text-white"
+                  className="p-1.5 hover:bg-black/10 rounded-lg transition-colors text-black/40 hover:text-black"
                 >
                   {isMinimized ? <Maximize2 size={12} /> : <Minimize2 size={12} />}
                 </button>
                 <button 
                   onClick={onClose}
-                  className="p-1.5 hover:bg-red-500/20 hover:text-red-400 rounded-lg transition-colors text-white/40"
+                  className="p-1.5 hover:bg-red-500/20 hover:text-red-400 rounded-lg transition-colors text-black/40"
                 >
                   <X size={12} />
                 </button>

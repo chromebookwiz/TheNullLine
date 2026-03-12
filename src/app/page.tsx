@@ -43,9 +43,9 @@ export default function Home() {
           animate={{ opacity: 1, scale: 1 }}
           className="flex items-center gap-8"
         >
-          <div className="w-8 h-px bg-white/40" />
-          <div className="text-white/80 font-light tracking-[1em] text-[10px] uppercase">Null</div>
-          <div className="w-8 h-px bg-white/40" />
+          <div className="w-8 h-px bg-black/40" />
+          <div className="text-black/80 font-light tracking-[1em] text-[10px] uppercase">Null</div>
+          <div className="w-8 h-px bg-black/40" />
         </motion.div>
       </div>
 
@@ -58,9 +58,9 @@ export default function Home() {
       {/* Symbol-based Footer */}
       <div className="absolute bottom-12 z-10 opacity-40 pointer-events-none">
         <div className="flex gap-4 items-center">
-          <div className="w-1 h-1 rounded-full bg-white" />
-          <div className="w-1 h-1 rounded-full bg-white/50" />
-          <div className="w-1 h-1 rounded-full bg-white/20" />
+          <div className="w-1 h-1 rounded-full bg-black" />
+          <div className="w-1 h-1 rounded-full bg-black/50" />
+          <div className="w-1 h-1 rounded-full bg-black/20" />
         </div>
       </div>
 

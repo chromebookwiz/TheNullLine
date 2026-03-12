@@ -39,12 +39,12 @@ export default function GeometricBackground() {
       if (drawCircle) {
         ctx.beginPath();
         ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.05)';
         ctx.stroke();
       }
 
       ctx.beginPath();
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
       for (let i = 0; i <= q; i++) {
         const angle = (i * p * 2 * Math.PI) / q + rotation;
         const x = centerX + radius * Math.cos(angle);

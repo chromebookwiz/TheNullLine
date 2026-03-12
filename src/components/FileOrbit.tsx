@@ -76,7 +76,7 @@ export default function FileOrbit({
       {/* Central Hub - Esoteric Symbol */}
       <div className="absolute w-40 h-40 flex items-center justify-center z-10 pointer-events-none">
         <div className="w-full h-full relative flex items-center justify-center">
-          <div className="absolute inset-0 rounded-full border border-white/10 [box-shadow:0_0_60px_rgba(255,255,255,0.05)]" />
+          <div className="absolute inset-0 rounded-full border border-black/5 [box-shadow:0_0_60px_rgba(0,0,0,0.02)]" />
           
           <div className="z-20 text-center flex items-center justify-center pointer-events-auto">
              <motion.button
@@ -86,7 +86,7 @@ export default function FileOrbit({
                  e.stopPropagation();
                  onActivate();
                }}
-               className="w-12 h-12 esoteric-glass rounded-full flex items-center justify-center text-white/60 hover:text-white transition-all shadow-[0_0_40px_rgba(255,255,255,0.15)] border border-white/40"
+               className="w-12 h-12 esoteric-glass rounded-full flex items-center justify-center text-black/60 hover:text-black transition-all shadow-[0_0_40px_rgba(0,0,0,0.05)] border border-black/20"
              >
                <LayoutGrid size={24} />
              </motion.button>
@@ -127,7 +127,7 @@ export default function FileOrbit({
               onClick={() => onFileSelect(file)}
               className={cn(
                 "absolute w-10 h-10 rounded-full esoteric-glass flex items-center justify-center transition-all duration-500",
-                hovered === i ? "border-white/40 text-white" : "text-white/30 border-white/5"
+                hovered === i ? "border-black/40 text-black" : "text-black/30 border-black/5"
               )}
             >
               {file.type === 'pdf' ? <FileIcon size={20} /> : file.type === 'app' ? <Cpu size={20} className="animate-pulse" /> : <FileText size={20} />}
@@ -138,7 +138,7 @@ export default function FileOrbit({
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9 }}
-                    className="absolute top-12 left-1/2 -translate-x-1/2 whitespace-nowrap esoteric-glass px-3 py-1 rounded-full text-[9px] font-mono tracking-widest text-white/50 border border-white/10 z-[1001]"
+                    className="absolute top-12 left-1/2 -translate-x-1/2 whitespace-nowrap esoteric-glass px-3 py-1 rounded-full text-[9px] font-mono tracking-widest text-black/50 border border-black/10 z-[1001]"
                   >
                     ◊.{file.name.toUpperCase().replace(/\s/g, '_')}
                   </motion.div>
@@ -150,8 +150,8 @@ export default function FileOrbit({
       </div>
 
       {/* Connection Rings - Monochrome */}
-      <div className="absolute w-[520px] h-[220px] rounded-full border border-white/5 pointer-events-none" style={{ transform: 'rotateX(75deg)' }} />
-      <div className="absolute w-[560px] h-[240px] rounded-full border border-white/5 pointer-events-none" style={{ transform: 'rotateX(75deg)' }} />
+      <div className="absolute w-[520px] h-[220px] rounded-full border border-black/5 pointer-events-none" style={{ transform: 'rotateX(75deg)' }} />
+      <div className="absolute w-[560px] h-[240px] rounded-full border border-black/5 pointer-events-none" style={{ transform: 'rotateX(75deg)' }} />
     </div>
   );
 }

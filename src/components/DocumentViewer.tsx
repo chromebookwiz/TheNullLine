@@ -58,23 +58,23 @@ export default function DocumentViewer({ file, onClose }: ViewerProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 bg-black/95 backdrop-blur-2xl"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 bg-white/95 backdrop-blur-2xl"
     >
       <motion.div
         initial={{ scale: 0.98, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.98, opacity: 0 }}
-        className="w-full max-w-5xl h-[85vh] esoteric-glass rounded-3xl overflow-hidden flex flex-col relative border border-white/20"
+        className="w-full max-w-5xl h-[85vh] esoteric-glass rounded-3xl overflow-hidden flex flex-col relative border border-black/20"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="p-4 md:px-8 flex items-center justify-between border-b border-white/5 bg-white/5">
+        <div className="p-4 md:px-8 flex items-center justify-between border-b border-black/5 bg-white/5">
           <div className="flex items-center gap-4">
-            <div className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center text-white/60">
+            <div className="w-8 h-8 rounded-full border border-black/20 flex items-center justify-center text-black/60">
               <FileText size={16} />
             </div>
             <div>
-              <h2 className="font-light text-sm tracking-widest uppercase text-white/80">{file.name}</h2>
+              <h2 className="font-light text-sm tracking-widest uppercase text-black/80">{file.name}</h2>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -89,14 +89,14 @@ export default function DocumentViewer({ file, onClose }: ViewerProps) {
             <a 
               href={file.path} 
               download 
-              className="p-2 hover:bg-white/10 rounded-full transition-colors opacity-60 hover:opacity-100"
+              className="p-2 hover:bg-black/10 rounded-full transition-colors text-black/40 hover:text-black"
               title="Download"
             >
               <Download size={20} />
             </a>
             <button 
               onClick={onClose}
-              className="p-2 hover:bg-white/10 rounded-full transition-colors"
+              className="p-2 hover:bg-black/10 rounded-full text-black/40 hover:text-black transition-colors"
             >
               <X size={24} />
             </button>
