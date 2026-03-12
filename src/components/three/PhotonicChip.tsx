@@ -2,7 +2,7 @@
 
 import React, { useRef, useMemo, useState, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { PerspectiveCamera, OrbitControls, Float, Sphere, Points, PointMaterial } from '@react-three/drei';
+import { PerspectiveCamera, OrbitControls, Float, Sphere, PointMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 
 const NUM_PARTICLES = 600;
@@ -27,6 +27,7 @@ function gcd(a: number, b: number): number {
 const RaySystem = React.memo(function RaySystem({ q, p, isSolving }: { q: number, p: number, isSolving: boolean }) {
   const pointsRef = useRef<THREE.Points>(null);
   const lineRef = useRef<THREE.Line>(null);
+  const segmentsRef = useRef<THREE.LineSegments>(null);
   const coreRef = useRef<THREE.Mesh>(null);
   
   const radius = 2.0;
@@ -62,12 +63,26 @@ const RaySystem = React.memo(function RaySystem({ q, p, isSolving }: { q: number
         ));
     }
     return verts;
-  }, [q, p]);
+  }, [q, p, radius]);
+
+  // Type-safe Three.js Objects to avoid SVG conflicts
+  const mainLine = useMemo(() => {
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(128 * 3), 3));
+    const mat = new THREE.LineBasicMaterial({ color: 'white', transparent: true, opacity: 0 });
+    return new THREE.Line(geo, mat);
+  }, []);
+
+  const beamSegments = useMemo(() => {
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(128 * 3 * 2), 3));
+    const mat = new THREE.LineBasicMaterial({ color: 'white', transparent: true, opacity: 0 });
+    return new THREE.LineSegments(geo, mat);
+  }, []);
 
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
     const positions = pointsRef.current?.geometry.attributes.position.array as Float32Array;
-    const linePositions = lineRef.current?.geometry.attributes.position.array as Float32Array;
 
     const lerpSpeed = isSolving ? 0.02 : 0.1;
 
@@ -97,28 +112,54 @@ const RaySystem = React.memo(function RaySystem({ q, p, isSolving }: { q: number
         particle.lerp(target, lerpSpeed);
       }
 
-      // Update BufferAttributes
-      positions[i * 3] = particle.x;
-      positions[i * 3 + 1] = particle.y;
-      positions[i * 3 + 2] = particle.z;
+      // Update BufferAttributes for points
+      if (positions) {
+        positions[i * 3] = particle.x;
+        positions[i * 3 + 1] = particle.y;
+        positions[i * 3 + 2] = particle.z;
+      }
     }
 
     if (pointsRef.current) pointsRef.current.geometry.attributes.position.needsUpdate = true;
 
     // Update the ray paths only when collapsed
     if (lineRef.current) {
+        const linePos = lineRef.current.geometry.attributes.position.array as Float32Array;
         const opacityTarget = isSolving ? 0 : 0.6;
         (lineRef.current.material as THREE.LineBasicMaterial).opacity += (opacityTarget - (lineRef.current.material as THREE.LineBasicMaterial).opacity) * 0.1;
         
         if (!isSolving) {
             for (let i = 0; i <= q; i++) {
                 const pnt = particles.pnts[i];
-                linePositions[i * 3] = pnt.x;
-                linePositions[i * 3 + 1] = pnt.y;
-                linePositions[i * 3 + 2] = pnt.z;
+                linePos[i * 3] = pnt.x;
+                linePos[i * 3 + 1] = pnt.y;
+                linePos[i * 3 + 2] = pnt.z;
             }
             lineRef.current.geometry.setDrawRange(0, q + 1);
             lineRef.current.geometry.attributes.position.needsUpdate = true;
+        }
+    }
+
+    // Update the intersection beams only when collapsed
+    if (segmentsRef.current) {
+        const segPos = segmentsRef.current.geometry.attributes.position.array as Float32Array;
+        const opacityTarget = isSolving ? 0 : 0.1;
+        (segmentsRef.current.material as THREE.LineBasicMaterial).opacity += (opacityTarget - (segmentsRef.current.material as THREE.LineBasicMaterial).opacity) * 0.1;
+
+        if (!isSolving) {
+            for (let i = 0; i < q; i++) {
+                const pnt = particles.pnts[i];
+                // Start at origin
+                segPos[i * 6] = 0;
+                segPos[i * 6 + 1] = 0;
+                segPos[i * 6 + 2] = 0;
+                // End at point
+                segPos[i * 6 + 3] = pnt.x;
+                segPos[i * 6 + 4] = pnt.y;
+                segPos[i * 6 + 5] = pnt.z;
+            }
+            segmentsRef.current.geometry.setDrawRange(0, q * 2);
+            segmentsRef.current.geometry.attributes.position.needsUpdate = true;
         }
     }
 
@@ -153,18 +194,10 @@ const RaySystem = React.memo(function RaySystem({ q, p, isSolving }: { q: number
       </points>
 
       {/* The Billiard Rays (collapsed state) */}
-      <line ref={lineRef}>
-        <bufferGeometry>
-          <bufferAttribute
-            attach="attributes-position"
-            count={128} // Pre-allocated limit
-            array={new Float32Array(128 * 3)}
-            itemSize={3}
-            args={[new Float32Array(128 * 3), 3]}
-          />
-        </bufferGeometry>
-        <lineBasicMaterial color="white" transparent opacity={0} linewidth={1} />
-      </line>
+      <primitive object={mainLine} ref={lineRef} />
+
+      {/* The Intersection Beams (collapsed state) */}
+      <primitive object={beamSegments} ref={segmentsRef} />
 
       {/* Boundary Sphere */}
       <Sphere args={[radius, 32, 32]}>
