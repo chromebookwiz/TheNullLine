@@ -19,6 +19,7 @@ const ShapeClicker = dynamic(() => import('@/components/ShapeClicker'), {
   loading: () => <div className="w-full h-full bg-white flex items-center justify-center text-black/20 text-[10px] uppercase tracking-widest">Loading Manifold...</div>
 });
 
+
 type FileType = 'txt' | 'docx' | 'pdf' | 'app' | 'folder';
 
 interface NullFile {
@@ -28,9 +29,11 @@ interface NullFile {
   children?: NullFile[];
 }
 
+
+type AppWindowType = 'document' | 'photonic' | 'info' | 'evolve' | 'clicker' | 'simulation' | 'files';
 interface WindowInstance {
   id: string;
-  type: 'document' | 'photonic' | 'info' | 'evolve';
+  type: AppWindowType;
   file?: NullFile;
   zIndex: number;
 }
@@ -45,7 +48,8 @@ export default function Home() {
     setOpenWindows(prev => prev.map(w => w.id === id ? { ...w, zIndex: newZ } : w));
   };
 
-  const openWindow = (type: 'document' | 'photonic' | 'info', file?: NullFile) => {
+
+  const openWindow = (type: AppWindowType, file?: NullFile) => {
     const id = file ? file.path : type;
     const existing = openWindows.find(w => w.id === id);
     if (existing) {
@@ -61,10 +65,19 @@ export default function Home() {
     setOpenWindows(prev => prev.filter(w => w.id !== id));
   };
 
+
   const handleFileSelect = (file: NullFile) => {
     if (file.type === 'app') {
-      openWindow('photonic');
-      openWindow('info');
+      if (file.name.toLowerCase().includes('clicker')) {
+        openWindow('clicker');
+      } else if (file.name.toLowerCase().includes('simulation')) {
+        openWindow('simulation');
+      } else if (file.name.toLowerCase().includes('files')) {
+        openWindow('files', file);
+      } else {
+        openWindow('photonic');
+        openWindow('info');
+      }
     } else {
       openWindow('document', file);
     }
@@ -108,6 +121,40 @@ export default function Home() {
                 <div className="w-full h-[75vh] md:h-[750px] dark-context rounded-xl overflow-hidden shadow-2xl relative">
                   <PhotonicChip />
                 </div>
+              </DraggableWindow>
+            ) : win.type === 'clicker' ? (
+              <DraggableWindow
+                title="◊.CLICKER"
+                isOpen={true}
+                onClose={() => closeWindow(win.id)}
+                className="w-[90vw] md:w-[800px] h-[80vh]"
+                style={{ zIndex: win.zIndex }}
+                onPointerDown={() => bringToFront(win.id)}
+              >
+                <ShapeClicker />
+              </DraggableWindow>
+            ) : win.type === 'simulation' ? (
+              <DraggableWindow
+                title="◊.SIMULATION"
+                isOpen={true}
+                onClose={() => closeWindow(win.id)}
+                className="w-[98vw] md:w-[1100px] h-[90vh] md:h-[850px]"
+                style={{ zIndex: win.zIndex }}
+                onPointerDown={() => bringToFront(win.id)}
+              >
+                {/* Placeholder for simulation app */}
+                <div className="w-full h-full flex items-center justify-center text-black/40 text-2xl">Simulation App Coming Soon</div>
+              </DraggableWindow>
+            ) : win.type === 'files' && win.file ? (
+              <DraggableWindow
+                title="◊.FILES"
+                isOpen={true}
+                onClose={() => closeWindow(win.id)}
+                className="w-[90vw] md:w-[800px] h-[80vh]"
+                style={{ zIndex: win.zIndex }}
+                onPointerDown={() => bringToFront(win.id)}
+              >
+                <DocumentViewer file={win.file} embedded />
               </DraggableWindow>
             ) : win.type === 'info' ? (
               <DraggableWindow

@@ -47,10 +47,16 @@ const DOCUMENTS: NullFile[] = [
   { name: "The Null Line Project", type: "txt", path: "/docs/TheNullLineProject.txt" },
 ];
 
+
+import { NOLLTECH_WRITINGS } from "./nolltechWritings";
+
 const FILES: NullFile[] = [
-  { name: "Photonic Core", type: "app", path: "app://photonic-core" },
-  { name: "Documents", type: "folder", path: "/documents", children: DOCUMENTS },
-  { name: "NollTech", type: "folder", path: "/nolltech", children: [] },
+  { name: "Files", type: "app", path: "app://files", children: [
+    { name: "NollTech", type: "folder", path: "/nolltech", children: NOLLTECH_WRITINGS },
+    { name: "Documents", type: "folder", path: "/documents", children: DOCUMENTS },
+  ] },
+  { name: "Clicker", type: "app", path: "app://clicker" },
+  { name: "Simulation", type: "app", path: "app://simulation" },
 ];
 
 
