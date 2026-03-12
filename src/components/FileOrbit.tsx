@@ -139,7 +139,7 @@ export default function FileOrbit({
                   key={activeIndex}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-[10px] tracking-[0.4em] font-light text-black/60 uppercase mt-2 whitespace-nowrap"
+                  className="text-[12px] tracking-[0.4em] font-bold text-black uppercase mt-2 whitespace-nowrap"
                 >
                   ◊.{FILES[activeIndex].name.toUpperCase().replace(/\s/g, '_')}
                 </motion.div>
@@ -179,47 +179,45 @@ function OrbitItem({
   onSelect: (file: NullFile) => void, hovered: number | null, setHovered: (idx: number | null) => void 
 }) {
   const isSelected = activeIndex === index;
-  const radius = 280;
+  const radius = 260; // Consistent fixed wheel size
   
-  // Use useTransform for ultra-smooth 2D circle mapping
-  const angle = useMotionValue(0);
-  
-  // Angle transform based on rotation value
-  const x = useSpring(useTransform(rotation, (rot: number) => {
-    const angleVal = (index * 2 * Math.PI) / total + (rot * Math.PI) / 180;
-    return radius * Math.cos(angleVal);
-  }), { stiffness: 100, damping: 20 });
+  // Calculate polar coordinates relative to the SHARED smoothed rotation
+  // This preserves the radius perfectly (arc motion) rather than linear interpolation
+  const x = useTransform(rotation, (rot: number) => {
+    const angle = (index * 2 * Math.PI) / total + (rot * Math.PI) / 180;
+    return radius * Math.cos(angle);
+  });
 
-  const y = useSpring(useTransform(rotation, (rot: number) => {
-    const angleVal = (index * 2 * Math.PI) / total + (rot * Math.PI) / 180;
-    return radius * Math.sin(angleVal);
-  }), { stiffness: 100, damping: 20 });
+  const y = useTransform(rotation, (rot: number) => {
+    const angle = (index * 2 * Math.PI) / total + (rot * Math.PI) / 180;
+    return radius * Math.sin(angle);
+  });
 
   return (
     <motion.button
       style={{ x, y, zIndex: hovered === index ? 100 : 10 }}
       animate={{ 
-        scale: hovered === index ? 1.2 : 1,
-        // No isSelected scaling to keep the circle consistent
+        scale: isSelected ? 1.2 : (hovered === index ? 1.3 : 1),
       }}
-      transition={{ type: "spring", stiffness: 120, damping: 20 }}
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
       onMouseEnter={() => setHovered(index)}
       onMouseLeave={() => setHovered(null)}
       onClick={() => onSelect(file)}
       className={cn(
-        "absolute w-10 h-10 rounded-full esoteric-glass flex items-center justify-center transition-all duration-300",
-        isSelected ? "border-black/60 text-black shadow-[0_0_20px_rgba(0,0,0,0.1)]" : "text-black/30 border-black/5"
+        "absolute w-12 h-12 rounded-full esoteric-glass flex items-center justify-center transition-all duration-300",
+        isSelected ? "border-black/60 text-black shadow-[0_0_30px_rgba(0,0,0,0.15)] ring-2 ring-black/5" : 
+        hovered === index ? "border-black/40 text-black" : "text-black/30 border-black/5"
       )}
     >
-      {file.type === 'pdf' ? <FileIcon size={20} /> : file.type === 'app' ? <Cpu size={20} className="animate-pulse" /> : <FileText size={20} />}
+      {file.type === 'pdf' ? <FileIcon size={22} /> : file.type === 'app' ? <Cpu size={22} className="animate-pulse" /> : <FileText size={22} />}
       
       <AnimatePresence>
-        {hovered === index && (
+        {(hovered === index || isSelected) && (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="absolute top-12 left-1/2 -translate-x-1/2 whitespace-nowrap esoteric-glass px-3 py-1 rounded-full text-[9px] font-mono tracking-widest text-black/50 border border-black/10 z-[1001]"
+            className="absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap esoteric-glass px-3 py-1 rounded-full text-[9px] font-mono tracking-widest text-black/50 border border-black/10 z-[1001]"
           >
             ◊.{file.name.toUpperCase().replace(/\s/g, '_')}
           </motion.div>
