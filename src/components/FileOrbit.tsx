@@ -97,9 +97,12 @@ const FileOrbitComponent = ({
       rotationRaw.set(angle);
     }
     // Try to enable gyroscope if available
-    if (window.DeviceOrientationEvent && typeof window.DeviceOrientationEvent.requestPermission === 'function') {
+    const DOE = window.DeviceOrientationEvent as typeof window.DeviceOrientationEvent & {
+      requestPermission?: () => Promise<string>;
+    };
+    if (DOE && typeof DOE.requestPermission === 'function') {
       // iOS 13+
-      window.DeviceOrientationEvent.requestPermission().then((response) => {
+      DOE.requestPermission().then((response) => {
         if (response === 'granted') {
           window.addEventListener('deviceorientation', handleOrientation, true);
           gyroActive = true;
