@@ -19,10 +19,13 @@ const ShapeClicker = dynamic(() => import('@/components/ShapeClicker'), {
   loading: () => <div className="w-full h-full bg-white flex items-center justify-center text-black/20 text-[10px] uppercase tracking-widest">Loading Manifold...</div>
 });
 
+type FileType = 'txt' | 'docx' | 'pdf' | 'app' | 'folder';
+
 interface NullFile {
   name: string;
-  type: 'txt' | 'docx' | 'pdf' | 'app';
+  type: FileType;
   path: string;
+  children?: NullFile[];
 }
 
 interface WindowInstance {

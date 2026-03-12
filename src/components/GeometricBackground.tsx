@@ -75,11 +75,24 @@ const GeometricBackgroundComponent = () => {
       ctx.arc(centerX, centerY, miniRadius, 0, Math.PI * 2);
       ctx.stroke();
 
-      // Mini shapes all touch the circle, now with bright colors
-      drawStarPolygon(centerX, centerY, miniRadius, 3, 1, speed * 2, 2.2, '#00FFFF'); // Cyan
-      drawStarPolygon(centerX, centerY, miniRadius, 5, 2, -speed * 1.5, 2.2, '#FF00FF'); // Magenta
-      drawStarPolygon(centerX, centerY, miniRadius, 8, 3, speed * 1.2, 2.2, '#FFFF00'); // Yellow
-      drawStarPolygon(centerX, centerY, miniRadius, 13, 5, -speed * 0.8, 2.2, '#00FF66'); // Lime
+      // Mini shapes all touch the circle, now with mathematically accurate rainbow colors
+      const miniShapes = [
+        { q: 3, p: 1, rot: speed * 2 },
+        { q: 5, p: 2, rot: -speed * 1.5 },
+        { q: 8, p: 3, rot: speed * 1.2 },
+        { q: 13, p: 5, rot: -speed * 0.8 },
+      ];
+      // Map q to a hue in the rainbow (0-360)
+      const qs = miniShapes.map(s => s.q);
+      const minQ = Math.min(...qs);
+      const maxQ = Math.max(...qs);
+      miniShapes.forEach((shape, i) => {
+        // Evenly distribute hues across the rainbow for the q values
+        const t = (shape.q - minQ) / (maxQ - minQ);
+        const hue = Math.round(360 * t); // 0=red, 120=green, 240=blue, 360=red
+        const color = `hsl(${hue}, 98%, 54%)`;
+        drawStarPolygon(centerX, centerY, miniRadius, shape.q, shape.p, shape.rot, 2.2, color);
+      });
 
       animationFrameId = requestAnimationFrame(animate);
     };
