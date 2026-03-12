@@ -2,15 +2,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
-import { FileText, File as FileIcon, ChevronRight, X, Info } from 'lucide-react';
+import { FileText, File as FileIcon, ChevronRight, X, Info, Cpu } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import dynamic from 'next/dynamic';
-
-const PhotonicChip = dynamic(() => import('./three/PhotonicChip'), { 
-  ssr: false,
-  loading: () => <div className="w-40 h-40 rounded-full glass animate-pulse" />
-});
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -18,12 +12,12 @@ function cn(...inputs: ClassValue[]) {
 
 interface NullFile {
   name: string;
-  type: 'txt' | 'docx' | 'pdf';
+  type: 'txt' | 'docx' | 'pdf' | 'app';
   path: string;
 }
 
 const FILES: NullFile[] = [
-  ...Array(2).fill(null), // Empty space for better UX top
+  { name: "Photonic Core", type: "app", path: "app://photonic-core" },
   { name: "Magi v1", type: "txt", path: "/docs/Magi v1.txt" },
   { name: "NullAegis v1", type: "txt", path: "/docs/NullAegis v1.txt" },
   { name: "NullArk v1", type: "txt", path: "/docs/NullArk v1.txt" },
@@ -76,17 +70,19 @@ export default function FileOrbit({ onFileSelect }: { onFileSelect: (file: NullF
       ref={containerRef}
       className="relative w-full h-[600px] flex items-center justify-center cursor-ns-resize"
     >
-      {/* Central Hub with 3D Model */}
-      <div className="absolute w-[400px] h-[400px] flex items-center justify-center z-10 pointer-events-none">
+      {/* Central Hub - Simplified */}
+      <div className="absolute w-48 h-48 flex items-center justify-center z-10 pointer-events-none">
         <div className="w-full h-full relative flex items-center justify-center">
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-auto">
-            <PhotonicChip />
-          </div>
+          <div className="absolute inset-0 rounded-full glass-card border border-accent/20 [box-shadow:0_0_40px_rgba(125,65,255,0.1)]" />
           
           {/* Text Overlay for Hub */}
-          <div className="z-20 text-center pointer-events-none mb-8">
+          <div className="z-20 text-center pointer-events-none">
             <div className="text-accent font-bold text-3xl tracking-[0.2em] [text-shadow:0_0_20px_rgba(125,65,255,0.8)]">k · k = 0</div>
-            <div className="text-[10px] uppercase tracking-[0.5em] opacity-50 mt-2 font-light">Photonic Core</div>
+            <div className="text-[10px] uppercase tracking-[0.5em] opacity-40 mt-3 font-light">The Null Line</div>
+            <div className="mt-4 flex flex-col items-center gap-1 opacity-20">
+              <Info size={12} />
+              <span className="text-[7px] uppercase tracking-widest">Select an entity</span>
+            </div>
           </div>
         </div>
       </div>
@@ -127,7 +123,7 @@ export default function FileOrbit({ onFileSelect }: { onFileSelect: (file: NullF
                 hovered === i ? "border-accent text-accent bg-accent/10" : "text-foreground/60"
               )}
             >
-              {file.type === 'pdf' ? <FileIcon size={20} /> : <FileText size={20} />}
+              {file.type === 'pdf' ? <FileIcon size={20} /> : file.type === 'app' ? <Cpu size={20} className="animate-pulse" /> : <FileText size={20} />}
               
               <AnimatePresence>
                 {hovered === i && (

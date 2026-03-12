@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface ViewerProps {
   file: {
     name: string;
-    type: 'txt' | 'docx' | 'pdf';
+    type: 'txt' | 'docx' | 'pdf' | 'app';
     path: string;
   };
   onClose: () => void;

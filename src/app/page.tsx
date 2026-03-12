@@ -7,16 +7,32 @@ import FileOrbit from '@/components/FileOrbit';
 import DocumentViewer from '@/components/DocumentViewer';
 import DraggableWindow from '@/components/DraggableWindow';
 import { LayoutGrid } from 'lucide-react';
+import dynamic from 'next/dynamic';
+
+const PhotonicChip = dynamic(() => import('@/components/three/PhotonicChip'), { 
+  ssr: false,
+  loading: () => <div className="w-full h-full rounded-2xl glass-card animate-pulse flex items-center justify-center text-accent/20 text-[10px] uppercase tracking-widest">Initializing Core...</div>
+});
 
 interface NullFile {
   name: string;
-  type: 'txt' | 'docx' | 'pdf';
+  type: 'txt' | 'docx' | 'pdf' | 'app';
   path: string;
 }
 
 export default function Home() {
   const [selectedFile, setSelectedFile] = useState<NullFile | null>(null);
-  const [showOutline, setShowOutline] = useState(true);
+  const [showOutline, setShowOutline] = useState(false);
+  const [show3DModel, setShow3DModel] = useState(false);
+
+  const handleFileSelect = (file: NullFile) => {
+    if (file.type === 'app') {
+      setShow3DModel(true);
+      setShowOutline(true);
+    } else {
+      setSelectedFile(file);
+    }
+  };
 
   return (
     <main className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden">
@@ -44,7 +60,7 @@ export default function Home() {
       </div>
 
       {/* Main Interaction Area */}
-      <FileOrbit onFileSelect={setSelectedFile} />
+      <FileOrbit onFileSelect={handleFileSelect} />
 
       {/* Footer Info */}
       <div className="absolute bottom-12 z-10 text-center space-y-1 opacity-30 text-[10px] uppercase tracking-widest pointer-events-none">
@@ -69,14 +85,13 @@ export default function Home() {
       >
         <div className="space-y-4">
           <section>
-            <h3 className="text-accent font-bold text-xs uppercase tracking-tighter mb-1">Fundamental Equation</h3>
-            <p className="font-mono text-lg font-bold">k · k = 0</p>
-            <p className="text-[10px] opacity-60">A photon's four-momentum is null. Inside reflective boundaries, this produces mass, time, and computation.</p>
+            <h3 className="text-accent font-bold text-[10px] uppercase tracking-widest mb-2 opacity-60">Strategic Objective</h3>
+            <p className="text-xs leading-relaxed">To extend human civilization across the stars via the systematic exploitation of null billiard dynamics.</p>
           </section>
           
           <section>
-            <h3 className="text-accent font-bold text-xs uppercase tracking-tighter mb-1">The Dependency Map</h3>
-            <ul className="text-[10px] space-y-1 opacity-80 list-disc pl-3">
+            <h3 className="text-accent font-bold text-[10px] uppercase tracking-widest mb-2 opacity-60">The Dependency Map</h3>
+            <ul className="text-[10px] space-y-2 opacity-80 list-disc pl-4">
               <li><strong>Null Sphere Computer</strong>: Fundamental photonic processor.</li>
               <li><strong>Orbit OS</strong>: Wavefunction collapse as process execution.</li>
               <li><strong>Null Forge</strong>: Atomic-precision fabricator.</li>
@@ -85,28 +100,40 @@ export default function Home() {
             </ul>
           </section>
 
-          <section>
-            <h3 className="text-accent font-bold text-xs uppercase tracking-tighter mb-1">Strategic Objective</h3>
-            <p className="text-[10px] opacity-60">To extend human civilization across the stars via the systematic exploitation of null billiard dynamics.</p>
-          </section>
-
           <button 
             onClick={() => setShowOutline(false)}
-            className="w-full py-2 bg-accent/10 border border-accent/20 rounded-xl text-[10px] uppercase font-bold tracking-widest hover:bg-accent/20 transition-colors"
+            className="w-full py-2 bg-accent/10 border border-accent/20 rounded-xl text-[10px] uppercase font-bold tracking-widest hover:bg-accent/20 transition-colors mt-2"
           >
-            Acknowledge
+            Collapse Info
           </button>
         </div>
       </DraggableWindow>
 
+      {/* 3D Model Window */}
+      <DraggableWindow
+        title="Photonic Core Visualizer"
+        isOpen={show3DModel}
+        onClose={() => setShow3DModel(false)}
+      >
+        <div className="w-full aspect-square md:w-[400px] md:h-[400px]">
+          <PhotonicChip />
+        </div>
+        <div className="mt-4 p-3 bg-white/5 rounded-xl border border-white/5 text-[9px] uppercase tracking-widest leading-loose opacity-60">
+          Showing E8-symmetrical topology of 8 WGM microspheres arranged for null billiard computation.
+        </div>
+      </DraggableWindow>
+
       {/* Outline Toggle Button */}
-      {!showOutline && (
+      {(!showOutline || !show3DModel) && (
         <motion.button
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
-          onClick={() => setShowOutline(true)}
+          onClick={() => {
+            setShowOutline(true);
+            setShow3DModel(true);
+          }}
           className="fixed bottom-8 right-8 w-12 h-12 glass rounded-full flex items-center justify-center text-accent shadow-2xl z-50 hover:scale-110 transition-transform"
-          title="Open Design Outline"
+          title="Activate Photonic Core"
         >
           <LayoutGrid size={20} />
         </motion.button>
