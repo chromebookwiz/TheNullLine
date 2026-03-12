@@ -35,12 +35,12 @@ const GeometricBackgroundComponent = () => {
       q: number,
       p: number,
       rotation: number,
-      lineWidth: number
+      lineWidth: number,
+      color?: string
     ) => {
       ctx.beginPath();
-      ctx.strokeStyle = `rgba(0, 0, 0, 1.0)`;
+      ctx.strokeStyle = color || `rgba(0, 0, 0, 1.0)`;
       ctx.lineWidth = lineWidth;
-      
       for (let i = 0; i <= q; i++) {
         const angle = (i * p * 2 * Math.PI) / q + rotation;
         const x = centerX + radius * Math.cos(angle);
@@ -66,18 +66,20 @@ const GeometricBackgroundComponent = () => {
       drawStarPolygon(centerX, centerY, baseRadius * 1.2, 13, 5, -speed * 0.4, 0.3);
 
       // CENTRAL ENCASEMENT: Mini-core with uniform radii
-      const innerRadius = baseRadius * 0.1;
+      // Make the mini shape animation larger and concentric with the inside of the large triangle
+      const triangleRadius = baseRadius * 0.3;
+      const miniRadius = triangleRadius * 0.85; // Just inside the triangle
       ctx.beginPath();
       ctx.strokeStyle = "rgba(0, 0, 0, 1.0)";
-      ctx.lineWidth = 2.0;
-      ctx.arc(centerX, centerY, innerRadius + 10, 0, Math.PI * 2);
+      ctx.lineWidth = 0.7;
+      ctx.arc(centerX, centerY, miniRadius, 0, Math.PI * 2);
       ctx.stroke();
 
-      // Mini shapes all same size
-      drawStarPolygon(centerX, centerY, innerRadius, 3, 1, speed * 2, 1.0);
-      drawStarPolygon(centerX, centerY, innerRadius, 5, 2, -speed * 1.5, 1.0);
-      drawStarPolygon(centerX, centerY, innerRadius, 8, 3, speed * 1.2, 0.5);
-      drawStarPolygon(centerX, centerY, innerRadius, 13, 5, -speed * 0.8, 0.3);
+      // Mini shapes all touch the circle, now with bright colors
+      drawStarPolygon(centerX, centerY, miniRadius, 3, 1, speed * 2, 2.2, '#00FFFF'); // Cyan
+      drawStarPolygon(centerX, centerY, miniRadius, 5, 2, -speed * 1.5, 2.2, '#FF00FF'); // Magenta
+      drawStarPolygon(centerX, centerY, miniRadius, 8, 3, speed * 1.2, 2.2, '#FFFF00'); // Yellow
+      drawStarPolygon(centerX, centerY, miniRadius, 13, 5, -speed * 0.8, 2.2, '#00FF66'); // Lime
 
       animationFrameId = requestAnimationFrame(animate);
     };

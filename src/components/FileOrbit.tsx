@@ -10,14 +10,16 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+type FileType = 'txt' | 'docx' | 'pdf' | 'app' | 'folder';
+
 interface NullFile {
   name: string;
-  type: 'txt' | 'docx' | 'pdf' | 'app';
+  type: FileType;
   path: string;
+  children?: NullFile[];
 }
 
-const FILES: NullFile[] = [
-  { name: "Photonic Core", type: "app", path: "app://photonic-core" },
+const DOCUMENTS: NullFile[] = [
   { name: "Magi v1", type: "txt", path: "/docs/Magi v1.txt" },
   { name: "NullAegis v1", type: "txt", path: "/docs/NullAegis v1.txt" },
   { name: "NullArk v1", type: "txt", path: "/docs/NullArk v1.txt" },
@@ -43,7 +45,14 @@ const FILES: NullFile[] = [
   { name: "Nullware v1", type: "txt", path: "/docs/Nullware v1.txt" },
   { name: "OrbitOS v1", type: "txt", path: "/docs/OrbitOS v1.txt" },
   { name: "The Null Line Project", type: "txt", path: "/docs/TheNullLineProject.txt" },
-].filter(f => f !== null) as NullFile[];
+];
+
+const FILES: NullFile[] = [
+  { name: "Photonic Core", type: "app", path: "app://photonic-core" },
+  { name: "Documents", type: "folder", path: "/documents", children: DOCUMENTS },
+  { name: "NollTech", type: "folder", path: "/nolltech", children: [] },
+];
+
 
 const FileOrbitComponent = ({ 
   onFileSelect, 
@@ -54,8 +63,12 @@ const FileOrbitComponent = ({
 }) => {
   const [hovered, setHovered] = useState<number | null>(null);
   const [targetIndex, setTargetIndex] = useState(0);
-  const total = FILES.length;
+  const [currentFolder, setCurrentFolder] = useState<NullFile | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Determine which files to show (root or folder)
+  const files = currentFolder?.children || FILES;
+  const total = files.length;
 
   // Motion Values for the rotation
   const rotationRaw = useMotionValue(90); // 90 is the bottom
@@ -122,29 +135,45 @@ const FileOrbitComponent = ({
             whileTap={{ scale: 0.95 }}
             onClick={(e) => {
               e.stopPropagation();
-              onFileSelect(FILES[activeIndex]);
+              const selected = files[activeIndex];
+              if (selected.type === 'folder') {
+                setCurrentFolder(selected);
+                setTargetIndex(0);
+              } else {
+                onFileSelect(selected);
+              }
             }}
             className="w-24 h-24 bg-[#FAF9F6]/90 backdrop-blur-xl rounded-full flex items-center justify-center text-black/60 hover:text-black transition-all shadow-[0_0_50px_rgba(0,0,0,0.1)] border border-black/10 pointer-events-auto group"
           >
             <AnimatePresence mode="wait">
               <motion.div
-                key={FILES[activeIndex].type}
+                key={files[activeIndex].type + files[activeIndex].name}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.2 }}
               >
-                {FILES[activeIndex].type === 'app' ? (
+                {files[activeIndex].type === 'app' ? (
                   <LayoutGrid size={36} strokeWidth={1} className="group-hover:rotate-90 transition-transform duration-500" />
-                ) : FILES[activeIndex].type === 'pdf' ? (
+                ) : files[activeIndex].type === 'pdf' ? (
                   <FileIcon size={36} strokeWidth={1} />
+                ) : files[activeIndex].type === 'folder' ? (
+                  <ChevronRight size={36} strokeWidth={1} />
                 ) : (
                   <FileText size={36} strokeWidth={1} />
                 )}
               </motion.div>
             </AnimatePresence>
           </motion.button>
-          
+          {/* Folder navigation bar */}
+          {currentFolder && (
+            <button
+              className="absolute top-0 left-1/2 -translate-x-1/2 px-3 py-1 bg-black/10 text-black/60 text-[10px] rounded-full border border-black/10 shadow"
+              onClick={() => { setCurrentFolder(null); setTargetIndex(0); }}
+            >
+              ← Back
+            </button>
+          )}
           <div className="absolute top-[120px] flex flex-col items-center w-[400px]">
             <div className="w-px h-16 bg-gradient-to-b from-black/20 to-transparent" />
             <motion.div
@@ -155,7 +184,7 @@ const FileOrbitComponent = ({
               className="mt-6 px-8 py-3 bg-[#FAF9F6]/95 backdrop-blur-md rounded-full border border-black/5 shadow-xl"
             >
               <span className="text-[14px] font-bold tracking-[0.5em] uppercase text-black">
-                ◊.{FILES[activeIndex].name.toUpperCase().replace(/\s/g, '_')}
+                ◊.{files[activeIndex].name.toUpperCase().replace(/\s/g, '_')}
               </span>
             </motion.div>
           </div>
@@ -167,7 +196,7 @@ const FileOrbitComponent = ({
         style={{ rotate: rotationSmooth }}
         className="relative w-[520px] h-[520px] rounded-full border border-black/[0.03] flex items-center justify-center pointer-events-none will-change-transform transform-gpu"
       >
-        {FILES.map((file, i) => {
+        {files.map((file, i) => {
           const itemAngle = (i * 360) / total;
           const radius = 260;
           return (
@@ -185,7 +214,14 @@ const FileOrbitComponent = ({
                 file={file}
                 isSelected={activeIndex === i}
                 isHovered={hovered === i}
-                onSelect={() => onFileSelect(file)}
+                onSelect={() => {
+                  if (file.type === 'folder') {
+                    setCurrentFolder(file);
+                    setTargetIndex(0);
+                  } else {
+                    onFileSelect(file);
+                  }
+                }}
                 onHoverChange={(h) => setHovered(h ? i : null)}
                 parentRotation={rotationSmooth}
               />
