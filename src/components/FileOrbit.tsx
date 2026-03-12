@@ -53,30 +53,32 @@ export default function FileOrbit({
   onActivate: () => void
 }) {
   const [hovered, setHovered] = useState<number | null>(null);
-  const [targetIndex, setTargetIndex] = useState(0); // Discrete index for snapping
+  const [targetIndex, setTargetIndex] = useState(0);
   const total = FILES.length;
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Motion Values for the rotation
+  const rotationRaw = useMotionValue(90); // 90 is the bottom
+  const rotationSmooth = useSpring(rotationRaw, { stiffness: 40, damping: 12, mass: 0.8 });
   
-  const rotationRaw = useMotionValue(90); // Start with 90 to put first item at bottom
-  const rotationSmooth = useSpring(rotationRaw, { stiffness: 45, damping: 15 });
-  
+  // The active index is targetIndex normalized
   const activeIndex = ((targetIndex % total) + total) % total;
 
   useEffect(() => {
-    // Standardize selection: targetIndex at bottom (90 degrees)
-    // Formula: indexAngle + rotation = 90  => rotation = 90 - indexAngle
-    const itemAngle = (targetIndex * 360) / total;
-    rotationRaw.set(90 - itemAngle);
+    // To make targetIndex bottom: rotation = 90 - (targetIndex * 360 / total)
+    const angle = (targetIndex * 360) / total;
+    rotationRaw.set(90 - angle);
   }, [targetIndex, total, rotationRaw]);
 
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
-      // User request: Scroll Up (e.deltaY < 0) -> Rotate Right (Clockwise).
-      // Clockwise rotation means the items move to the right, so the NEXT item comes to the bottom.
+      // User request: Scroll Up (deltaY < 0) -> Rotate Right (Clockwise).
+      // Clockwise rotation means rotation angle INCREASES.
+      // targetIndex must DECREASE for rotation angle to increase: 90 - ( (targetIndex-1) * 360/total )
       if (e.deltaY < 0) {
-        setTargetIndex(prev => prev + 1);
-      } else {
         setTargetIndex(prev => prev - 1);
+      } else {
+        setTargetIndex(prev => prev + 1);
       }
     };
 
@@ -87,8 +89,8 @@ export default function FileOrbit({
 
     const handleTouchMove = (e: TouchEvent) => {
       const deltaY = touchY - e.touches[0].clientY;
-      if (Math.abs(deltaY) > 20) {
-        setTargetIndex(prev => prev + (deltaY > 0 ? -1 : 1));
+      if (Math.abs(deltaY) > 30) {
+        setTargetIndex(prev => prev + (deltaY > 0 ? 1 : -1));
         touchY = e.touches[0].clientY;
       }
     };
@@ -112,112 +114,117 @@ export default function FileOrbit({
   return (
     <div 
       ref={containerRef}
-      className="relative w-full h-[700px] flex items-center justify-center cursor-ns-resize"
+      className="relative w-full h-[700px] flex items-center justify-center overflow-hidden"
+      style={{ isolation: 'isolate' }}
     >
-      {/* Central Hub */}
-      <div className="absolute w-48 h-48 flex items-center justify-center z-10 pointer-events-none">
-        <div className="w-full h-full relative flex items-center justify-center">
-          <div className="absolute inset-0 rounded-full border border-black/[0.03] [box-shadow:0_0_80px_rgba(0,0,0,0.01)]" />
+      {/* Central Hub - Always on top of the wheel but below windows */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-50">
+        <div className="relative flex flex-col items-center">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onActivate();
+            }}
+            className="w-20 h-20 bg-[#FAF9F6]/90 backdrop-blur-xl rounded-full flex items-center justify-center text-black/60 hover:text-black transition-all shadow-[0_0_50px_rgba(0,0,0,0.05)] border border-black/10 pointer-events-auto"
+          >
+            <LayoutGrid size={32} strokeWidth={1.5} />
+          </motion.button>
           
-          <div className="z-20 text-center flex flex-col items-center justify-center pointer-events-auto">
-             <motion.button
-               whileHover={{ scale: 1.1 }}
-               whileTap={{ scale: 0.9 }}
-               onClick={(e) => {
-                 e.stopPropagation();
-                 onActivate();
-               }}
-               className="w-16 h-16 esoteric-glass rounded-full flex items-center justify-center text-black/60 hover:text-black transition-all shadow-[0_0_40px_rgba(0,0,0,0.05)] border border-black/10"
-             >
-               <LayoutGrid size={28} />
-             </motion.button>
-             
-             <div className="mt-6 absolute top-24 flex flex-col items-center z-30">
-                <div className="w-px h-10 bg-black/10" />
-                <motion.div
-                  key={activeIndex}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-xs tracking-[0.5em] font-bold text-black uppercase mt-3 whitespace-nowrap bg-[#FAF9F6]/90 backdrop-blur-md px-5 py-2 rounded-full border border-black/5 shadow-sm"
-                >
-                  ◊.{FILES[activeIndex].name.toUpperCase().replace(/\s/g, '_')}
-                </motion.div>
-             </div>
+          <div className="absolute top-[100px] flex flex-col items-center">
+            <div className="w-px h-12 bg-black/10" />
+            <motion.div
+              key={activeIndex}
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-4 px-6 py-2 bg-[#FAF9F6]/95 backdrop-blur-md rounded-full border border-black/5 shadow-sm"
+            >
+              <span className="text-[13px] font-bold tracking-[0.4em] uppercase text-black">
+                ◊.{FILES[activeIndex].name.toUpperCase().replace(/\s/g, '_')}
+              </span>
+            </motion.div>
           </div>
         </div>
       </div>
 
-      {/* The Wheel */}
-      <div className="relative w-full h-full flex items-center justify-center">
-        {FILES.map((file, i) => (
-          <OrbitItem 
-            key={i}
-            index={i}
-            total={FILES.length}
-            file={file}
-            rotation={rotationSmooth}
-            activeIndex={activeIndex}
-            onSelect={onFileSelect}
-            hovered={hovered}
-            setHovered={setHovered}
-          />
-        ))}
-      </div>
+      {/* The Wheel - Container Rotation Strategy */}
+      <motion.div 
+        style={{ rotate: rotationSmooth }}
+        className="relative w-[520px] h-[520px] rounded-full border border-black/[0.03] flex items-center justify-center pointer-events-none"
+      >
+        {FILES.map((file, i) => {
+          const itemAngle = (i * 360) / total;
+          const radius = 260;
+          return (
+            <motion.div
+              key={file.path}
+              className="absolute flex items-center justify-center"
+              style={{
+                width: 50,
+                height: 50,
+                // Static positioning on the circle
+                left: `calc(50% + ${radius * Math.cos((itemAngle * Math.PI) / 180)}px - 25px)`,
+                top: `calc(50% + ${radius * Math.sin((itemAngle * Math.PI) / 180)}px - 25px)`,
+              }}
+            >
+              <OrbitItem 
+                file={file}
+                isSelected={activeIndex === i}
+                isHovered={hovered === i}
+                onSelect={() => onFileSelect(file)}
+                onHoverChange={(h) => setHovered(h ? i : null)}
+                // Counter-rotate to stay upright
+                parentRotation={rotationSmooth}
+              />
+            </motion.div>
+          );
+        })}
+      </motion.div>
 
-      {/* Visual Connection Rings */}
-      <div className="absolute w-[520px] h-[520px] rounded-full border border-black/[0.03] pointer-events-none" />
-      <div className="absolute w-[540px] h-[540px] rounded-full border border-black/[0.05] pointer-events-none" />
+      {/* Decorative Rings - Under the wheel */}
+      <div className="absolute w-[520px] h-[520px] rounded-full border border-black/[0.02] -z-10" />
+      <div className="absolute w-[530px] h-[530px] rounded-full border border-black/[0.01] -z-10" />
     </div>
   );
 }
 
 function OrbitItem({ 
-  index, total, file, rotation, activeIndex, onSelect, hovered, setHovered 
+  file, isSelected, isHovered, onSelect, onHoverChange, parentRotation 
 }: { 
-  index: number, total: number, file: NullFile, rotation: any, activeIndex: number, 
-  onSelect: (file: NullFile) => void, hovered: number | null, setHovered: (idx: number | null) => void 
+  file: NullFile, isSelected: boolean, isHovered: boolean, onSelect: () => void, 
+  onHoverChange: (h: boolean) => void, parentRotation: any 
 }) {
-  const isSelected = activeIndex === index;
-  const radius = 260; // Locked Radius
-  
-  // Precise Radial Mapping using a SHARED rotation spring
-  const x = useTransform(rotation, (rot: number) => {
-    const angle = (index * 2 * Math.PI) / total + (rot * Math.PI) / 180;
-    return radius * Math.cos(angle);
-  });
-
-  const y = useTransform(rotation, (rot: number) => {
-    const angle = (index * 2 * Math.PI) / total + (rot * Math.PI) / 180;
-    return radius * Math.sin(angle);
-  });
+  // We apply the negative of parentRotation to keep the icon upright
+  const counterRotate = useTransform(parentRotation, (r: number) => -r);
 
   return (
     <motion.button
-      style={{ x, y, zIndex: isSelected || hovered === index ? 100 : 10 }}
-      animate={{ 
-        scale: isSelected ? 1.25 : (hovered === index ? 1.4 : 1),
+      style={{ rotate: counterRotate }}
+      onMouseEnter={() => onHoverChange(true)}
+      onMouseLeave={() => onHoverChange(false)}
+      onClick={(e) => {
+        e.stopPropagation();
+        onSelect();
       }}
-      transition={{ type: "spring", stiffness: 300, damping: 25 }}
-      onMouseEnter={() => setHovered(index)}
-      onMouseLeave={() => setHovered(null)}
-      onClick={() => onSelect(file)}
       className={cn(
-        "absolute w-12 h-12 rounded-full esoteric-glass flex items-center justify-center transition-all duration-300",
-        isSelected ? "border-black/60 text-black shadow-[0_0_30px_rgba(0,0,0,0.1)] ring-1 ring-black/10" : 
-        "text-black/30 border-black/5"
+        "w-12 h-12 rounded-full esoteric-glass flex items-center justify-center pointer-events-auto transition-all duration-300",
+        isSelected ? "border-black/60 text-black shadow-[0_0_20px_rgba(0,0,0,0.1)] scale-110" : 
+        isHovered ? "border-black/30 text-black scale-110 shadow-lg" : 
+        "text-black/20 border-black/5"
       )}
     >
-      {file.type === 'pdf' ? <FileIcon size={22} /> : file.type === 'app' ? <Cpu size={22} className="animate-pulse" /> : <FileText size={22} />}
+      {file.type === 'pdf' ? <FileIcon size={20} /> : file.type === 'app' ? <Cpu size={20} className="animate-pulse" /> : <FileText size={20} />}
       
       <AnimatePresence>
-        {(hovered === index || isSelected) && (
+        {(isHovered || isSelected) && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="absolute -top-12 left-1/2 -translate-x-1/2 whitespace-nowrap esoteric-glass px-4 py-1.5 rounded-full text-[9px] font-mono tracking-widest text-black shadow-sm border border-black/10 z-[1001]"
+            exit={{ opacity: 0, scale: 0.8 }}
+            className="absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap bg-black text-white px-3 py-1 rounded text-[8px] font-mono tracking-widest uppercase z-[100]"
           >
-            ◊.{file.name.toUpperCase().replace(/\s/g, '_')}
+            {file.name}
           </motion.div>
         )}
       </AnimatePresence>
