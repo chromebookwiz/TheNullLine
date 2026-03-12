@@ -77,9 +77,23 @@ export default function DocumentViewer({ file, onClose, embedded }: ViewerProps)
           dangerouslySetInnerHTML={{ __html: content || '' }} 
         />
       ) : (
-        <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-black/80">
-          {content}
-        </pre>
+        /* Hybrid TXT/HTML rendering */
+        (() => {
+          const isHTML = content && (/<[a-z][\s\S]*>/i.test(content));
+          if (isHTML) {
+            return (
+              <div 
+                className="prose max-w-none text-black/90 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: content || '' }} 
+              />
+            );
+          }
+          return (
+            <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-black/80">
+              {content}
+            </pre>
+          );
+        })()
       )}
     </div>
   );
