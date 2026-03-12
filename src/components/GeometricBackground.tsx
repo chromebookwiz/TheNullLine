@@ -53,45 +53,43 @@ const GeometricBackgroundComponent = () => {
 
     const animate = (time: number) => {
       ctx.clearRect(0, 0, width, height);
-      
+
       const centerX = width / 2;
       const centerY = height / 2;
-      const baseRadius = Math.min(width, height) * 0.35; 
-      const speed = time * 0.0001; 
+      const baseRadius = Math.min(width, height) * 0.35;
+      const speed = time * 0.0001;
 
       // Draw nested SOLID black polygons with varying weights
-      drawStarPolygon(centerX, centerY, baseRadius * 0.3, 3, 1, speed, 1.5);     
-      drawStarPolygon(centerX, centerY, baseRadius * 0.6, 5, 2, -speed * 0.8, 1.0);    
-      drawStarPolygon(centerX, centerY, baseRadius * 0.9, 8, 3, speed * 0.6, 0.5);           
+      drawStarPolygon(centerX, centerY, baseRadius * 0.3, 3, 1, speed, 1.5);
+      drawStarPolygon(centerX, centerY, baseRadius * 0.6, 5, 2, -speed * 0.8, 1.0);
+      drawStarPolygon(centerX, centerY, baseRadius * 0.9, 8, 3, speed * 0.6, 0.5);
       drawStarPolygon(centerX, centerY, baseRadius * 1.2, 13, 5, -speed * 0.4, 0.3);
 
       // CENTRAL ENCASEMENT: Mini-core with uniform radii
-      // Make the mini shape animation larger and concentric with the inside of the large triangle
+      // Make the mini shape animation exactly inscribed in the triangle
       const triangleRadius = baseRadius * 0.3;
-      const miniRadius = triangleRadius * 0.85; // Just inside the triangle
+      // The inradius of an equilateral triangle of circumradius R is R * cos(pi/3) = R * 0.5
+      // But for a regular polygon, the inradius is R * cos(pi/q). For q=3, inradius = R * 0.5
+      // We want the mini circle's inner edge to touch the triangle's inner edge, so:
+      const miniRadius = triangleRadius * 0.5; // inradius of triangle
       ctx.beginPath();
       ctx.strokeStyle = "rgba(0, 0, 0, 1.0)";
       ctx.lineWidth = 0.7;
       ctx.arc(centerX, centerY, miniRadius, 0, Math.PI * 2);
       ctx.stroke();
 
-      // Mini shapes all touch the circle, now with mathematically accurate rainbow colors
+      // Mini shapes all touch the circle, now with pure RGB and 50/50 mixes
+      // Order: Red, Green, Blue, Yellow, Cyan, Magenta
       const miniShapes = [
-        { q: 3, p: 1, rot: speed * 2 },
-        { q: 5, p: 2, rot: -speed * 1.5 },
-        { q: 8, p: 3, rot: speed * 1.2 },
-        { q: 13, p: 5, rot: -speed * 0.8 },
+        { q: 3, p: 1, rot: speed * 2, color: 'rgb(255,0,0)' },      // Red
+        { q: 5, p: 2, rot: -speed * 1.5, color: 'rgb(0,255,0)' },   // Green
+        { q: 8, p: 3, rot: speed * 1.2, color: 'rgb(0,0,255)' },    // Blue
+        { q: 4, p: 1, rot: -speed * 0.8, color: 'rgb(255,255,0)' }, // Yellow (R+G)
+        { q: 6, p: 1, rot: speed * 0.6, color: 'rgb(0,255,255)' },  // Cyan (G+B)
+        { q: 7, p: 2, rot: -speed * 0.4, color: 'rgb(255,0,255)' }, // Magenta (R+B)
       ];
-      // Map q to a hue in the rainbow (0-360)
-      const qs = miniShapes.map(s => s.q);
-      const minQ = Math.min(...qs);
-      const maxQ = Math.max(...qs);
-      miniShapes.forEach((shape, i) => {
-        // Evenly distribute hues across the rainbow for the q values
-        const t = (shape.q - minQ) / (maxQ - minQ);
-        const hue = Math.round(360 * t); // 0=red, 120=green, 240=blue, 360=red
-        const color = `hsl(${hue}, 98%, 54%)`;
-        drawStarPolygon(centerX, centerY, miniRadius, shape.q, shape.p, shape.rot, 2.2, color);
+      miniShapes.forEach((shape) => {
+        drawStarPolygon(centerX, centerY, miniRadius, shape.q, shape.p, shape.rot, 2.2, shape.color);
       });
 
       animationFrameId = requestAnimationFrame(animate);
