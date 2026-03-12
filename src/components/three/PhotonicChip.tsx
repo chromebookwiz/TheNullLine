@@ -2,10 +2,10 @@
 
 import React, { useRef, useMemo, useState, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { PerspectiveCamera, OrbitControls, Float, Sphere, PointMaterial } from '@react-three/drei';
+import { PerspectiveCamera, OrbitControls, Sphere, PointMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 
-const NUM_PARTICLES = 600;
+const NUM_PARTICLES = 1000;
 
 // Mapping numbers to geometric "perfect" orbits
 function getOrbit(value: number) {
@@ -29,6 +29,7 @@ const RaySystem = React.memo(function RaySystem({ q, p, isSolving }: { q: number
   const lineRef = useRef<THREE.Line>(null);
   const segmentsRef = useRef<THREE.LineSegments>(null);
   const coreRef = useRef<THREE.Mesh>(null);
+  const groupRef = useRef<THREE.Group>(null);
   
   const radius = 2.0;
 
@@ -43,9 +44,9 @@ const RaySystem = React.memo(function RaySystem({ q, p, isSolving }: { q: number
             (Math.random() - 0.5) * 4
         ));
         velocities.push(new THREE.Vector3(
-            (Math.random() - 0.5) * 0.1,
-            (Math.random() - 0.5) * 0.1,
-            (Math.random() - 0.5) * 0.1
+            (Math.random() - 0.5) * 0.12,
+            (Math.random() - 0.5) * 0.12,
+            (Math.random() - 0.5) * 0.12
         ));
     }
     return { pnts, velocities };
@@ -65,17 +66,26 @@ const RaySystem = React.memo(function RaySystem({ q, p, isSolving }: { q: number
     return verts;
   }, [q, p, radius]);
 
+  // Pre-calculate line segments for the "flow-in" effect
+  const raySegments = useMemo(() => {
+    const segs: { start: THREE.Vector3, end: THREE.Vector3 }[] = [];
+    for (let i = 0; i < q; i++) {
+        segs.push({ start: targetVertices[i], end: targetVertices[i+1] });
+    }
+    return segs;
+  }, [q, targetVertices]);
+
   // Type-safe Three.js Objects to avoid SVG conflicts
   const mainLine = useMemo(() => {
     const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(128 * 3), 3));
+    geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(256 * 3), 3));
     const mat = new THREE.LineBasicMaterial({ color: 'white', transparent: true, opacity: 0 });
     return new THREE.Line(geo, mat);
   }, []);
 
   const beamSegments = useMemo(() => {
     const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(128 * 3 * 2), 3));
+    geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(256 * 3 * 2), 3));
     const mat = new THREE.LineBasicMaterial({ color: 'white', transparent: true, opacity: 0 });
     return new THREE.LineSegments(geo, mat);
   }, []);
@@ -84,7 +94,7 @@ const RaySystem = React.memo(function RaySystem({ q, p, isSolving }: { q: number
     const t = state.clock.getElapsedTime();
     const positions = pointsRef.current?.geometry.attributes.position.array as Float32Array;
 
-    const lerpSpeed = isSolving ? 0.02 : 0.1;
+    const lerpSpeed = isSolving ? 0.03 : 0.08;
 
     for (let i = 0; i < NUM_PARTICLES; i++) {
       const particle = particles.pnts[i];
@@ -97,18 +107,33 @@ const RaySystem = React.memo(function RaySystem({ q, p, isSolving }: { q: number
         // Bounce off sphere wall (radius=2)
         if (particle.length() > radius) {
             particle.normalize().multiplyScalar(radius);
-            vel.reflect(particle.clone().normalize()).multiplyScalar(0.9);
+            vel.reflect(particle.clone().normalize()).multiplyScalar(0.95);
         }
         
         // Small random perturbations
-        vel.x += (Math.random() - 0.5) * 0.005;
-        vel.y += (Math.random() - 0.5) * 0.005;
-        vel.z += (Math.random() - 0.5) * 0.005;
-        vel.clampLength(0, 0.05);
+        vel.x += (Math.random() - 0.5) * 0.008;
+        vel.y += (Math.random() - 0.5) * 0.008;
+        vel.z += (Math.random() - 0.5) * 0.008;
+        vel.clampLength(0.01, 0.06);
 
       } else {
-        // Topological collapse to shape vertices
-        const target = targetVertices[i % targetVertices.length];
+        // SEQUENTIAL COLLAPSE: Outside Nodes -> Lines
+        // Dividing particles: 
+        // 40% stay at vertices
+        // 60% distribute along rays
+        const segmentIdx = i % raySegments.length;
+        const segment = raySegments[segmentIdx];
+        
+        let target;
+        if (i % 10 < 4) {
+          // Snap to vertex
+          target = targetVertices[segmentIdx];
+        } else {
+          // Flow along ray
+          const progress = ((i + t * 0.5) % 10) / 10;
+          target = new THREE.Vector3().copy(segment.start).lerp(segment.end, progress);
+        }
+        
         particle.lerp(target, lerpSpeed);
       }
 
@@ -125,15 +150,15 @@ const RaySystem = React.memo(function RaySystem({ q, p, isSolving }: { q: number
     // Update the ray paths only when collapsed
     if (lineRef.current) {
         const linePos = lineRef.current.geometry.attributes.position.array as Float32Array;
-        const opacityTarget = isSolving ? 0 : 0.6;
-        (lineRef.current.material as THREE.LineBasicMaterial).opacity += (opacityTarget - (lineRef.current.material as THREE.LineBasicMaterial).opacity) * 0.1;
+        const opacityTarget = isSolving ? 0 : 0.4;
+        (lineRef.current.material as THREE.LineBasicMaterial).opacity += (opacityTarget - (lineRef.current.material as THREE.LineBasicMaterial).opacity) * 0.05;
         
         if (!isSolving) {
             for (let i = 0; i <= q; i++) {
-                const pnt = particles.pnts[i];
-                linePos[i * 3] = pnt.x;
-                linePos[i * 3 + 1] = pnt.y;
-                linePos[i * 3 + 2] = pnt.z;
+                const v = targetVertices[i];
+                linePos[i * 3] = v.x;
+                linePos[i * 3 + 1] = v.y;
+                linePos[i * 3 + 2] = v.z;
             }
             lineRef.current.geometry.setDrawRange(0, q + 1);
             lineRef.current.geometry.attributes.position.needsUpdate = true;
@@ -143,37 +168,37 @@ const RaySystem = React.memo(function RaySystem({ q, p, isSolving }: { q: number
     // Update the intersection beams only when collapsed
     if (segmentsRef.current) {
         const segPos = segmentsRef.current.geometry.attributes.position.array as Float32Array;
-        const opacityTarget = isSolving ? 0 : 0.1;
-        (segmentsRef.current.material as THREE.LineBasicMaterial).opacity += (opacityTarget - (segmentsRef.current.material as THREE.LineBasicMaterial).opacity) * 0.1;
+        const opacityTarget = isSolving ? 0 : 0.05;
+        (segmentsRef.current.material as THREE.LineBasicMaterial).opacity += (opacityTarget - (segmentsRef.current.material as THREE.LineBasicMaterial).opacity) * 0.05;
 
         if (!isSolving) {
             for (let i = 0; i < q; i++) {
-                const pnt = particles.pnts[i];
-                // Start at origin
+                const v = targetVertices[i];
                 segPos[i * 6] = 0;
                 segPos[i * 6 + 1] = 0;
                 segPos[i * 6 + 2] = 0;
-                // End at point
-                segPos[i * 6 + 3] = pnt.x;
-                segPos[i * 6 + 4] = pnt.y;
-                segPos[i * 6 + 5] = pnt.z;
+                segPos[i * 6 + 3] = v.x;
+                segPos[i * 6 + 4] = v.y;
+                segPos[i * 6 + 5] = v.z;
             }
             segmentsRef.current.geometry.setDrawRange(0, q * 2);
             segmentsRef.current.geometry.attributes.position.needsUpdate = true;
         }
     }
 
-    // Core pulsing
+    // Core pulsing & System Rotation
+    if (groupRef.current) {
+      groupRef.current.rotation.y += (isSolving ? 0.02 : 0.005);
+    }
     if (coreRef.current) {
-      const s = isSolving ? 0.8 + Math.sin(t * 20) * 0.2 : 0.3;
+      const s = isSolving ? 0.8 + Math.sin(t * 15) * 0.2 : 0.3;
       coreRef.current.scale.setScalar(s);
-      (coreRef.current.material as THREE.MeshBasicMaterial).opacity = isSolving ? 0.6 + Math.sin(t * 30) * 0.2 : 0.15;
+      (coreRef.current.material as THREE.MeshBasicMaterial).opacity = isSolving ? 0.6 + Math.sin(t * 20) * 0.2 : 0.1;
     }
   });
 
   return (
-    <group>
-      {/* The Particle Swarm */}
+    <group ref={groupRef}>
       <points ref={pointsRef}>
         <bufferGeometry>
           <bufferAttribute
@@ -187,29 +212,25 @@ const RaySystem = React.memo(function RaySystem({ q, p, isSolving }: { q: number
         <PointMaterial 
             transparent 
             color="white" 
-            size={0.035} 
+            size={0.025} 
             sizeAttenuation={true} 
             depthWrite={false} 
+            opacity={0.8}
         />
       </points>
 
-      {/* The Billiard Rays (collapsed state) */}
       <primitive object={mainLine} ref={lineRef} />
-
-      {/* The Intersection Beams (collapsed state) */}
       <primitive object={beamSegments} ref={segmentsRef} />
 
-      {/* Boundary Sphere */}
       <Sphere args={[radius, 32, 32]}>
-        <meshBasicMaterial color="white" transparent opacity={0.03} wireframe />
+        <meshBasicMaterial color="white" transparent opacity={0.02} wireframe />
       </Sphere>
 
-      {/* Central Intersection Core */}
       <Sphere ref={coreRef} args={[0.2, 16, 16]}>
-        <meshBasicMaterial color="white" transparent opacity={0.2} />
+        <meshBasicMaterial color="white" transparent opacity={0.15} />
       </Sphere>
 
-      <pointLight intensity={isSolving ? 1.5 : 0.4} />
+      <pointLight intensity={isSolving ? 1.2 : 0.3} />
     </group>
   );
 });
@@ -239,25 +260,25 @@ export default function PhotonicComputer() {
         console.error("Math error", err);
       }
       setIsSolving(false);
-    }, 2500); // Slightly longer for "collapse" impact
+    }, 3000); 
   };
 
   return (
-    <div className="w-full h-full relative flex flex-col items-center justify-center bg-black overflow-hidden">
+    <div className="w-full h-full relative flex flex-col items-center justify-center bg-black overflow-hidden select-none">
       <div className="flex-1 w-full scale-125 md:scale-110">
         <Canvas gl={{ antialias: false, powerPreference: "high-performance" }} dpr={[1, 1.5]}>
           <PerspectiveCamera makeDefault position={[0, 0, 8]} fov={25} />
+          {/* Zoom loop fix: constrain min/max distance tightly */}
           <OrbitControls 
             enablePan={false} 
             autoRotate={!isSolving} 
-            autoRotateSpeed={0.5} 
-            minDistance={4}
-            maxDistance={12}
+            autoRotateSpeed={0.4} 
+            minDistance={6}
+            maxDistance={10}
+            enableDamping={true}
           />
-          <ambientLight intensity={0.5} />
-          <Float speed={1.5} rotationIntensity={0.2} floatIntensity={0.2}>
-            <RaySystem q={orbit.q} p={orbit.p} isSolving={isSolving} />
-          </Float>
+          <ambientLight intensity={0.4} />
+          <RaySystem q={orbit.q} p={orbit.p} isSolving={isSolving} />
         </Canvas>
       </div>
 
@@ -267,34 +288,34 @@ export default function PhotonicComputer() {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="◊.ENTER_EQUATION"
-            className="w-full bg-transparent border-b border-white/10 py-3 px-1 text-[11px] uppercase tracking-[0.5em] text-white focus:outline-none focus:border-white/40 transition-all text-center placeholder:opacity-20"
+            placeholder="◊.EQUATION_FIELD"
+            className="w-full bg-transparent border-b border-white/5 py-3 px-1 text-[11px] uppercase tracking-[0.5em] text-white focus:outline-none focus:border-white/30 transition-all text-center placeholder:opacity-10"
           />
           <button 
             type="submit"
             disabled={isSolving}
-            className="absolute right-0 bottom-3 text-[9px] text-white/30 hover:text-white transition-colors tracking-[0.3em] font-bold disabled:opacity-20"
+            className="absolute right-0 bottom-3 text-[9px] text-white/20 hover:text-white transition-colors tracking-[0.3em] font-bold disabled:opacity-5"
           >
-            {isSolving ? "[SOLVING]" : "[EXEC]"}
+            {isSolving ? "[SEARCHING]" : "[EXEC]"}
           </button>
         </form>
 
-        <div className="flex items-center gap-8 md:gap-14">
+        <div className="flex items-center gap-8 md:gap-14 opacity-40">
             <div className="flex flex-col items-center">
-              <div className="text-[7px] tracking-[0.4em] text-white/20 uppercase mb-1">Status</div>
-              <div className="text-[9px] tracking-[0.2em] text-white/60 uppercase font-mono">{isSolving ? "WAVE_SWARM" : "PERIODIC_SNAP"}</div>
+              <div className="text-[7px] tracking-[0.4em] text-white/50 uppercase mb-1">Compute</div>
+              <div className="text-[9px] tracking-[0.1em] text-white/80 uppercase font-mono">{isSolving ? "WAVE_SWARM" : "STABLE_GEO"}</div>
             </div>
             
             {result !== null && (
                 <div className="flex flex-col items-center border-x border-white/10 px-6 md:px-10">
-                  <div className="text-[7px] tracking-[0.4em] text-white/20 uppercase mb-1">Collapse_Value</div>
-                  <div className="text-[12px] tracking-[0.2em] text-white font-mono font-bold">{result}</div>
+                  <div className="text-[7px] tracking-[0.4em] text-white/50 uppercase mb-1">Result</div>
+                  <div className="text-[11px] tracking-[0.1em] text-white font-mono">{result}</div>
                 </div>
             )}
 
             <div className="flex flex-col items-center">
-              <div className="text-[7px] tracking-[0.4em] text-white/20 uppercase mb-1">Topology</div>
-              <div className="text-[9px] tracking-[0.2em] text-white/60 uppercase font-mono">{orbit.q}:{orbit.p}</div>
+              <div className="text-[7px] tracking-[0.4em] text-white/50 uppercase mb-1">Manifold</div>
+              <div className="text-[9px] tracking-[0.1em] text-white/80 uppercase font-mono">{orbit.q}:{orbit.p}</div>
             </div>
         </div>
       </div>

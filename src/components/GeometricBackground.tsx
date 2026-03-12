@@ -35,22 +35,12 @@ const GeometricBackgroundComponent = () => {
       q: number,
       p: number,
       rotation: number,
-      drawCircle = true
+      opacity: number
     ) => {
-      const hue = Math.max(0, 300 - (q * 20)); 
-      const color = `hsla(${hue}, 70%, 50%, 0.15)`;
-      const circleColor = `hsla(${hue}, 70%, 50%, 0.05)`;
-
-      if (drawCircle) {
-        ctx.beginPath();
-        ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-        ctx.strokeStyle = circleColor;
-        ctx.stroke();
-      }
-
       ctx.beginPath();
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = `rgba(0, 0, 0, ${opacity})`;
+      ctx.lineWidth = 1;
+      
       for (let i = 0; i <= q; i++) {
         const angle = (i * p * 2 * Math.PI) / q + rotation;
         const x = centerX + radius * Math.cos(angle);
@@ -63,18 +53,17 @@ const GeometricBackgroundComponent = () => {
 
     const animate = (time: number) => {
       ctx.clearRect(0, 0, width, height);
-      ctx.lineWidth = 1;
-
+      
       const centerX = width / 2;
       const centerY = height / 2;
-      const baseRadius = Math.min(width, height) * 0.38; 
-
+      const baseRadius = Math.min(width, height) * 0.35; 
       const speed = time * 0.0001; 
 
-      drawStarPolygon(centerX, centerY, baseRadius * 0.4, 3, 1, speed);     
-      drawStarPolygon(centerX, centerY, baseRadius * 0.7, 5, 2, -speed);    
-      drawStarPolygon(centerX, centerY, baseRadius, 8, 3, speed);           
-      drawStarPolygon(centerX, centerY, baseRadius * 1.3, 13, 5, -speed);   
+      // Draw nested black polygons
+      drawStarPolygon(centerX, centerY, baseRadius * 0.3, 3, 1, speed, 0.12);     
+      drawStarPolygon(centerX, centerY, baseRadius * 0.6, 5, 2, -speed * 0.8, 0.1);    
+      drawStarPolygon(centerX, centerY, baseRadius * 0.9, 8, 3, speed * 0.6, 0.08);           
+      drawStarPolygon(centerX, centerY, baseRadius * 1.2, 13, 5, -speed * 0.4, 0.06);   
 
       animationFrameId = requestAnimationFrame(animate);
     };
