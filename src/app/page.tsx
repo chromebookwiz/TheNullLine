@@ -106,12 +106,25 @@ export default function Home() {
             </p>
           </section>
 
-          <section className="border-l border-black/20 pl-4">
-            <div className="text-[10px] tracking-[0.5em] text-black/40 mb-2">[.OPS]</div>
-            <div className="space-y-3 text-[10px] uppercase tracking-widest text-black/60">
-              <p>◊ UNIT (1) = BASE SYMMETRY RESONANCE</p>
-              <p>◊ ADD (+) = PERTURBATION COUPLING</p>
-              <p>◊ MULT (*) = GEOMETRIC PROPAGATION</p>
+          <section className="border-l border-black/20 pl-4 bg-black/5 py-4 pr-4 rounded-r-lg">
+            <div className="text-[10px] tracking-[0.5em] text-black/40 mb-3">[.PRC_EXAMPLE: (7 + 3) * 123]</div>
+            <div className="space-y-4 text-[10px] font-mono text-black/90 tracking-wider">
+              <div className="flex gap-3">
+                <span className="text-black/30">01.</span>
+                <p><strong>INIT:</strong> Manifold resets to base unit symmetry (q=1).</p>
+              </div>
+              <div className="flex gap-3">
+                <span className="text-black/30">02.</span>
+                <p><strong>COUPLING (7+3):</strong> Unit perturbations collide, evolving the energy field to a q=10 state.</p>
+              </div>
+              <div className="flex gap-3">
+                <span className="text-black/30">03.</span>
+                <p><strong>PROPAGATION (*123):</strong> The harmonic baseline scale-inverts, shifting the resonance to 1230.</p>
+              </div>
+              <div className="flex gap-3">
+                <span className="text-black/30">04.</span>
+                <p><strong>COLLAPSE:</strong> The 1230 state finds its nearest stable Null Orbit. Visually represented as a <strong>1230/512</strong> star polygon arrangement.</p>
+              </div>
             </div>
           </section>
 
