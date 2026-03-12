@@ -146,62 +146,84 @@ export default function FileOrbit({
 
       {/* Orbiting Files */}
       <div className="relative w-full h-full flex items-center justify-center">
-        {FILES.map((file, i) => {
-          const total = FILES.length;
-          const angleOffset = (rotation * Math.PI) / 180;
-          const angle = (i * 2 * Math.PI) / total + angleOffset;
-          const radius = 260;
-          const x = radius * Math.cos(angle);
-          const y = radius * Math.sin(angle);
-          
-          // Pure 2D Circle - No depth logic
-          const zIndex = 10;
-          const opacity = 1;
-          const scale = 1;
-          const isSelected = activeIndex === i;
-
-          return (
-            <motion.button
-              key={i}
-              initial={false}
-              animate={{ 
-                x: x,
-                y: y,
-                scale: hovered === i ? 1.2 : scale,
-                opacity: opacity,
-              }}
-              style={{ zIndex: hovered === i ? 100 : zIndex }}
-              transition={{ type: "spring", stiffness: 120, damping: 20 }}
-              onMouseEnter={() => setHovered(i)}
-              onMouseLeave={() => setHovered(null)}
-              onClick={() => onFileSelect(file)}
-              className={cn(
-                "absolute w-10 h-10 rounded-full esoteric-glass flex items-center justify-center transition-all duration-300",
-                isSelected ? "border-black/60 text-black shadow-[0_0_20px_rgba(0,0,0,0.1)]" : "text-black/30 border-black/5"
-              )}
-            >
-              {file.type === 'pdf' ? <FileIcon size={20} /> : file.type === 'app' ? <Cpu size={20} className="animate-pulse" /> : <FileText size={20} />}
-              
-              <AnimatePresence>
-                {hovered === i && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    className="absolute top-12 left-1/2 -translate-x-1/2 whitespace-nowrap esoteric-glass px-3 py-1 rounded-full text-[9px] font-mono tracking-widest text-black/50 border border-black/10 z-[1001]"
-                  >
-                    ◊.{file.name.toUpperCase().replace(/\s/g, '_')}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.button>
-          );
-        })}
+        {FILES.map((file, i) => (
+          <OrbitItem 
+            key={i}
+            index={i}
+            total={FILES.length}
+            file={file}
+            rotation={rotationSmooth}
+            activeIndex={activeIndex}
+            onSelect={onFileSelect}
+            hovered={hovered}
+            setHovered={setHovered}
+          />
+        ))}
       </div>
 
       {/* Connection Rings - Monochrome - Flat 2D */}
       <div className="absolute w-[520px] h-[520px] rounded-full border border-black/5 pointer-events-none" />
       <div className="absolute w-[560px] h-[560px] rounded-full border border-black/5 pointer-events-none" />
     </div>
+  );
+}
+
+function OrbitItem({ 
+  index, total, file, rotation, activeIndex, onSelect, hovered, setHovered 
+}: { 
+  index: number, total: number, file: NullFile, rotation: any, activeIndex: number, 
+  onSelect: (file: NullFile) => void, hovered: number | null, setHovered: (idx: number | null) => void 
+}) {
+  const isSelected = activeIndex === index;
+  
+  const angle = useMotionValue(0);
+  useEffect(() => {
+    return rotation.on("change", (latest: number) => {
+      const angleVal = (index * 2 * Math.PI) / total + (latest * Math.PI) / 180;
+      angle.set(angleVal);
+    });
+  }, [rotation, index, total, angle]);
+
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  useEffect(() => {
+    return angle.on("change", (latest: number) => {
+        const radius = 280;
+        x.set(radius * Math.cos(latest));
+        y.set(radius * Math.sin(latest));
+    });
+  }, [angle, x, y]);
+
+  return (
+    <motion.button
+      style={{ x, y, zIndex: hovered === index ? 100 : 10 }}
+      animate={{ 
+        scale: isSelected ? 1.1 : (hovered === index ? 1.2 : 1),
+      }}
+      transition={{ type: "spring", stiffness: 120, damping: 20 }}
+      onMouseEnter={() => setHovered(index)}
+      onMouseLeave={() => setHovered(null)}
+      onClick={() => onSelect(file)}
+      className={cn(
+        "absolute w-10 h-10 rounded-full esoteric-glass flex items-center justify-center transition-all duration-300",
+        isSelected ? "border-black/60 text-black shadow-[0_0_20px_rgba(0,0,0,0.1)]" : "text-black/30 border-black/5"
+      )}
+    >
+      {file.type === 'pdf' ? <FileIcon size={20} /> : file.type === 'app' ? <Cpu size={20} className="animate-pulse" /> : <FileText size={20} />}
+      
+      <AnimatePresence>
+        {hovered === index && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="absolute top-12 left-1/2 -translate-x-1/2 whitespace-nowrap esoteric-glass px-3 py-1 rounded-full text-[9px] font-mono tracking-widest text-black/50 border border-black/10 z-[1001]"
+          >
+            ◊.{file.name.toUpperCase().replace(/\s/g, '_')}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.button>
   );
 }
