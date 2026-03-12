@@ -80,13 +80,29 @@ export default function FileOrbit({
 
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
-      // Direct rotation based on wheel delta
-      setRotation(prev => prev - e.deltaY * 0.1); 
+      // Increased sensitivity for cleaner spin
+      setRotation(prev => prev - e.deltaY * 0.2);
+    };
+
+    let touchY = 0;
+    const handleTouchStart = (e: TouchEvent) => {
+      touchY = e.touches[0].clientY;
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      const deltaY = touchY - e.touches[0].clientY;
+      setRotation(prev => prev - deltaY * 0.5);
+      touchY = e.touches[0].clientY;
     };
 
     window.addEventListener('wheel', handleWheel, { passive: true });
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    
     return () => {
       window.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
     };
   }, []);
 
