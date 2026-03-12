@@ -80,7 +80,7 @@ export default function Home() {
         isOpen={show3DModel}
         onClose={() => setShow3DModel(false)}
       >
-        <div className="w-full aspect-square md:w-[500px] md:h-[600px]">
+        <div className="w-full aspect-square md:w-[850px] md:h-[750px]">
           <PhotonicChip />
         </div>
       </DraggableWindow>
@@ -102,8 +102,6 @@ export default function Home() {
         </ul>
       </nav>
 
-      {/* Overlay Vignette */}
-      <div className="fixed inset-0 pointer-events-none shadow-[inset_0_0_150px_rgba(0,0,0,0.8)] z-[-1]" />
     </main>
   );
 }

@@ -58,9 +58,9 @@ function RaySystem({ q, p, isSolving }: { q: number, p: number, isSolving: boole
         <meshPhysicalMaterial 
           color="black" 
           transparent 
-          opacity={0.05} 
-          transmission={0.9}
-          thickness={1}
+          opacity={0.03} 
+          transmission={0.95}
+          thickness={0.5}
           roughness={0}
         />
       </Sphere>
@@ -70,11 +70,11 @@ function RaySystem({ q, p, isSolving }: { q: number, p: number, isSolving: boole
         color="black"
         lineWidth={isSolving ? 2 : 1}
         transparent
-        opacity={isSolving ? 0.8 : 0.4}
+        opacity={isSolving ? 0.9 : 0.4}
       />
       
       {points.slice(0, q).map((pnt, i) => (
-        <Sphere key={i} position={pnt} args={[isSolving ? 0.05 : 0.03, 16, 16]}>
+        <Sphere key={i} position={pnt} args={[isSolving ? 0.04 : 0.02, 16, 16]}>
           <meshBasicMaterial color="black" />
         </Sphere>
       ))}
@@ -132,7 +132,7 @@ export default function PhotonicComputer() {
       </div>
 
       {/* Symbolic Console Overlay */}
-      <div className="absolute inset-x-0 bottom-0 p-6 flex flex-col items-center gap-4 bg-white/80 border-t border-black/10">
+      <div className="absolute inset-x-0 bottom-0 p-6 flex flex-col items-center gap-4 bg-white/95 border-t border-black/10 backdrop-blur-md">
         <form onSubmit={handleSolve} className="w-full max-w-xs relative">
           <input 
             type="text"

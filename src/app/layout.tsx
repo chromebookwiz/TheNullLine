@@ -24,9 +24,8 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body
-        className={`${outfit.variable} antialiased selection:bg-accent/30`}
+        className={`${outfit.variable} antialiased selection:bg-black/10`}
       >
-        <div className="photon-glow" />
         {children}
       </body>
     </html>
