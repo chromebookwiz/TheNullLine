@@ -28,12 +28,11 @@ function gcd(a: number, b: number): number {
 
 function RaySystem({ q, p, isSolving }: { q: number, p: number, isSolving: boolean }) {
   const groupRef = useRef<THREE.Group>(null);
-  
-  const points = useMemo(() => {
+  const coreRef = useRef<THREE.Mesh>(null);
+  const targetPoints = useMemo(() => {
     const pnts: THREE.Vector3[] = [];
     const radius = 1.5;
-    // We draw the star polygon path
-    for (let i = 0; i <= q * 2; i++) {
+    for (let i = 0; i <= q; i++) {
         const angle = (i * p * 2 * Math.PI) / q;
         pnts.push(new THREE.Vector3(
             radius * Math.cos(angle),
@@ -44,40 +43,91 @@ function RaySystem({ q, p, isSolving }: { q: number, p: number, isSolving: boole
     return pnts;
   }, [q, p]);
 
+  // Current points that will lerp to targetPoints
+  const [currentPoints, setCurrentPoints] = useState<THREE.Vector3[]>(targetPoints);
+
   useFrame((state) => {
+    const t = state.clock.getElapsedTime();
+    
     if (groupRef.current) {
-        // Solving phase: faster rotation
-        const speed = isSolving ? 0.5 : 0.05;
+        const speed = isSolving ? 0.3 : 0.05;
         groupRef.current.rotation.y += speed * 0.1;
     }
+
+    if (coreRef.current) {
+      const coreScale = isSolving ? 1 + Math.sin(t * 20) * 0.2 : 0.4;
+      coreRef.current.scale.setScalar(coreScale);
+      (coreRef.current.material as THREE.MeshBasicMaterial).opacity = isSolving ? 0.8 + Math.sin(t * 30) * 0.2 : 0.3;
+    }
+
+    // Smoothed transition
+    const lerpSpeed = isSolving ? 0.02 : 0.15;
+    const newPoints = targetPoints.map((target, i) => {
+      const current = currentPoints[i] || new THREE.Vector3();
+      
+      // If solving, add chaotic jitter
+      if (isSolving) {
+        const noise = new THREE.Vector3(
+          (Math.random() - 0.5) * 0.2,
+          (Math.random() - 0.5) * 0.2,
+          (Math.random() - 0.5) * 0.2
+        );
+        return current.clone().lerp(target.clone().add(noise), 0.1);
+      }
+      
+      return current.clone().lerp(target, lerpSpeed);
+    });
+    setCurrentPoints(newPoints);
   });
 
   return (
     <group ref={groupRef}>
-      <Sphere args={[1.5, 64, 64]}>
+      {/* The Whisper Gallery Sphere */}
+      <Sphere args={[2, 64, 64]}>
         <meshPhysicalMaterial 
           color="white" 
           transparent 
-          opacity={0.05} 
-          transmission={0.9}
-          thickness={1}
+          opacity={0.03} 
+          transmission={0.95}
+          thickness={0.5}
           roughness={0}
         />
       </Sphere>
-      
+
+      {/* Internal Intersection Beams */}
+      {currentPoints.slice(0, q).map((pnt, i) => (
+        <Line
+          key={`beam-${i}`}
+          points={[new THREE.Vector3(0,0,0), pnt]}
+          color="white"
+          lineWidth={0.5}
+          transparent
+          opacity={isSolving ? 0.5 : 0.1}
+        />
+      ))}
+
+      {/* Waveform Trace */}
       <Line
-        points={points}
+        points={currentPoints}
         color="white" 
-        lineWidth={isSolving ? 2 : 1}
+        lineWidth={isSolving ? 3 : 1.5}
         transparent
-        opacity={isSolving ? 0.9 : 0.4}
+        opacity={isSolving ? 0.9 : 0.5}
       />
       
-      {points.slice(0, q).map((pnt, i) => (
-        <Sphere key={i} position={pnt} args={[isSolving ? 0.04 : 0.02, 16, 16]}>
-          <meshBasicMaterial color="white" />
+      {/* Quantized Vertices */}
+      {currentPoints.slice(0, q).map((pnt, i) => (
+        <Sphere key={i} position={pnt} args={[isSolving ? 0.05 : 0.03, 16, 16]}>
+          <meshBasicMaterial color="white" transparent opacity={0.8} />
         </Sphere>
       ))}
+
+      {/* The Intersection Core (The Collapse Point) */}
+      <Sphere ref={coreRef} args={[0.15, 32, 32]}>
+        <meshBasicMaterial color="white" transparent opacity={0.3} />
+      </Sphere>
+      
+      <pointLight intensity={isSolving ? 2 : 0.5} color="white" />
     </group>
   );
 }
