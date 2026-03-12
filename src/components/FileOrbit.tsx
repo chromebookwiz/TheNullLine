@@ -53,42 +53,31 @@ export default function FileOrbit({
   onActivate: () => void
 }) {
   const [hovered, setHovered] = useState<number | null>(null);
-  const rotationRaw = useMotionValue(0);
-  const rotationSmooth = useSpring(rotationRaw, { stiffness: 60, damping: 20 });
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [targetIndex, setTargetIndex] = useState(0); // Discrete index for snapping
+  const total = FILES.length;
   const containerRef = useRef<HTMLDivElement>(null);
+  
+  const rotationRaw = useMotionValue(90); // Start with 90 to put first item at bottom
+  const rotationSmooth = useSpring(rotationRaw, { stiffness: 45, damping: 15 });
+  
+  const activeIndex = ((targetIndex % total) + total) % total;
 
-  // Sync active index with smooth rotation
-  // Selection logic: Bottommost icon = (Latest rotation + item index angle) % 2PI should be close to PI/2
   useEffect(() => {
-    return rotationSmooth.on("change", (latest) => {
-      const total = FILES.length;
-      const angleOffset = (latest * Math.PI) / 180;
-      let maxYa = -Infinity;
-      let bestIdx = 0;
-
-      FILES.forEach((_, i) => {
-        // We want to find which item is currently at the "bottom" (Y is max)
-        const angle = (i * 2 * Math.PI) / total + angleOffset;
-        const y = Math.sin(angle);
-        if (y > maxYa) {
-          maxYa = y;
-          bestIdx = i;
-        }
-      });
-
-      if (bestIdx !== activeIndex) {
-        setActiveIndex(bestIdx);
-      }
-    });
-  }, [rotationSmooth, activeIndex]);
+    // Standardize selection: targetIndex at bottom (90 degrees)
+    // Formula: indexAngle + rotation = 90  => rotation = 90 - indexAngle
+    const itemAngle = (targetIndex * 360) / total;
+    rotationRaw.set(90 - itemAngle);
+  }, [targetIndex, total, rotationRaw]);
 
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
-      // User requested: Scroll Up -> Rotate Right (Clockwise/Positive), Scroll Down -> Rotate Left (Counter-Clockwise/Negative)
-      // Standard wheel delta: Up is negative, Down is positive.
-      const direction = e.deltaY < 0 ? 1 : -1;
-      rotationRaw.set(rotationRaw.get() + direction * 15); 
+      // User request: Scroll Up (e.deltaY < 0) -> Rotate Right (Clockwise).
+      // Clockwise rotation means the items move to the right, so the NEXT item comes to the bottom.
+      if (e.deltaY < 0) {
+        setTargetIndex(prev => prev + 1);
+      } else {
+        setTargetIndex(prev => prev - 1);
+      }
     };
 
     let touchY = 0;
@@ -98,8 +87,10 @@ export default function FileOrbit({
 
     const handleTouchMove = (e: TouchEvent) => {
       const deltaY = touchY - e.touches[0].clientY;
-      rotationRaw.set(rotationRaw.get() + (deltaY > 0 ? -10 : 10));
-      touchY = e.touches[0].clientY;
+      if (Math.abs(deltaY) > 20) {
+        setTargetIndex(prev => prev + (deltaY > 0 ? -1 : 1));
+        touchY = e.touches[0].clientY;
+      }
     };
 
     const container = containerRef.current;
