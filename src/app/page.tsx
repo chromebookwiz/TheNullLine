@@ -109,7 +109,7 @@ export default function Home() {
                 style={{ zIndex: win.zIndex }}
                 onPointerDown={() => bringToFront(win.id)}
               >
-                <div className="space-y-6">
+                <div className="space-y-6 p-6">
                   <section className="border-l border-black/20 pl-4">
                     <div className="text-[10px] tracking-[0.5em] text-black/40 mb-2">[.AEM_LOGIC]</div>
                     <p className="text-[11px] font-mono text-black/80 leading-relaxed text-left">

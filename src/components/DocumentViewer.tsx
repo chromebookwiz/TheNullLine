@@ -4,6 +4,12 @@ import React, { useState, useEffect } from 'react';
 import mammoth from 'mammoth';
 import { X, ExternalLink, FileText, Download, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 interface ViewerProps {
   file: {
@@ -55,7 +61,10 @@ export default function DocumentViewer({ file, onClose, embedded }: ViewerProps)
   }, [file]);
 
   const innerContent = (
-    <div className="flex-1 overflow-y-auto p-6 md:p-12 custom-scrollbar bg-black/5 min-h-0 h-full">
+    <div className={cn(
+      "flex-1 p-6 md:p-12 bg-black/5 min-h-0",
+      embedded ? "h-auto overflow-visible" : "overflow-y-auto h-full"
+    )}>
       {loading ? (
         <div className="h-full flex items-center justify-center">
           <Loader2 className="animate-spin text-black/20" size={32} />
