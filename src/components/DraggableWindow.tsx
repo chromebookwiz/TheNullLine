@@ -3,15 +3,22 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, GripHorizontal, ChevronRight, Maximize2, Minimize2 } from 'lucide-react';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 interface DraggableWindowProps {
   title: string;
   isOpen: boolean;
   onClose: () => void;
   children: React.ReactNode;
+  className?: string;
 }
 
-export default function DraggableWindow({ title, isOpen, onClose, children }: DraggableWindowProps) {
+export default function DraggableWindow({ title, isOpen, onClose, children, className }: DraggableWindowProps) {
   const [isMinimized, setIsMinimized] = useState(false);
 
   return (
@@ -24,9 +31,9 @@ export default function DraggableWindow({ title, isOpen, onClose, children }: Dr
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.98 }}
           style={{ position: 'fixed', zIndex: 100 }}
-          className="bottom-24 right-8 w-80 md:w-96 shadow-2xl"
+          className={cn("bottom-24 right-8 shadow-2xl transition-all duration-300", className || "w-80 md:w-96")}
         >
-          <div className="esoteric-glass rounded-2xl overflow-hidden border border-black/20 flex flex-col max-h-[700px]">
+          <div className={cn("esoteric-glass rounded-2xl overflow-hidden border border-black/20 flex flex-col", !className && "max-h-[700px]")}>
             {/* Header / Drag Handle */}
             <div className="bg-black/5 px-4 py-2 flex items-center justify-between cursor-move border-b border-black/5">
               <div className="flex items-center gap-3">

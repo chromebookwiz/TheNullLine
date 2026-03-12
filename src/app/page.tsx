@@ -63,8 +63,9 @@ export default function Home() {
         title="◊.VISUALIZER"
         isOpen={show3DModel}
         onClose={() => setShow3DModel(false)}
+        className="bottom-12 right-1/2 translate-x-1/2 w-[98vw] md:w-[1100px] h-[90vh] md:h-[850px]"
       >
-        <div className="w-full aspect-square md:w-[900px] md:h-[800px] dark-context rounded-xl overflow-hidden shadow-2xl">
+        <div className="w-full h-[75vh] md:h-[750px] dark-context rounded-xl overflow-hidden shadow-2xl relative">
           <PhotonicChip />
         </div>
       </DraggableWindow>
