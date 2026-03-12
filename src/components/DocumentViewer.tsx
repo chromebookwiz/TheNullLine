@@ -11,14 +11,7 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-type FileType = 'txt' | 'docx' | 'pdf' | 'app' | 'folder';
 
-interface NullFile {
-  name: string;
-  type: FileType;
-  path: string;
-  children?: NullFile[];
-}
 
 interface ViewerProps {
   file: NullFile;
@@ -60,8 +53,6 @@ const DocumentViewerComponent = ({ file, onClose, embedded }: ViewerProps) => {
           setError("◊.ERR_Δ");
           setLoading(false);
         });
-    } else if (file.type === 'folder') {
-      setLoading(false);
     } else {
       setLoading(false);
     }
@@ -92,11 +83,18 @@ const DocumentViewerComponent = ({ file, onClose, embedded }: ViewerProps) => {
           className="prose max-w-none docx-content text-black/90 leading-relaxed"
           dangerouslySetInnerHTML={{ __html: content || '' }} 
         />
-      ) : file.type === 'folder' ? (
-        <div className="font-mono text-[13px] text-black/80 bg-yellow-50/40 border border-yellow-200 rounded-lg p-6 mt-2">
-          <div className="mb-2 text-[11px] text-yellow-700">Decompiled Folder Structure (LaTeX-style):</div>
-          <pre className="whitespace-pre-wrap">
-            {renderFolderLatex(file)}
+      ) : file.type === 'txt' ? (
+        <div className="flex flex-col gap-4 h-full">
+          <div className="flex justify-end">
+            <button
+              className="px-5 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold shadow hover:from-blue-600 hover:to-purple-600 transition-all text-xs tracking-widest uppercase"
+              onClick={() => alert('Compile action for ' + file.name)}
+            >
+              ◊ Compile
+            </button>
+          </div>
+          <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-black/80 flex-1 bg-white/80 rounded-lg p-4 border border-black/10">
+            {content}
           </pre>
         </div>
       ) : (
@@ -118,21 +116,7 @@ const DocumentViewerComponent = ({ file, onClose, embedded }: ViewerProps) => {
           );
         })()
       )}
-    // Render folder as LaTeX-style tree
-    function renderFolderLatex(file: NullFile, indent = 0): string {
-      const pad = '  '.repeat(indent);
-      let out = `${pad}\\textbf{${file.name}} \\textit{[folder]}`;
-      if (file.children && file.children.length > 0) {
-        for (const child of file.children) {
-          if (child.type === 'folder') {
-            out += `\n${renderFolderLatex(child, indent + 1)}`;
-          } else {
-            out += `\n${'  '.repeat(indent + 1)}- ${child.name} \\texttt{[${child.type}]}`;
-          }
-        }
-      }
-      return out;
-    }
+
     </div>
   );
 
