@@ -266,6 +266,14 @@ export default function PhotonicComputer() {
     }, 3000); 
   };
 
+  const handleClear = () => {
+    setInput("");
+    setResult(null);
+    setOrbit({ q: 1, p: 1 }); // Reset to unit symmetry (base state)
+  };
+
+  const isFree = result === null && !isSolving;
+
   return (
     <div className="w-full h-full relative flex flex-col items-center justify-center bg-black overflow-hidden select-none font-mono">
       {/* 3D Simulation Layer */}
@@ -282,7 +290,7 @@ export default function PhotonicComputer() {
             dampingFactor={0.05}
           />
           <ambientLight intensity={0.4} />
-          <RaySystem q={orbit.q} p={orbit.p} isSolving={isSolving} />
+          <RaySystem q={orbit.q} p={orbit.p} isSolving={isSolving || isFree} />
         </Canvas>
       </div>
 
@@ -320,39 +328,39 @@ export default function PhotonicComputer() {
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-8 md:p-10 space-y-8 text-black custom-scrollbar">
+              <div className="flex-1 overflow-y-auto p-8 md:p-10 space-y-10 text-black custom-scrollbar">
                 <section>
                   <h3 className="text-[11px] font-bold tracking-[0.2em] mb-4 flex items-center gap-2">
-                    <Zap size={12} className="text-black/30" /> 1. THE NULL CONDITION
+                    <Zap size={12} className="text-black/30" /> 1. PRIMITIVE TOPOLOGY
                   </h3>
                   <p className="text-[10px] leading-6 tracking-wide text-black/60 uppercase">
-                    THE FUNDAMENTAL PRIMITIVE IS THE <span className="text-black font-bold">NULL RAY</span>—A MASSLESS trajectory 
-                    IN MINKOWSKI SPACE GOVERNED BY THE METRIC η = DIAG(-1, +1, +1, +1). 
-                    COMPUTING IS THE <span className="text-black font-bold">TOPOLOGICAL LOCALIZATION</span> OF NULL MOMENTUM.
+                    ESTABLISHING THE <span className="text-black font-bold">NULL CONE</span> AS THE LOGICALLY PRIMITIVE STRUCTURE (ZEEMAN, 1964). 
+                    COMPUTING IS THE <span className="text-black font-bold">TOPOLOGICAL LOCALIZATION</span> OF NULL MOMENTUM WITHIN 
+                    A LORENTZIAN SUBSTRATE. BIJECTIONS PRESERVING THE NULL CONDITION K·K=0 DEFINE THE LOGIC GATES.
                   </p>
                 </section>
 
                 <section>
                   <h3 className="text-[11px] font-bold tracking-[0.2em] mb-4 flex items-center gap-2">
-                    <Atom size={12} className="text-black/30" /> 2. NULL BILLIARDS & MASS
+                    <Atom size={12} className="text-black/30" /> 2. EMERGENT MASS (M=Q)
                   </h3>
                   <p className="text-[10px] leading-6 tracking-wide text-black/60 uppercase">
                     PHOTONS TRAPPED IN THE WAVEFORM MANIFOLD REFLECT AT ANGLE α. 
-                    WHEN <span className="font-bold text-black">α = Pπ/Q</span>, THE RAY CLOSES INTO A PERIODIC ORBIT. 
-                    SPATIAL MOMENTA CANCEL BY SYMMETRY, WHILST ENERGY ACCUMULATES. 
-                    MASS <span className="font-bold text-black">M=Q</span> EMERGES FROM LIGHT via THE PERIODIC SNAP.
+                    FOR RATIONAL ORBITS <span className="font-bold text-black">α = Pπ/Q</span>, SPATIAL MOMENTA CANCEL BY SYMMETRY. 
+                    INVARIANT MASS <span className="font-bold text-black">M=Q</span> EMERGES FROM LIGHT via GEOMETRIC CLOSURE—THE 
+                    PERIODIC SNAP.
                   </p>
                 </section>
 
                 <section>
                   <h3 className="text-[11px] font-bold tracking-[0.2em] mb-4 flex items-center gap-2">
-                    <Cpu size={12} className="text-black/30" /> 3. ADE TOPOLOGY
+                    <Cpu size={12} className="text-black/30" /> 3. RIEMANN & E8 ROOT LATTICE
                   </h3>
                   <p className="text-[10px] leading-6 tracking-wide text-black/60 uppercase">
                     STABLE STATES ARE CLASSIFIED BY <span className="font-bold text-black">ADE DYNKIN DIAGRAMS</span>. 
-                    E8 (240-STATE) ACTS AS THE SPECTRAL OPERATOR. WAVEFORM COLLAPSE IS THE SNAP FROM 
-                    CHAOTIC SWARM TO LATTICE ROOT—A GEOMETRIC ISOMORPHISM TO THE CRITICAL ZEROS OF THE 
-                    COMPLETED <span className="font-bold text-black">RIEMANN ZETA FUNCTION</span>.
+                    WE UTILIZE THE <span className="font-bold text-black">E8 ROOT SYSTEM</span> AS THE SPECTRAL OPERATOR. 
+                    WEIL POSITIVITY ENSURES COMPUTATIONAL STABILITY; THE WAVEFORM COLLAPSE IS PHYSICALLY ISOMORPHIC 
+                    TO THE DISTRIBUTION OF CRITICAL ZEROS IN THE <span className="font-bold text-black">RIEMANN ZETA FUNCTION</span>.
                   </p>
                 </section>
 
@@ -377,13 +385,22 @@ export default function PhotonicComputer() {
             placeholder="◊.EQUATION_FIELD"
             className="w-full bg-transparent border-b border-white/5 py-3 px-1 text-[11px] uppercase tracking-[0.5em] text-white focus:outline-none focus:border-white/30 transition-all text-center placeholder:opacity-10"
           />
-          <button 
-            type="submit"
-            disabled={isSolving}
-            className="absolute right-0 bottom-3 text-[9px] text-white/20 hover:text-white transition-colors tracking-[0.3em] font-bold disabled:opacity-5"
-          >
-            {isSolving ? "[SEARCHING]" : "[EXEC]"}
-          </button>
+          <div className="absolute right-0 bottom-3 flex gap-4">
+            <button 
+              type="button"
+              onClick={handleClear}
+              className="text-[9px] text-white/20 hover:text-white transition-colors tracking-[0.3em] font-bold"
+            >
+              [CLEAR]
+            </button>
+            <button 
+              type="submit"
+              disabled={isSolving}
+              className="text-[9px] text-white/20 hover:text-white transition-colors tracking-[0.3em] font-bold disabled:opacity-5"
+            >
+              {isSolving ? "[SEARCHING]" : "[EXEC]"}
+            </button>
+          </div>
         </form>
 
         <div className="flex items-center gap-8 md:gap-14 opacity-40">
