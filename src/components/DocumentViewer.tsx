@@ -11,12 +11,17 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+type FileType = 'txt' | 'docx' | 'pdf' | 'app' | 'folder';
+
+interface NullFile {
+  name: string;
+  type: FileType;
+  path: string;
+  children?: NullFile[];
+}
+
 interface ViewerProps {
-  file: {
-    name: string;
-    type: 'txt' | 'docx' | 'pdf' | 'app';
-    path: string;
-  };
+  file: NullFile;
   onClose?: () => void;
   embedded?: boolean;
 }
@@ -55,6 +60,8 @@ const DocumentViewerComponent = ({ file, onClose, embedded }: ViewerProps) => {
           setError("◊.ERR_Δ");
           setLoading(false);
         });
+    } else if (file.type === 'folder') {
+      setLoading(false);
     } else {
       setLoading(false);
     }
@@ -85,6 +92,13 @@ const DocumentViewerComponent = ({ file, onClose, embedded }: ViewerProps) => {
           className="prose max-w-none docx-content text-black/90 leading-relaxed"
           dangerouslySetInnerHTML={{ __html: content || '' }} 
         />
+      ) : file.type === 'folder' ? (
+        <div className="font-mono text-[13px] text-black/80 bg-yellow-50/40 border border-yellow-200 rounded-lg p-6 mt-2">
+          <div className="mb-2 text-[11px] text-yellow-700">Decompiled Folder Structure (LaTeX-style):</div>
+          <pre className="whitespace-pre-wrap">
+            {renderFolderLatex(file)}
+          </pre>
+        </div>
       ) : (
         /* Hybrid TXT/HTML rendering */
         (() => {
@@ -104,6 +118,21 @@ const DocumentViewerComponent = ({ file, onClose, embedded }: ViewerProps) => {
           );
         })()
       )}
+    // Render folder as LaTeX-style tree
+    function renderFolderLatex(file: NullFile, indent = 0): string {
+      const pad = '  '.repeat(indent);
+      let out = `${pad}\\textbf{${file.name}} \\textit{[folder]}`;
+      if (file.children && file.children.length > 0) {
+        for (const child of file.children) {
+          if (child.type === 'folder') {
+            out += `\n${renderFolderLatex(child, indent + 1)}`;
+          } else {
+            out += `\n${'  '.repeat(indent + 1)}- ${child.name} \\texttt{[${child.type}]}`;
+          }
+        }
+      }
+      return out;
+    }
     </div>
   );
 
