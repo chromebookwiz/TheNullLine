@@ -115,7 +115,7 @@ export default function FileOrbit({
               initial={false}
               animate={{ 
                 x: x,
-                y: y, // Flat 2D circle
+                y: y, // Pure flat 2D circle
                 scale: scale,
                 opacity: opacity,
               }}
@@ -127,7 +127,7 @@ export default function FileOrbit({
               onClick={() => onFileSelect(file)}
               className={cn(
                 "absolute w-10 h-10 rounded-full esoteric-glass flex items-center justify-center transition-all duration-500",
-                hovered === i ? "border-black/40 text-black" : "text-black/30 border-black/5"
+                hovered === i ? "border-black/40 text-black shadow-[0_0_20px_rgba(0,0,0,0.1)]" : "text-black/30 border-black/5"
               )}
             >
               {file.type === 'pdf' ? <FileIcon size={20} /> : file.type === 'app' ? <Cpu size={20} className="animate-pulse" /> : <FileText size={20} />}
@@ -149,7 +149,7 @@ export default function FileOrbit({
         })}
       </div>
 
-      {/* Connection Rings - Monochrome - Flat */}
+      {/* Connection Rings - Monochrome - Flat 2D */}
       <div className="absolute w-[520px] h-[520px] rounded-full border border-black/5 pointer-events-none" />
       <div className="absolute w-[560px] h-[560px] rounded-full border border-black/5 pointer-events-none" />
     </div>

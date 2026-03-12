@@ -23,10 +23,12 @@ interface NullFile {
 export default function Home() {
   const [selectedFile, setSelectedFile] = useState<NullFile | null>(null);
   const [show3DModel, setShow3DModel] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
 
   const handleFileSelect = (file: NullFile) => {
     if (file.type === 'app') {
       setShow3DModel(true);
+      setShowInfo(true);
     } else {
       setSelectedFile(file);
     }
@@ -49,10 +51,12 @@ export default function Home() {
         </motion.div>
       </div>
 
-      {/* Main Interaction Area */}
       <FileOrbit 
         onFileSelect={handleFileSelect} 
-        onActivate={() => setShow3DModel(true)} 
+        onActivate={() => {
+          setShow3DModel(true);
+          setShowInfo(true);
+        }} 
       />
 
       {/* Symbol-based Footer */}
@@ -80,8 +84,43 @@ export default function Home() {
         isOpen={show3DModel}
         onClose={() => setShow3DModel(false)}
       >
-        <div className="w-full aspect-square md:w-[850px] md:h-[750px]">
+        <div className="w-full aspect-square md:w-[900px] md:h-[800px] dark-context rounded-xl overflow-hidden shadow-2xl">
           <PhotonicChip />
+        </div>
+      </DraggableWindow>
+
+      {/* Photonic Framework Info Panel */}
+      <DraggableWindow
+        title="◊.DOCS_PRC"
+        isOpen={showInfo}
+        onClose={() => setShowInfo(false)}
+      >
+        <div className="space-y-6">
+          <section className="border-l border-black/20 pl-4">
+            <div className="text-[10px] tracking-[0.5em] text-black/40 mb-2">[.AEM_LOGIC]</div>
+            <p className="text-[11px] font-mono text-black/80 leading-relaxed text-left">
+              The Photonic Computer operates on the principle of <strong>Topological Collapse</strong>. 
+              Numbers are not treated as scalars but as <strong>Quantized Harmonic Frequencies</strong>.
+              <br/><br/>
+              When an equation is executed, the manifold evolves toward the nearest stable <strong>Null Orbit</strong>—a $q/p$ star polygon arrangement within the CaF2 whispering gallery sphere.
+            </p>
+          </section>
+
+          <section className="border-l border-black/20 pl-4">
+            <div className="text-[10px] tracking-[0.5em] text-black/40 mb-2">[.OPS]</div>
+            <div className="space-y-3 text-[10px] uppercase tracking-widest text-black/60">
+              <p>◊ UNIT (1) = BASE SYMMETRY RESONANCE</p>
+              <p>◊ ADD (+) = PERTURBATION COUPLING</p>
+              <p>◊ MULT (*) = GEOMETRIC PROPAGATION</p>
+            </div>
+          </section>
+
+          <button 
+            onClick={() => setShowInfo(false)}
+            className="w-full py-2 border border-black/10 text-black/20 text-[8px] tracking-[0.5em] uppercase hover:text-black/60 hover:border-black/20 transition-all mt-4"
+          >
+            [ACKNOWLEDGE_FRAMEWORK]
+          </button>
         </div>
       </DraggableWindow>
 

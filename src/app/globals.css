@@ -6,13 +6,13 @@
 }
 
 :root {
-  --background: #fafafa;
+  --background: #faf9f6;
   --foreground: #000000;
   --accent: #000000;
   --accent-secondary: #000000;
-  --glass: rgba(0, 0, 0, 0.05);
-  --glass-border: rgba(0, 0, 0, 0.2);
-  --photon-glow: 0 0 15px rgba(0, 0, 0, 0.1);
+  --glass: rgba(0, 0, 0, 0.03);
+  --glass-border: rgba(0, 0, 0, 0.1);
+  --photon-glow: none;
 }
 
 .dark {
@@ -35,9 +35,20 @@ body {
 }
 
 .esoteric-glass {
-  background: rgba(255, 255, 255, 1);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.dark-context {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+.dark-context .esoteric-glass {
+  background: rgba(0, 0, 0, 0.95) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
 }
 
 .mono-glow {

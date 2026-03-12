@@ -56,18 +56,18 @@ function RaySystem({ q, p, isSolving }: { q: number, p: number, isSolving: boole
     <group ref={groupRef}>
       <Sphere args={[2, 64, 64]}>
         <meshPhysicalMaterial 
-          color="black" 
+          color="white" 
           transparent 
-          opacity={0.03} 
-          transmission={0.95}
-          thickness={0.5}
+          opacity={0.05} 
+          transmission={0.9}
+          thickness={1}
           roughness={0}
         />
       </Sphere>
       
       <Line
         points={points}
-        color="black"
+        color="white" 
         lineWidth={isSolving ? 2 : 1}
         transparent
         opacity={isSolving ? 0.9 : 0.4}
@@ -75,7 +75,7 @@ function RaySystem({ q, p, isSolving }: { q: number, p: number, isSolving: boole
       
       {points.slice(0, q).map((pnt, i) => (
         <Sphere key={i} position={pnt} args={[isSolving ? 0.04 : 0.02, 16, 16]}>
-          <meshBasicMaterial color="black" />
+          <meshBasicMaterial color="white" />
         </Sphere>
       ))}
     </group>
@@ -132,33 +132,33 @@ export default function PhotonicComputer() {
       </div>
 
       {/* Symbolic Console Overlay */}
-      <div className="absolute inset-x-0 bottom-0 p-6 flex flex-col items-center gap-4 bg-white/95 border-t border-black/10 backdrop-blur-md">
+      <div className="absolute inset-x-0 bottom-0 p-6 flex flex-col items-center gap-4 bg-black/80 border-t border-white/10 backdrop-blur-md">
         <form onSubmit={handleSolve} className="w-full max-w-xs relative">
           <input 
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="◊.ENTER_EQUATION"
-            className="w-full bg-transparent border-b border-black/20 py-2 px-1 text-[10px] uppercase tracking-[0.4em] text-black focus:outline-none focus:border-black transition-colors"
+            className="w-full bg-transparent border-b border-white/20 py-2 px-1 text-[10px] uppercase tracking-[0.4em] text-white focus:outline-none focus:border-white transition-colors"
           />
           <button 
             type="submit"
-            className="absolute right-0 bottom-2 text-[10px] text-black/40 hover:text-black transition-colors tracking-widest"
+            className="absolute right-0 bottom-2 text-[10px] text-white/40 hover:text-white transition-colors tracking-widest"
           >
             [EXEC]
           </button>
         </form>
 
         <div className="flex items-center gap-6">
-            <div className="text-[8px] tracking-[0.5em] text-black/20 uppercase">
+            <div className="text-[8px] tracking-[0.5em] text-white/20 uppercase">
                 Status: {isSolving ? "◊.SOLVING" : "◊.IDLE"}
             </div>
             {result !== null && (
-                <div className="text-[10px] tracking-[0.4em] text-black uppercase border-l border-black/20 pl-6">
+                <div className="text-[10px] tracking-[0.4em] text-white uppercase border-l border-white/20 pl-6">
                     Res: {result}
                 </div>
             )}
-            <div className="text-[8px] tracking-[0.5em] text-black/20 uppercase">
+            <div className="text-[8px] tracking-[0.5em] text-white/20 uppercase">
                 Orbit: {orbit.q}/{orbit.p}
             </div>
         </div>
