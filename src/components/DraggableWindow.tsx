@@ -20,18 +20,18 @@ export default function DraggableWindow({ title, isOpen, onClose, children }: Dr
         <motion.div
           drag
           dragMomentum={false}
-          initial={{ opacity: 0, scale: 0.9, x: 20, y: 20 }}
-          animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.9 }}
           style={{ position: 'fixed', zIndex: 100 }}
           className="bottom-24 right-8 w-80 md:w-96 shadow-2xl"
         >
-          <div className="glass rounded-2xl overflow-hidden border border-white/10 flex flex-col max-h-[500px]">
+          <div className="esoteric-glass rounded-2xl overflow-hidden border border-white/10 flex flex-col max-h-[500px]">
             {/* Header / Drag Handle */}
-            <div className="bg-white/5 px-4 py-3 flex items-center justify-between cursor-move border-b border-white/5">
-              <div className="flex items-center gap-2">
-                <GripHorizontal className="text-accent/40" size={16} />
-                <span className="text-[10px] uppercase tracking-widest font-bold text-accent">{title}</span>
+            <div className="bg-white/5 px-4 py-2 flex items-center justify-between cursor-move border-b border-white/5">
+              <div className="flex items-center gap-3">
+                <GripHorizontal className="text-white/20" size={14} />
+                <span className="text-[9px] uppercase tracking-[0.3em] font-light text-white/60">{title}</span>
               </div>
               <div className="flex items-center gap-1">
                 <button 

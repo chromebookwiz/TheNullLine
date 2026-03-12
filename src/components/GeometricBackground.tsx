@@ -32,9 +32,19 @@ export default function GeometricBackground() {
       radius: number,
       q: number,
       p: number,
-      rotation: number
+      rotation: number,
+      drawCircle = true
     ) => {
+      // Draw outer boundary circle
+      if (drawCircle) {
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+        ctx.stroke();
+      }
+
       ctx.beginPath();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
       for (let i = 0; i <= q; i++) {
         const angle = (i * p * 2 * Math.PI) / q + rotation;
         const x = centerX + radius * Math.cos(angle);
@@ -47,17 +57,17 @@ export default function GeometricBackground() {
 
     const animate = (time: number) => {
       ctx.clearRect(0, 0, width, height);
-      ctx.strokeStyle = 'rgba(125, 65, 255, 0.15)';
       ctx.lineWidth = 1;
 
       const centerX = width / 2;
       const centerY = height / 2;
       const baseRadius = Math.min(width, height) * 0.4;
 
-      // Draw several nested star polygons from NullBilliards ADE classification
+      // Counter-rotating star polygons with boundary circles
       drawStarPolygon(centerX, centerY, baseRadius, 8, 3, time * 0.0001);
-      drawStarPolygon(centerX, centerY, baseRadius * 0.8, 5, 2, -time * 0.00015);
-      drawStarPolygon(centerX, centerY, baseRadius * 1.2, 13, 5, time * 0.00005);
+      drawStarPolygon(centerX, centerY, baseRadius * 0.7, 5, 2, -time * 0.00015);
+      drawStarPolygon(centerX, centerY, baseRadius * 1.3, 13, 5, time * 0.00008);
+      drawStarPolygon(centerX, centerY, baseRadius * 0.4, 3, 1, -time * 0.0002);
 
       animationFrameId = requestAnimationFrame(animate);
     };

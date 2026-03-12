@@ -70,18 +70,15 @@ export default function FileOrbit({ onFileSelect }: { onFileSelect: (file: NullF
       ref={containerRef}
       className="relative w-full h-[600px] flex items-center justify-center cursor-ns-resize"
     >
-      {/* Central Hub - Simplified */}
-      <div className="absolute w-48 h-48 flex items-center justify-center z-10 pointer-events-none">
+      {/* Central Hub - Esoteric Symbol */}
+      <div className="absolute w-40 h-40 flex items-center justify-center z-10 pointer-events-none">
         <div className="w-full h-full relative flex items-center justify-center">
-          <div className="absolute inset-0 rounded-full glass-card border border-accent/20 [box-shadow:0_0_40px_rgba(125,65,255,0.1)]" />
+          <div className="absolute inset-0 rounded-full border border-white/10 [box-shadow:0_0_60px_rgba(255,255,255,0.05)]" />
           
-          {/* Text Overlay for Hub */}
           <div className="z-20 text-center pointer-events-none">
-            <div className="text-accent font-bold text-3xl tracking-[0.2em] [text-shadow:0_0_20px_rgba(125,65,255,0.8)]">k · k = 0</div>
-            <div className="text-[10px] uppercase tracking-[0.5em] opacity-40 mt-3 font-light">The Null Line</div>
-            <div className="mt-4 flex flex-col items-center gap-1 opacity-20">
-              <Info size={12} />
-              <span className="text-[7px] uppercase tracking-widest">Select an entity</span>
+            <div className="text-white font-light text-2xl tracking-[0.3em] opacity-80">k·k=0</div>
+            <div className="mt-4 flex justify-center gap-2 opacity-20">
+              <div className="w-1 h-1 rounded-full bg-white transition-opacity" />
             </div>
           </div>
         </div>
@@ -119,8 +116,8 @@ export default function FileOrbit({ onFileSelect }: { onFileSelect: (file: NullF
               onMouseLeave={() => setHovered(null)}
               onClick={() => onFileSelect(file)}
               className={cn(
-                "absolute w-12 h-12 rounded-full glass flex items-center justify-center transition-colors duration-300",
-                hovered === i ? "border-accent text-accent bg-accent/10" : "text-foreground/60"
+                "absolute w-10 h-10 rounded-full esoteric-glass flex items-center justify-center transition-all duration-500",
+                hovered === i ? "border-white/40 text-white" : "text-white/30 border-white/5"
               )}
             >
               {file.type === 'pdf' ? <FileIcon size={20} /> : file.type === 'app' ? <Cpu size={20} className="animate-pulse" /> : <FileText size={20} />}
@@ -128,12 +125,12 @@ export default function FileOrbit({ onFileSelect }: { onFileSelect: (file: NullF
               <AnimatePresence>
                 {hovered === i && (
                   <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 10 }}
-                    className="absolute top-14 left-1/2 -translate-x-1/2 whitespace-nowrap glass px-4 py-1.5 rounded-full text-xs font-semibold border border-accent/30 shadow-2xl z-[1001]"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    className="absolute top-12 left-1/2 -translate-x-1/2 whitespace-nowrap esoteric-glass px-3 py-1 rounded-full text-[9px] font-mono tracking-widest text-white/50 border border-white/10 z-[1001]"
                   >
-                    {file.name}
+                    ◊.{file.name.toUpperCase().replace(/\s/g, '_')}
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -142,14 +139,9 @@ export default function FileOrbit({ onFileSelect }: { onFileSelect: (file: NullF
         })}
       </div>
 
-      {/* Connection Rings */}
-      <div className="absolute w-[520px] h-[220px] rounded-full border border-accent/10 pointer-events-none rotate-x-60" style={{ transform: 'rotateX(75deg)' }} />
+      {/* Connection Rings - Monochrome */}
+      <div className="absolute w-[520px] h-[220px] rounded-full border border-white/5 pointer-events-none" style={{ transform: 'rotateX(75deg)' }} />
       <div className="absolute w-[560px] h-[240px] rounded-full border border-white/5 pointer-events-none" style={{ transform: 'rotateX(75deg)' }} />
-      
-      {/* CC License Footer */}
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 text-[9px] uppercase tracking-widest opacity-30 whitespace-nowrap">
-        Licensed under <span className="text-accent underline">CC BY 4.0</span>
-      </div>
     </div>
   );
 }

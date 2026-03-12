@@ -38,34 +38,29 @@ export default function Home() {
     <main className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden">
       <GeometricBackground />
       
-      {/* Hero Section */}
-      <div className="absolute top-12 md:top-20 z-10 text-center space-y-2 pointer-events-none">
-        <motion.h1 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-4xl md:text-6xl font-bold tracking-tighter"
+      {/* Minimal Esoteric Header */}
+      <div className="absolute top-12 z-10 text-center pointer-events-none">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex items-center gap-8"
         >
-          THE NULL <span className="photonic-gradient bg-clip-text text-transparent">LINE</span>
-        </motion.h1>
-        <motion.p 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.6 }}
-          transition={{ delay: 0.2 }}
-          className="text-sm md:text-base tracking-[0.3em] uppercase opacity-60 flex items-center justify-center gap-4"
-        >
-          <span className="w-12 h-px bg-white/20" />
-          NullTech Repository
-          <span className="w-12 h-px bg-white/20" />
-        </motion.p>
+          <div className="w-8 h-px bg-white/40" />
+          <div className="text-white/80 font-light tracking-[1em] text-[10px] uppercase">Null</div>
+          <div className="w-8 h-px bg-white/40" />
+        </motion.div>
       </div>
 
       {/* Main Interaction Area */}
       <FileOrbit onFileSelect={handleFileSelect} />
 
-      {/* Footer Info */}
-      <div className="absolute bottom-12 z-10 text-center space-y-1 opacity-30 text-[10px] uppercase tracking-widest pointer-events-none">
-        <p>Based on NullBilliards Geometry</p>
-        <p>Quantum-Ready Hyper-Text Archive</p>
+      {/* Symbol-based Footer */}
+      <div className="absolute bottom-12 z-10 opacity-40 pointer-events-none">
+        <div className="flex gap-4 items-center">
+          <div className="w-1 h-1 rounded-full bg-white" />
+          <div className="w-1 h-1 rounded-full bg-white/50" />
+          <div className="w-1 h-1 rounded-full bg-white/20" />
+        </div>
       </div>
 
       {/* Document Viewer Modal */}
@@ -79,63 +74,64 @@ export default function Home() {
       </AnimatePresence>
 
       <DraggableWindow 
-        title="Design Outline" 
+        title="◊.OUTLINE" 
         isOpen={showOutline} 
         onClose={() => setShowOutline(false)}
       >
-        <div className="space-y-4">
-          <section>
-            <h3 className="text-accent font-bold text-[10px] uppercase tracking-widest mb-2 opacity-60">Strategic Objective</h3>
-            <p className="text-xs leading-relaxed">To extend human civilization across the stars via the systematic exploitation of null billiard dynamics.</p>
+        <div className="space-y-6">
+          <section className="border-l border-white/20 pl-4">
+            <div className="text-[10px] tracking-[0.5em] text-white/40 mb-2">[.EQU]</div>
+            <p className="font-mono text-xl text-white/90">k · k = 0</p>
           </section>
           
-          <section>
-            <h3 className="text-accent font-bold text-[10px] uppercase tracking-widest mb-2 opacity-60">The Dependency Map</h3>
-            <ul className="text-[10px] space-y-2 opacity-80 list-disc pl-4">
-              <li><strong>Null Sphere Computer</strong>: Fundamental photonic processor.</li>
-              <li><strong>Orbit OS</strong>: Wavefunction collapse as process execution.</li>
-              <li><strong>Null Forge</strong>: Atomic-precision fabricator.</li>
-              <li><strong>Trinary Magi</strong>: Civilisational AI governance.</li>
-              <li><strong>Null Ark</strong>: Interstellar colony vessel.</li>
-            </ul>
+          <section className="border-l border-white/20 pl-4">
+            <div className="text-[10px] tracking-[0.5em] text-white/40 mb-2">[.MAP]</div>
+            <div className="space-y-2 text-[9px] uppercase tracking-widest text-white/60">
+              <p>◊ NSC (PRC)</p>
+              <p>◊ OOS (EXEC)</p>
+              <p>◊ NFG (FAB)</p>
+              <p>◊ TMG (GOV)</p>
+              <p>◊ ARK (COL)</p>
+            </div>
+          </section>
+
+          <section className="border-l border-white/20 pl-4">
+            <div className="text-[10px] tracking-[0.5em] text-white/40 mb-2">[.OBJ]</div>
+            <p className="text-[9px] uppercase tracking-widest text-white/40 italic">Null propagation across the stellar void.</p>
           </section>
 
           <button 
             onClick={() => setShowOutline(false)}
-            className="w-full py-2 bg-accent/10 border border-accent/20 rounded-xl text-[10px] uppercase font-bold tracking-widest hover:bg-accent/20 transition-colors mt-2"
+            className="w-full py-2 border border-white/10 text-white/20 text-[8px] tracking-[0.5em] uppercase hover:text-white/60 hover:border-white/20 transition-all mt-4"
           >
-            Collapse Info
+            [CLOSE_SESSION]
           </button>
         </div>
       </DraggableWindow>
 
       {/* 3D Model Window */}
       <DraggableWindow
-        title="Photonic Core Visualizer"
+        title="◊.VISUALIZER"
         isOpen={show3DModel}
         onClose={() => setShow3DModel(false)}
       >
         <div className="w-full aspect-square md:w-[400px] md:h-[400px]">
           <PhotonicChip />
         </div>
-        <div className="mt-4 p-3 bg-white/5 rounded-xl border border-white/5 text-[9px] uppercase tracking-widest leading-loose opacity-60">
-          Showing E8-symmetrical topology of 8 WGM microspheres arranged for null billiard computation.
-        </div>
       </DraggableWindow>
 
-      {/* Outline Toggle Button */}
+      {/* Outline Toggle Button - Esoteric Symbol */}
       {(!showOutline || !show3DModel) && (
         <motion.button
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           onClick={() => {
             setShowOutline(true);
             setShow3DModel(true);
           }}
-          className="fixed bottom-8 right-8 w-12 h-12 glass rounded-full flex items-center justify-center text-accent shadow-2xl z-50 hover:scale-110 transition-transform"
-          title="Activate Photonic Core"
+          className="fixed bottom-8 right-8 w-10 h-10 esoteric-glass rounded-full flex items-center justify-center text-white/60 shadow-2xl z-50 hover:text-white transition-all"
         >
-          <LayoutGrid size={20} />
+          <LayoutGrid size={18} />
         </motion.button>
       )}
 

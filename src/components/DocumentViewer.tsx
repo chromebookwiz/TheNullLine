@@ -32,7 +32,7 @@ export default function DocumentViewer({ file, onClose }: ViewerProps) {
           setLoading(false);
         })
         .catch(err => {
-          setError("Failed to load text file.");
+          setError("◊.ERR_Σ");
           setLoading(false);
         });
     } else if (file.type === 'docx') {
@@ -45,7 +45,7 @@ export default function DocumentViewer({ file, onClose }: ViewerProps) {
         })
         .catch(err => {
           console.error(err);
-          setError("Failed to convert DOCX file.");
+          setError("◊.ERR_Δ");
           setLoading(false);
         });
     } else {
@@ -58,24 +58,23 @@ export default function DocumentViewer({ file, onClose }: ViewerProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 bg-black/80 backdrop-blur-xl"
     >
       <motion.div
-        initial={{ scale: 0.9, opacity: 0, y: 20 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.9, opacity: 0, y: 20 }}
-        className="w-full max-w-5xl h-[85vh] glass rounded-3xl overflow-hidden flex flex-col relative"
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        className="w-full max-w-5xl h-[85vh] esoteric-glass rounded-3xl overflow-hidden flex flex-col relative"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="p-4 md:px-8 flex items-center justify-between border-b border-glass-border bg-white/5">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-accent/20 flex items-center justify-center text-accent">
-              <FileText size={20} />
+        <div className="p-4 md:px-8 flex items-center justify-between border-b border-white/5 bg-white/5">
+          <div className="flex items-center gap-4">
+            <div className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center text-white/60">
+              <FileText size={16} />
             </div>
             <div>
-              <h2 className="font-semibold text-lg leading-tight">{file.name}</h2>
-              <p className="text-xs opacity-50 uppercase tracking-widest">{file.type} document</p>
+              <h2 className="font-light text-sm tracking-widest uppercase text-white/80">{file.name}</h2>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -105,10 +104,10 @@ export default function DocumentViewer({ file, onClose }: ViewerProps) {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-12 custom-scrollbar bg-black/20">
+        <div className="flex-1 overflow-y-auto p-6 md:p-12 custom-scrollbar bg-black/40">
           {loading ? (
             <div className="h-full flex items-center justify-center">
-              <Loader2 className="animate-spin text-accent" size={48} />
+              <Loader2 className="animate-spin text-white/20" size={32} />
             </div>
           ) : error ? (
             <div className="h-full flex flex-col items-center justify-center text-red-400 gap-4">
