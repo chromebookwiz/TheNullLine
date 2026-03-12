@@ -14,6 +14,11 @@ const PhotonicChip = dynamic(() => import('@/components/three/PhotonicChip'), {
   loading: () => <div className="w-full h-full rounded-2xl glass-card animate-pulse flex items-center justify-center text-accent/20 text-[10px] uppercase tracking-widest">Initializing Core...</div>
 });
 
+const ShapeClicker = dynamic(() => import('@/components/ShapeClicker'), {
+  ssr: false,
+  loading: () => <div className="w-full h-full bg-white flex items-center justify-center text-black/20 text-[10px] uppercase tracking-widest">Loading Manifold...</div>
+});
+
 interface NullFile {
   name: string;
   type: 'txt' | 'docx' | 'pdf' | 'app';
@@ -22,7 +27,7 @@ interface NullFile {
 
 interface WindowInstance {
   id: string;
-  type: 'document' | 'photonic' | 'info';
+  type: 'document' | 'photonic' | 'info' | 'evolve';
   file?: NullFile;
   zIndex: number;
 }
@@ -141,6 +146,17 @@ export default function Home() {
                     [ACKNOWLEDGE_FRAMEWORK]
                   </button>
                 </div>
+              </DraggableWindow>
+            ) : win.type === 'evolve' ? (
+              <DraggableWindow
+                title="◊.MANIFOLD_EVOLVER"
+                isOpen={true}
+                onClose={() => closeWindow(win.id)}
+                className="w-[95vw] md:w-[1200px] h-[90vh] md:h-[700px]"
+                style={{ zIndex: win.zIndex }}
+                onPointerDown={() => bringToFront(win.id)}
+              >
+                <ShapeClicker />
               </DraggableWindow>
             ) : null}
           </React.Fragment>
