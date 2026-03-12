@@ -15,7 +15,13 @@ function drawStar(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: numb
   ctx.stroke();
 }
 
-const PRODUCTS = [
+interface Product {
+  id: string; name: string; tagline: string; badge: string; color: string; accent: string;
+  q: number; p: number; price: string; availability: string; isPreorder: boolean;
+  docSlug: string; ctaLabel: string; description: string; bullets: string[]; stat: string[][];
+}
+
+const PRODUCTS: Product[] = [
   {
     id: 'nulldeck',
     name: 'Null Cylinder',
@@ -26,6 +32,9 @@ const PRODUCTS = [
     q: 8, p: 3,
     price: '$1,299',
     availability: 'Pre-order · Ships Q4 2026',
+    isPreorder: true,
+    docSlug: 'NullDeck v1.txt',
+    ctaLabel: '◆ Pre-order',
     description: 'A titanium cylinder the size of a shotgun shell. Twist the grip ring. Watch your world unfold in 360° of holographic light, floating in the space around you. 4,096 phase-controlled laser emitters. 120 Hz. No glasses. No headset. Just light.',
     bullets: [
       '360° × 60° holographic projection envelope',
@@ -47,6 +56,9 @@ const PRODUCTS = [
     q: 6, p: 1,
     price: '$340,000',
     availability: 'Pre-order · First delivery Q2 2027',
+    isPreorder: true,
+    docSlug: 'NullHover v1.txt',
+    ctaLabel: '◆ Pre-order',
     description: 'A 4-metre lenticular disc that levitates against its own superconducting magnetic field. No rails. No air cushion. No props. Over dry soil, seawater, concrete, or metal — the null sphere avionics adapt the AC frequency and field geometry 10,000 times per second. It simply hovers.',
     bullets: [
       'YBCO superconducting coil — 53,400 A·m² magnetic moment',
@@ -59,6 +71,54 @@ const PRODUCTS = [
     stat: [['4m', 'diameter'], ['800kg', 'craft mass'], ['28MHz', 'EDS frequency'], ['10kHz', 'control loop']],
   },
   {
+    id: 'nullaegis',
+    name: 'Null Aegis',
+    tagline: 'The Shell makes the room a computer. The Aegis makes you the room.',
+    badge: 'NullAegis',
+    color: '#080e14',
+    accent: '#60a0ff',
+    q: 11, p: 4,
+    price: 'By Inquiry',
+    availability: 'Research partnerships · 2028 est.',
+    isPreorder: false,
+    docSlug: 'NullAegis v1.txt',
+    ctaLabel: '◆ Inquire',
+    description: 'A 12 kg full-body wearable integrating every personal device in the Null ecosystem. 128 E₈ stacks distributed across the suit. Holographic display from visor and wrist projectors. Electromagnetic levitation from boots and back array. Micro-forge in the left forearm. The Null Shell, worn on your body.',
+    bullets: [
+      '128 E₈ null sphere stacks — full Orbit OS instance on-suit',
+      'Full holographic envelope — visor + wrist projectors + body shell',
+      'Electromagnetic levitation from boot + back coil arrays',
+      'Null Suture repair fleet — self-healing suit surface',
+      'Forearm micro-forge — prints tools from feedstock cartridges',
+      '7-layer construction: comfort liner → thermal → structural → photonic → optical armour → EDS → shell',
+    ],
+    stat: [['128', 'E₈ stacks'], ['12kg', 'total mass'], ['4mm', 'avg thickness'], ['7', 'suit layers']],
+  },
+  {
+    id: 'nullshell',
+    name: 'Null Shell',
+    tagline: "You don't put a computer in a room. You make the room the computer.",
+    badge: 'NullShell',
+    color: '#0e0e0a',
+    accent: '#d0c050',
+    q: 9, p: 4,
+    price: 'Per-project',
+    availability: 'Architecture firms · Inquiry only',
+    isPreorder: false,
+    docSlug: 'NullShell v1.txt',
+    ctaLabel: '◆ Inquire',
+    description: 'Programmable photonic architecture at building scale. Shell Panels — 500×500×30 mm slabs — replace conventional walls, floors, and ceilings. Each panel senses, computes, and reconfigures. Acoustics, optics, climate, and room geometry become software-defined. A building that knows who is inside it.',
+    bullets: [
+      '500×500 mm Shell Panels — drop-in wall, floor, and ceiling replacement',
+      'Programmable acoustics: absorb, reflect, or focus sound per-zone',
+      'Electrodynamic partitions: merge or divide rooms in under 500 ms',
+      'Circadian photonic lighting — wavelength and colour matched to biology',
+      'Presence-aware climate: heats and cools exactly where occupants are',
+      'Null Hover parking lane — floor EDS at 28 MHz for hover docking',
+    ],
+    stat: [['500ms', 'room reconfig'], ['3ms', 'presence detect'], ['28MHz', 'hover lane'], ['E₈', 'ADE class']],
+  },
+  {
     id: 'nullforge',
     name: 'Null Forge',
     tagline: 'Build matter from nothing but light and patience.',
@@ -68,6 +128,9 @@ const PRODUCTS = [
     q: 7, p: 3,
     price: '$4,200,000',
     availability: 'Research license · Contact sales',
+    isPreorder: false,
+    docSlug: 'NullForge v1.txt',
+    ctaLabel: '◆ Contact Sales',
     description: 'An atomic fabrication bench the size of a shipping container. Feed it elements, give it a crystal structure, walk away. The SLM optical trap array places 10⁶ atoms per second into E₈-classified lattice positions. Software-defined matter at the scale of chemistry.',
     bullets: [
       '10⁶ simultaneous SLM optical trap sites',
@@ -89,6 +152,9 @@ const PRODUCTS = [
     q: 13, p: 5,
     price: '$499/mo',
     availability: 'API access · Beta open',
+    isPreorder: false,
+    docSlug: 'NullMind v1.txt',
+    ctaLabel: '◆ Access Beta',
     description: 'A photonic neural network trained entirely on the ADE classification of cognition. Each layer is an orbit. Each inference is a round-trip on a null billiard. Converges in 3 picoseconds. No gradient descent. No backprop. Just light finding its closed path.',
     bullets: [
       'ADE-classified neural layers — E₈ at maximum depth',
@@ -101,6 +167,54 @@ const PRODUCTS = [
     stat: [['3ps', 'inference'], ['50k', 'word vocab'], ['240', 'E₈ states'], ['1mW', 'optical power']],
   },
   {
+    id: 'orbitos',
+    name: 'Orbit OS',
+    tagline: 'You do not use this operating system. You see it think.',
+    badge: 'OrbitOS',
+    color: '#080810',
+    accent: '#b070ff',
+    q: 7, p: 2,
+    price: 'Bundled',
+    availability: 'Ships with all Null Sphere devices',
+    isPreorder: false,
+    docSlug: 'OrbitOS v1.txt',
+    ctaLabel: '◆ Inquire',
+    description: 'The operating system of the Null sphere computer. Resources are geometry: processor time is photon orbital period, memory is WGM mode occupation, bandwidth is evanescent coupling rate. Orbit OS is a dynamic Apollonian sphere packing algorithm running on the very microspheres it manages. Display and computation are the same light.',
+    bullets: [
+      'Apollonian sphere packing — fractal memory hierarchy at every scale',
+      'WGM mode addressing — 3 ps register access time',
+      'E₈ topological memory protection — bit-level fault tolerance',
+      'Holographic state display — the display IS the computation',
+      'POSIX-compatible syscall layer for legacy software',
+      'Bundled with NullDeck, NullMind, NullForge, and NullShell',
+    ],
+    stat: [['3ps', 'register access'], ['100GHz', 'clock'], ['E₈', 'error correction'], ['0', 'extra cost']],
+  },
+  {
+    id: 'nullcortex',
+    name: 'Null Cortex',
+    tagline: 'A grain of light behind your ear, commanding a fleet in your blood.',
+    badge: 'NullCortex',
+    color: '#0a080e',
+    accent: '#e060c0',
+    q: 13, p: 6,
+    price: 'Clinical Trial',
+    availability: 'IRB review pending · Inquiry only',
+    isPreorder: false,
+    docSlug: 'NullCortex v1.txt',
+    ctaLabel: '◆ Inquire',
+    description: 'A 0.4 g photonic brain-computer interface implanted subdermally behind the ear. Commands a circulating fleet of 10⁸–10¹⁰ nanobots via near-infrared optical link. Closed-loop biological maintenance: immune surveillance, targeted drug delivery, cellular repair, and senescent cell clearance — continuously, for decades.',
+    bullets: [
+      '12×8×1.2 mm ceramic-sealed chip — outpatient implant, 20-minute procedure',
+      '10⁸–10¹⁰ nanobot fleet, 500 nm–2 μm diameter units',
+      'NIR optical + ultrasonic bidirectional fleet command link',
+      'Senescent cell clearance — longevity extension [SPECULATIVE]',
+      'Natural language health queries via Null Mind integration',
+      'E₈ null sphere processor — 100 GHz fleet coordination',
+    ],
+    stat: [['0.4g', 'chip mass'], ['10¹⁰', 'nanobot fleet'], ['100GHz', 'coordination'], ['20min', 'implant time']],
+  },
+  {
     id: 'nullbilliards',
     name: 'Null Billiards',
     tagline: 'Fire a photon. Watch it become mass.',
@@ -110,6 +224,9 @@ const PRODUCTS = [
     q: 5, p: 2,
     price: 'Free',
     availability: 'Available now · Play in browser',
+    isPreorder: false,
+    docSlug: 'NullBilliards v1.txt',
+    ctaLabel: '▶ Launch App',
     description: 'A meditative clicker built on the same mathematics that powers every null sphere processor. Fire photons. Collect bounces. Advance the Fibonacci manifold from triangle to pentagram to octagram. Watch q emerge from massless light. This is the physics, made playable.',
     bullets: [
       'Fibonacci manifold sequence: (3,1)→(5,2)→(8,3)→(13,5)→…',
@@ -218,16 +335,36 @@ export default function NullPromoApp() {
           </div>
 
           {/* CTA footer */}
-          <div className="px-6 pb-8 shrink-0 flex flex-wrap gap-3">
-            <button
-              className="px-6 py-3 font-bold text-[10px] tracking-[0.3em] uppercase transition-all text-black"
-              style={{ backgroundColor: product.accent }}
-            >
-              {product.price === 'Free' ? '▶ Launch App' : '◆ Pre-order Now'}
-            </button>
-            <button className="px-6 py-3 border border-white/10 font-bold text-[10px] tracking-[0.3em] uppercase text-white/40 hover:text-white hover:border-white/30 transition-all">
-              ◇ Read Spec Sheet
-            </button>
+          <div className="px-6 pb-8 shrink-0">
+            <div className="flex flex-wrap gap-3 mb-5">
+              {product.isPreorder ? (
+                <span className="px-6 py-3 font-bold text-[10px] tracking-[0.3em] uppercase bg-white/[0.04] text-white/15 border border-white/5 line-through cursor-not-allowed">
+                  ◆ Pre-order — Closed
+                </span>
+              ) : (
+                <a
+                  href={product.price === 'Free' ? '/' : 'mailto:nathanoll@proton.me'}
+                  className="px-6 py-3 font-bold text-[10px] tracking-[0.3em] uppercase transition-all text-black inline-block hover:opacity-90"
+                  style={{ backgroundColor: product.accent }}
+                >
+                  {product.ctaLabel}
+                </a>
+              )}
+              <a
+                href={`/docs/${encodeURIComponent(product.docSlug)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-6 py-3 border border-white/10 font-bold text-[10px] tracking-[0.3em] uppercase text-white/40 hover:text-white hover:border-white/30 transition-all inline-block"
+              >
+                ◇ Read Spec Sheet
+              </a>
+            </div>
+            <p className="text-[8px] text-white/20 uppercase tracking-widest">
+              Inquiries:{' '}
+              <a href="mailto:nathanoll@proton.me" className="hover:text-white/50 transition-colors underline underline-offset-2">
+                nathanoll@proton.me
+              </a>
+            </p>
           </div>
         </motion.div>
       </AnimatePresence>
