@@ -190,6 +190,7 @@ const RaySystem = React.memo(function RaySystem({ q, p, isSolving }: { q: number
                 count={2}
                 array={new Float32Array([0, 0, 0, 0, 0, 0])}
                 itemSize={3}
+                args={[new Float32Array([0, 0, 0, 0, 0, 0]), 3]}
               />
             </bufferGeometry>
             <lineBasicMaterial color="white" transparent opacity={0.1} />
@@ -281,4 +282,9 @@ export default function PhotonicComputer() {
             <div className="flex flex-col items-center">
               <div className="text-[7px] tracking-[0.4em] text-white/20 uppercase">Manifold</div>
               <div className="text-[9px] tracking-[0.2em] text-white/60 uppercase">{orbit.q}:{orbit.p}</div>
-        
+            </div>
+        </div>
+      </div>
+    </div>
+  );
+}
