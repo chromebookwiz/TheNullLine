@@ -79,14 +79,14 @@ const GeometricBackgroundComponent = () => {
       ctx.stroke();
 
       // Mini shapes all touch the circle, now with pure RGB and 50/50 mixes
-      // Order: Red, Green, Blue, Yellow, Cyan, Magenta
+      // Order: Magenta, Cyan, Yellow, Blue, Green, Red (reverse, so Red is out front)
       const miniShapes = [
-        { q: 3, p: 1, rot: speed * 2, color: 'rgb(255,0,0)' },      // Red
-        { q: 5, p: 2, rot: -speed * 1.5, color: 'rgb(0,255,0)' },   // Green
-        { q: 8, p: 3, rot: speed * 1.2, color: 'rgb(0,0,255)' },    // Blue
-        { q: 4, p: 1, rot: -speed * 0.8, color: 'rgb(255,255,0)' }, // Yellow (R+G)
-        { q: 6, p: 1, rot: speed * 0.6, color: 'rgb(0,255,255)' },  // Cyan (G+B)
         { q: 7, p: 2, rot: -speed * 0.4, color: 'rgb(255,0,255)' }, // Magenta (R+B)
+        { q: 6, p: 1, rot: speed * 0.6, color: 'rgb(0,255,255)' },  // Cyan (G+B)
+        { q: 4, p: 1, rot: -speed * 0.8, color: 'rgb(255,255,0)' }, // Yellow (R+G)
+        { q: 8, p: 3, rot: speed * 1.2, color: 'rgb(0,0,255)' },    // Blue
+        { q: 5, p: 2, rot: -speed * 1.5, color: 'rgb(0,255,0)' },   // Green
+        { q: 3, p: 1, rot: speed * 2, color: 'rgb(255,0,0)' },      // Red
       ];
       miniShapes.forEach((shape) => {
         drawStarPolygon(centerX, centerY, miniRadius, shape.q, shape.p, shape.rot, 2.2, shape.color);

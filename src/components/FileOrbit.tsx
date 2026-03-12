@@ -53,7 +53,6 @@ import { NOLLTECH_WRITINGS } from "./nolltechWritings";
 const FILES: NullFile[] = [
   { name: "Files", type: "app", path: "app://files", children: [
     { name: "NollTech", type: "folder", path: "/nolltech", children: NOLLTECH_WRITINGS },
-    { name: "Documents", type: "folder", path: "/documents", children: DOCUMENTS },
   ] },
   { name: "Clicker", type: "app", path: "app://clicker" },
   { name: "Simulation", type: "app", path: "app://simulation" },
