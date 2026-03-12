@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { FileText, File as FileIcon, ChevronRight, X, Info, Cpu, LayoutGrid } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -166,8 +166,8 @@ export default function FileOrbit({
       </div>
 
       {/* Connection Rings - Monochrome - Flat 2D */}
-      <div className="absolute w-[520px] h-[520px] rounded-full border border-black/5 pointer-events-none" />
       <div className="absolute w-[560px] h-[560px] rounded-full border border-black/5 pointer-events-none" />
+      <div className="absolute w-[600px] h-[600px] rounded-full border border-black/5 pointer-events-none" />
     </div>
   );
 }
@@ -179,31 +179,28 @@ function OrbitItem({
   onSelect: (file: NullFile) => void, hovered: number | null, setHovered: (idx: number | null) => void 
 }) {
   const isSelected = activeIndex === index;
+  const radius = 280;
   
+  // Use useTransform for ultra-smooth 2D circle mapping
   const angle = useMotionValue(0);
-  useEffect(() => {
-    return rotation.on("change", (latest: number) => {
-      const angleVal = (index * 2 * Math.PI) / total + (latest * Math.PI) / 180;
-      angle.set(angleVal);
-    });
-  }, [rotation, index, total, angle]);
+  
+  // Angle transform based on rotation value
+  const x = useSpring(useTransform(rotation, (rot: number) => {
+    const angleVal = (index * 2 * Math.PI) / total + (rot * Math.PI) / 180;
+    return radius * Math.cos(angleVal);
+  }), { stiffness: 100, damping: 20 });
 
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-
-  useEffect(() => {
-    return angle.on("change", (latest: number) => {
-        const radius = 280;
-        x.set(radius * Math.cos(latest));
-        y.set(radius * Math.sin(latest));
-    });
-  }, [angle, x, y]);
+  const y = useSpring(useTransform(rotation, (rot: number) => {
+    const angleVal = (index * 2 * Math.PI) / total + (rot * Math.PI) / 180;
+    return radius * Math.sin(angleVal);
+  }), { stiffness: 100, damping: 20 });
 
   return (
     <motion.button
       style={{ x, y, zIndex: hovered === index ? 100 : 10 }}
       animate={{ 
-        scale: isSelected ? 1.1 : (hovered === index ? 1.2 : 1),
+        scale: hovered === index ? 1.2 : 1,
+        // No isSelected scaling to keep the circle consistent
       }}
       transition={{ type: "spring", stiffness: 120, damping: 20 }}
       onMouseEnter={() => setHovered(index)}
