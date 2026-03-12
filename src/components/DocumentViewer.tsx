@@ -104,13 +104,13 @@ export default function DocumentViewer({ file, onClose }: ViewerProps) {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-12 custom-scrollbar bg-black/40">
+        <div className="flex-1 overflow-y-auto p-6 md:p-12 custom-scrollbar bg-black/5">
           {loading ? (
             <div className="h-full flex items-center justify-center">
-              <Loader2 className="animate-spin text-white/20" size={32} />
+              <Loader2 className="animate-spin text-black/20" size={32} />
             </div>
           ) : error ? (
-            <div className="h-full flex flex-col items-center justify-center text-red-400 gap-4">
+            <div className="h-full flex flex-col items-center justify-center text-red-600 gap-4">
               <X size={48} />
               <p>{error}</p>
             </div>
@@ -122,11 +122,11 @@ export default function DocumentViewer({ file, onClose }: ViewerProps) {
             />
           ) : file.type === 'docx' ? (
             <div 
-              className="prose prose-invert max-w-none docx-content text-foreground/90 leading-relaxed"
+              className="prose max-w-none docx-content text-black/90 leading-relaxed"
               dangerouslySetInnerHTML={{ __html: content || '' }} 
             />
           ) : (
-            <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-foreground/80">
+            <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-black/80">
               {content}
             </pre>
           )}

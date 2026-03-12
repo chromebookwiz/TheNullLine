@@ -115,7 +115,7 @@ export default function FileOrbit({
               initial={false}
               animate={{ 
                 x: x,
-                y: y * 0.4, // Elliptical orbit for better perspective
+                y: y, // Flat 2D circle
                 scale: scale,
                 opacity: opacity,
               }}
@@ -149,9 +149,9 @@ export default function FileOrbit({
         })}
       </div>
 
-      {/* Connection Rings - Monochrome */}
-      <div className="absolute w-[520px] h-[220px] rounded-full border border-black/5 pointer-events-none" style={{ transform: 'rotateX(75deg)' }} />
-      <div className="absolute w-[560px] h-[240px] rounded-full border border-black/5 pointer-events-none" style={{ transform: 'rotateX(75deg)' }} />
+      {/* Connection Rings - Monochrome - Flat */}
+      <div className="absolute w-[520px] h-[520px] rounded-full border border-black/5 pointer-events-none" />
+      <div className="absolute w-[560px] h-[560px] rounded-full border border-black/5 pointer-events-none" />
     </div>
   );
 }

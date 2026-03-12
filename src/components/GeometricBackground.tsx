@@ -61,15 +61,15 @@ export default function GeometricBackground() {
 
       const centerX = width / 2;
       const centerY = height / 2;
-      const baseRadius = Math.min(width, height) * 0.35; // Slightly smaller
+      const baseRadius = Math.min(width, height) * 0.38; 
 
       const speed = time * 0.0001; // Uniform speed
 
-      // Stark counter-rotating orbits with uniform speed
+      // Stark counter-rotating orbits with uniform speed and phase alignment
       drawStarPolygon(centerX, centerY, baseRadius, 8, 3, speed);
-      drawStarPolygon(centerX, centerY, baseRadius * 0.6, 5, 2, -speed);
-      drawStarPolygon(centerX, centerY, baseRadius * 1.2, 13, 5, speed);
-      drawStarPolygon(centerX, centerY, baseRadius * 0.3, 3, 1, -speed);
+      drawStarPolygon(centerX, centerY, baseRadius * 0.7, 5, 2, -speed);
+      drawStarPolygon(centerX, centerY, baseRadius * 1.3, 13, 5, speed);
+      drawStarPolygon(centerX, centerY, baseRadius * 0.4, 3, 1, -speed);
 
       animationFrameId = requestAnimationFrame(animate);
     };
