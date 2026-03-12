@@ -35,11 +35,11 @@ const GeometricBackgroundComponent = () => {
       q: number,
       p: number,
       rotation: number,
-      opacity: number
+      lineWidth: number
     ) => {
       ctx.beginPath();
-      ctx.strokeStyle = `rgba(0, 0, 0, ${opacity})`;
-      ctx.lineWidth = 1;
+      ctx.strokeStyle = `rgba(0, 0, 0, 1.0)`;
+      ctx.lineWidth = lineWidth;
       
       for (let i = 0; i <= q; i++) {
         const angle = (i * p * 2 * Math.PI) / q + rotation;
@@ -59,11 +59,11 @@ const GeometricBackgroundComponent = () => {
       const baseRadius = Math.min(width, height) * 0.35; 
       const speed = time * 0.0001; 
 
-      // Draw nested black polygons
-      drawStarPolygon(centerX, centerY, baseRadius * 0.3, 3, 1, speed, 0.12);     
-      drawStarPolygon(centerX, centerY, baseRadius * 0.6, 5, 2, -speed * 0.8, 0.1);    
-      drawStarPolygon(centerX, centerY, baseRadius * 0.9, 8, 3, speed * 0.6, 0.08);           
-      drawStarPolygon(centerX, centerY, baseRadius * 1.2, 13, 5, -speed * 0.4, 0.06);   
+      // Draw nested SOLID black polygons with varying weights
+      drawStarPolygon(centerX, centerY, baseRadius * 0.3, 3, 1, speed, 1.5);     
+      drawStarPolygon(centerX, centerY, baseRadius * 0.6, 5, 2, -speed * 0.8, 1.0);    
+      drawStarPolygon(centerX, centerY, baseRadius * 0.9, 8, 3, speed * 0.6, 0.5);           
+      drawStarPolygon(centerX, centerY, baseRadius * 1.2, 13, 5, -speed * 0.4, 0.3);   
 
       animationFrameId = requestAnimationFrame(animate);
     };

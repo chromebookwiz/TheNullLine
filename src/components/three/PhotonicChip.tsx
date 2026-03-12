@@ -269,16 +269,17 @@ export default function PhotonicComputer() {
   return (
     <div className="w-full h-full relative flex flex-col items-center justify-center bg-black overflow-hidden select-none font-mono">
       {/* 3D Simulation Layer */}
-      <div className="flex-1 w-full scale-125 md:scale-110">
+      <div className="flex-1 w-full relative">
         <Canvas gl={{ antialias: false, powerPreference: "high-performance" }} dpr={[1, 1.5]}>
-          <PerspectiveCamera makeDefault position={[0, 0, 8]} fov={25} />
+          <PerspectiveCamera makeDefault position={[0, 0, 10]} fov={28} />
           <OrbitControls 
             enablePan={false} 
             autoRotate={!isSolving} 
             autoRotateSpeed={0.4} 
-            minDistance={6}
-            maxDistance={10}
+            minDistance={4}
+            maxDistance={15}
             enableDamping={true}
+            dampingFactor={0.05}
           />
           <ambientLight intensity={0.4} />
           <RaySystem q={orbit.q} p={orbit.p} isSolving={isSolving} />
