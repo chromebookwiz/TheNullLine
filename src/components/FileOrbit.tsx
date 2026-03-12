@@ -5,14 +5,15 @@ import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from
 import { FileText, File as FileIcon, ChevronRight, X, Info, Cpu, LayoutGrid } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { NOLLTECH_WRITINGS } from './nolltechWritings';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-type FileType = 'txt' | 'docx' | 'pdf' | 'app' | 'folder';
+export type FileType = 'txt' | 'docx' | 'pdf' | 'app' | 'folder';
 
-interface NullFile {
+export interface NullFile {
   name: string;
   type: FileType;
   path: string;
@@ -47,8 +48,6 @@ const DOCUMENTS: NullFile[] = [
   { name: "The Null Line Project", type: "txt", path: "/docs/TheNullLineProject.txt" },
 ];
 
-
-import { NOLLTECH_WRITINGS } from "./nolltechWritings";
 
 const FILES: NullFile[] = [
   { name: "Files", type: "app", path: "app://files", children: [

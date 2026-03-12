@@ -1,4 +1,4 @@
-import { NullFile } from "./FileOrbit";
+import type { NullFile } from "./FileOrbit";
 
 export const NOLLTECH_WRITINGS: NullFile[] = [
   { name: "Magi v1", type: "txt", path: "/docs/Magi v1.txt" },

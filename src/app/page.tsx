@@ -19,6 +19,11 @@ const ShapeClicker = dynamic(() => import('@/components/ShapeClicker'), {
   loading: () => <div className="w-full h-full bg-white flex items-center justify-center text-black/20 text-[10px] uppercase tracking-widest">Loading Manifold...</div>
 });
 
+const FilesApp = dynamic(() => import('@/components/FilesApp'), {
+  ssr: false,
+  loading: () => <div className="w-full h-full bg-white flex items-center justify-center text-black/20 text-[10px] uppercase tracking-widest">Opening Files...</div>
+});
+
 
 type FileType = 'txt' | 'docx' | 'pdf' | 'app' | 'folder';
 
@@ -145,16 +150,16 @@ export default function Home() {
                 {/* Placeholder for simulation app */}
                 <div className="w-full h-full flex items-center justify-center text-black/40 text-2xl">Simulation App Coming Soon</div>
               </DraggableWindow>
-            ) : win.type === 'files' && win.file ? (
+            ) : win.type === 'files' ? (
               <DraggableWindow
                 title="◊.FILES"
                 isOpen={true}
                 onClose={() => closeWindow(win.id)}
-                className="w-[90vw] md:w-[800px] h-[80vh]"
+                className="w-[400px] h-[70vh]"
                 style={{ zIndex: win.zIndex }}
                 onPointerDown={() => bringToFront(win.id)}
               >
-                <DocumentViewer file={win.file} embedded />
+                <FilesApp onOpenFile={(file) => openWindow('document', file)} />
               </DraggableWindow>
             ) : win.type === 'info' ? (
               <DraggableWindow
@@ -212,23 +217,6 @@ export default function Home() {
           </React.Fragment>
         ))}
       </AnimatePresence>
-
-      {/* Hidden link list for SEO/AI discovery */}
-      <nav className="sr-only">
-        <ul>
-          {[
-            "Magi v1.txt", "NullAegis v1.txt", "NullArk v1.txt", "NullBilliards v1.txt",
-            "NullBot_Blueprint_v1.pdf", "NullBridge v1.txt", "NullChronicle v1.txt",
-            "NullCortex v1.txt", "NullDeck v1.txt", "NullDisk v1.txt", "NullEmber v1.txt",
-            "NullForge v1.txt", "NullHorizon_v1.docx", "NullHover v1.txt", "NullLoom v1.txt",
-            "NullMind v1.txt", "NullRoot v1.txt", "NullShell v1.txt", "NullStuture v1.txt",
-            "NullThread v1.txt", "NullWellspring v1.txt", "Null Billiards 2",
-            "Nullware v1.txt", "OrbitOS v1.txt", "TheNullLineProject.txt"
-          ].map(file => (
-            <li key={file}><a href={`/docs/${encodeURIComponent(file)}`}>{file}</a></li>
-          ))}
-        </ul>
-      </nav>
 
     </main>
   );
