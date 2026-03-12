@@ -40,7 +40,7 @@ const DraggableWindow = React.memo(function DraggableWindow({
         style={style}
         onPointerDown={onPointerDown}
         className={cn(
-          "bottom-24 right-8 shadow-2xl transition-shadow duration-300 will-change-transform transform-gpu pointer-events-auto",
+          "bottom-24 right-8 shadow-2xl transition-shadow duration-300 will-change-transform transform-gpu pointer-events-auto touch-action-none select-none",
           className || "w-80 md:w-96"
         )}
       >

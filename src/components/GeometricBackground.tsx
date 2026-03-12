@@ -19,8 +19,10 @@ const GeometricBackgroundComponent = () => {
     const resize = () => {
       width = window.innerWidth;
       height = window.innerHeight;
-      canvas.width = width;
-      canvas.height = height;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.scale(dpr, dpr);
     };
 
     window.addEventListener('resize', resize);

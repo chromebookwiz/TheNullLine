@@ -1,15 +1,15 @@
 "use client";
 
-import React, { useRef, useMemo, useState, useEffect, useCallback } from 'react';
+import React, { useRef, useMemo, useState, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { PerspectiveCamera, Environment, Sphere, Line, OrbitControls, Float } from '@react-three/drei';
 import * as THREE from 'three';
 
-const MAX_POINTS = 400;
+const MAX_POINTS = 500; // Fixed buffer size
 
 // Mapping numbers to geometric "perfect" orbits
 function getOrbit(value: number) {
-  const q = Math.max(3, Math.round(value));
+  const q = Math.max(3, Math.min(Math.round(value), 64)); // Clamp for safety
   let p = 1;
   for (let i = Math.floor(q / 2); i > 0; i--) {
     if (gcd(q, i) === 1) {
@@ -27,11 +27,23 @@ function gcd(a: number, b: number): number {
 const RaySystem = React.memo(function RaySystem({ q, p, isSolving }: { q: number, p: number, isSolving: boolean }) {
   const groupRef = useRef<THREE.Group>(null);
   const coreRef = useRef<THREE.Mesh>(null);
-  
-  // Calculate stable target points
+  const lineRef = useRef<any>(null);
+  const verticesRef = useRef<THREE.Group>(null);
+  const beamsRef = useRef<THREE.Group>(null);
+
+  // Constants for geometry
+  const radius = 1.5;
+
+  // We maintain a persistent array of points for the "current" state
+  const currentPoints = useMemo(() => {
+    const pnts = [];
+    for (let i = 0; i < MAX_POINTS; i++) pnts.push(new THREE.Vector3(0, 0, 0));
+    return pnts;
+  }, []);
+
+  // Targets are calculated only when q/p changes
   const targetPoints = useMemo(() => {
     const pnts: THREE.Vector3[] = [];
-    const radius = 1.5;
     for (let i = 0; i <= q; i++) {
         const angle = (i * p * 2 * Math.PI) / q;
         pnts.push(new THREE.Vector3(
@@ -43,136 +55,159 @@ const RaySystem = React.memo(function RaySystem({ q, p, isSolving }: { q: number
     return pnts;
   }, [q, p]);
 
-  // Use a ref for current positions to handle dynamic count changes safely
-  const currentPointsRef = useRef<THREE.Vector3[]>(targetPoints);
-  const [pointsToRender, setPointsToRender] = useState<THREE.Vector3[]>(targetPoints);
-
-  // Solving phase search simulation state
-  const [searchOrbit, setSearchOrbit] = useState({ q, p });
-
-  useEffect(() => {
-    if (isSolving) {
-      const interval = setInterval(() => {
-        setSearchOrbit({
-          q: Math.floor(Math.random() * 12) + 3,
-          p: Math.floor(Math.random() * 5) + 1
-        });
-      }, 100);
-      return () => clearInterval(interval);
-    } else {
-      setSearchOrbit({ q, p });
-    }
-  }, [isSolving, q, p]);
+  // Search Phase state
+  const searchState = useRef({ q, p, lastUpdate: 0 });
 
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
     
-    if (groupRef.current) {
-        const speed = isSolving ? 0.3 : 0.05;
-        groupRef.current.rotation.y += speed * 0.1;
+    // 1. Update Search Phase (Logic only, no react state)
+    if (isSolving && t - searchState.current.lastUpdate > 0.1) {
+      searchState.current.q = Math.floor(Math.random() * 20) + 3;
+      searchState.current.p = Math.floor(Math.random() * 8) + 1;
+      searchState.current.lastUpdate = t;
     }
 
-    if (coreRef.current) {
-      const coreScale = isSolving ? 1 + Math.sin(t * 20) * 0.2 : 0.4;
-      coreRef.current.scale.setScalar(coreScale);
-      (coreRef.current.material as THREE.MeshBasicMaterial).opacity = isSolving ? 0.8 + Math.sin(t * 30) * 0.2 : 0.3;
-    }
-
-    // Smoothed transition
-    const lerpSpeed = isSolving ? 0.05 : 0.15;
-    const activeTarget = isSolving ? getOrbitSearchPoints(searchOrbit.q, searchOrbit.p) : targetPoints;
-    
-    // Ensure we have enough points in the current ref
-    if (currentPointsRef.current.length !== activeTarget.length) {
-      const diff = activeTarget.length - currentPointsRef.current.length;
-      if (diff > 0) {
-        for(let i=0; i<diff; i++) currentPointsRef.current.push(new THREE.Vector3(0,0,0));
-      } else {
-        currentPointsRef.current = currentPointsRef.current.slice(0, activeTarget.length);
+    // 2. Derive Current Target (search vs real)
+    let activeTarget = targetPoints;
+    if (isSolving) {
+      const sq = searchState.current.q;
+      const sp = searchState.current.p;
+      activeTarget = [];
+      for (let i = 0; i <= sq; i++) {
+        const angle = (i * sp * 2 * Math.PI) / sq;
+        activeTarget.push(new THREE.Vector3(radius * Math.cos(angle), radius * Math.sin(angle), 0));
       }
     }
 
-    const nextPoints = activeTarget.map((target, i) => {
-      const current = currentPointsRef.current[i] || new THREE.Vector3();
+    // 3. Smoothly animate points (Direct Manipulation)
+    const lerpSpeed = isSolving ? 0.3 : 0.1;
+    for (let i = 0; i < MAX_POINTS; i++) {
+      const target = activeTarget[i % activeTarget.length];
+      const current = currentPoints[i];
       
       if (isSolving) {
-        const noise = new THREE.Vector3(
-          (Math.random() - 0.5) * 0.1,
-          (Math.random() - 0.5) * 0.1,
-          (Math.random() - 0.5) * 0.1
-        );
-        return current.clone().lerp(target.clone().add(noise), 0.2);
+        const jitter = (Math.random() - 0.5) * 0.15;
+        current.x += (target.x + jitter - current.x) * lerpSpeed;
+        current.y += (target.y + jitter - current.y) * lerpSpeed;
+        current.z += (target.z + jitter - current.z) * lerpSpeed;
+      } else {
+        current.x += (target.x - current.x) * lerpSpeed;
+        current.y += (target.y - current.y) * lerpSpeed;
+        current.z += (target.z - current.z) * lerpSpeed;
       }
-      
-      return current.clone().lerp(target, lerpSpeed);
-    });
-
-    currentPointsRef.current = nextPoints;
-    setPointsToRender([...nextPoints]);
-  });
-
-  function getOrbitSearchPoints(sq: number, sp: number) {
-    const pnts: THREE.Vector3[] = [];
-    const radius = 1.5;
-    for (let i = 0; i <= sq; i++) {
-        const angle = (i * sp * 2 * Math.PI) / sq;
-        pnts.push(new THREE.Vector3(
-            radius * Math.cos(angle),
-            radius * Math.sin(angle),
-            0
-        ));
     }
-    return pnts;
-  }
+
+    // 4. Update Line Geometry (Directly)
+    if (lineRef.current) {
+      const positions = lineRef.current.geometry.attributes.position.array;
+      for (let i = 0; i < activeTarget.length; i++) {
+        positions[i * 3] = currentPoints[i].x;
+        positions[i * 3 + 1] = currentPoints[i].y;
+        positions[i * 3 + 2] = currentPoints[i].z;
+      }
+      lineRef.current.geometry.setDrawRange(0, activeTarget.length);
+      lineRef.current.geometry.attributes.position.needsUpdate = true;
+    }
+
+    // 5. Update Vertices (Directly)
+    if (verticesRef.current) {
+      verticesRef.current.children.forEach((child, i) => {
+        if (i < activeTarget.length - 1) {
+          child.visible = true;
+          child.position.copy(currentPoints[i]);
+          (child as any).scale.setScalar(isSolving ? 1.5 : 1.0);
+        } else {
+          child.visible = false;
+        }
+      });
+    }
+
+    // 6. Update Beams (Directly)
+    if (beamsRef.current) {
+      beamsRef.current.children.forEach((child, i) => {
+        if (i < activeTarget.length - 1) {
+          child.visible = true;
+          const pos = (child as any).geometry.attributes.position.array;
+          pos[3] = currentPoints[i].x;
+          pos[4] = currentPoints[i].y;
+          pos[5] = currentPoints[i].z;
+          (child as any).geometry.attributes.position.needsUpdate = true;
+        } else {
+          child.visible = false;
+        }
+      });
+    }
+
+    // 7. Core & Rotation
+    if (groupRef.current) {
+      groupRef.current.rotation.y += (isSolving ? 0.05 : 0.005);
+    }
+    if (coreRef.current) {
+      const s = isSolving ? 1 + Math.sin(t * 30) * 0.3 : 0.4;
+      coreRef.current.scale.setScalar(s);
+      (coreRef.current.material as THREE.MeshBasicMaterial).opacity = isSolving ? 0.7 + Math.sin(t * 50) * 0.3 : 0.2;
+    }
+  });
 
   return (
     <group ref={groupRef}>
-      <Sphere args={[2, 64, 64]}>
-        <meshPhysicalMaterial 
-          color="white" 
-          transparent 
-          opacity={0.02} 
-          transmission={0.98}
-          thickness={0.5}
-          roughness={0}
-        />
+      {/* Outer Shell - Very faint for performance */}
+      <Sphere args={[2, 32, 32]}>
+        <meshBasicMaterial color="white" transparent opacity={0.01} wireframe />
       </Sphere>
 
-      {pointsToRender.slice(0, pointsToRender.length - 1).map((pnt, i) => (
-        <Line
-          key={`beam-${i}`}
-          points={[new THREE.Vector3(0,0,0), pnt]}
-          color="white"
-          lineWidth={0.5}
-          transparent
-          opacity={isSolving ? 0.4 : 0.05}
-        />
-      ))}
+      {/* Main Waveform Line - Pre-allocated buffer */}
+      <line ref={lineRef}>
+        <bufferGeometry>
+          <bufferAttribute
+            attach="attributes-position"
+            count={MAX_POINTS}
+            array={new Float32Array(MAX_POINTS * 3)}
+            itemSize={3}
+            args={[new Float32Array(MAX_POINTS * 3), 3]}
+          />
+        </bufferGeometry>
+        <lineBasicMaterial color="white" transparent opacity={0.8} linewidth={2} />
+      </line>
 
-      <Line
-        points={pointsToRender}
-        color="white" 
-        lineWidth={isSolving ? 2 : 1.2}
-        transparent
-        opacity={isSolving ? 0.8 : 0.4}
-      />
-      
-      {pointsToRender.slice(0, pointsToRender.length - 1).map((pnt, i) => (
-        <Sphere key={i} position={pnt} args={[isSolving ? 0.04 : 0.025, 16, 16]}>
-          <meshBasicMaterial color="white" transparent opacity={0.8} />
-        </Sphere>
-      ))}
+      {/* Quantized Vertices Group */}
+      <group ref={verticesRef}>
+        {Array.from({ length: 64 }).map((_, i) => (
+          <Sphere key={i} args={[0.03, 8, 8]}>
+            <meshBasicMaterial color="white" transparent opacity={0.6} />
+          </Sphere>
+        ))}
+      </group>
 
-      <Sphere ref={coreRef} args={[0.15, 32, 32]}>
+      {/* Intersection Beams Group */}
+      <group ref={beamsRef}>
+        {Array.from({ length: 64 }).map((_, i) => (
+          <line key={i}>
+            <bufferGeometry>
+              <bufferAttribute
+                attach="attributes-position"
+                count={2}
+                array={new Float32Array([0, 0, 0, 0, 0, 0])}
+                itemSize={3}
+              />
+            </bufferGeometry>
+            <lineBasicMaterial color="white" transparent opacity={0.1} />
+          </line>
+        ))}
+      </group>
+
+      {/* The Collapse Core */}
+      <Sphere ref={coreRef} args={[0.15, 16, 16]}>
         <meshBasicMaterial color="white" transparent opacity={0.3} />
       </Sphere>
-      
-      <pointLight intensity={isSolving ? 2 : 0.5} color="white" />
+
+      <pointLight intensity={isSolving ? 1.5 : 0.5} />
     </group>
   );
 });
 
-const PhotonicComputerComponent = () => {
+export default function PhotonicComputer() {
   const [input, setInput] = useState("");
   const [result, setResult] = useState<number | null>(null);
   const [isSolving, setIsSolving] = useState(false);
@@ -180,14 +215,12 @@ const PhotonicComputerComponent = () => {
 
   const handleSolve = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input) return;
+    if (!input || isSolving) return;
 
     setIsSolving(true);
-    
     setTimeout(() => {
       try {
         const sanitized = input.replace(/[^-+*/().0-9]/g, '');
-        // eslint-disable-next-line no-eval
         const val = eval(sanitized);
         const num = parseFloat(val);
         if (!isNaN(num)) {
@@ -202,25 +235,20 @@ const PhotonicComputerComponent = () => {
   };
 
   return (
-    <div className="w-full h-full relative flex flex-col items-center justify-center bg-black">
-      <div className="flex-1 w-full scale-110">
-        <Canvas dpr={[1, 2]}>
-          <PerspectiveCamera makeDefault position={[0, 0, 10]} fov={25} />
+    <div className="w-full h-full relative flex flex-col items-center justify-center bg-black overflow-hidden">
+      <div className="flex-1 w-full scale-125 md:scale-100">
+        <Canvas gl={{ antialias: false, powerPreference: "high-performance" }} dpr={[1, 1.5]}>
+          <PerspectiveCamera makeDefault position={[0, 0, 9]} fov={25} />
           <OrbitControls enablePan={false} autoRotate={!isSolving} autoRotateSpeed={0.5} />
-          
-          <ambientLight intensity={0.5} />
-          <pointLight position={[10, 10, 10]} intensity={1} />
-          
-          <Float speed={1.5} rotationIntensity={0.5} floatIntensity={0.5}>
+          <ambientLight intensity={0.4} />
+          <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
             <RaySystem q={orbit.q} p={orbit.p} isSolving={isSolving} />
           </Float>
-          
-          <Environment preset="night" />
         </Canvas>
       </div>
 
-      <div className="absolute inset-x-0 bottom-0 p-8 flex flex-col items-center gap-6 bg-black/90 border-t border-white/5 backdrop-blur-xl">
-        <form onSubmit={handleSolve} className="w-full max-w-sm relative group">
+      <div className="absolute inset-x-0 bottom-0 p-6 md:p-8 flex flex-col items-center gap-6 bg-black/95 border-t border-white/5 backdrop-blur-2xl">
+        <form onSubmit={handleSolve} className="w-full max-w-sm relative">
           <input 
             type="text"
             value={input}
@@ -230,36 +258,27 @@ const PhotonicComputerComponent = () => {
           />
           <button 
             type="submit"
-            className="absolute right-0 bottom-3 text-[9px] text-white/30 hover:text-white transition-colors tracking-[0.3em] font-bold"
+            disabled={isSolving}
+            className="absolute right-0 bottom-3 text-[9px] text-white/30 hover:text-white transition-colors tracking-[0.3em] font-bold disabled:opacity-20"
           >
-            [EXEC]
+            {isSolving ? "[WAIT]" : "[EXEC]"}
           </button>
         </form>
 
-        <div className="flex items-center gap-10">
-            <div className="flex flex-col items-center gap-1">
+        <div className="flex items-center gap-6 md:gap-12">
+            <div className="flex flex-col items-center">
               <div className="text-[7px] tracking-[0.4em] text-white/20 uppercase">Core Status</div>
-              <div className="text-[9px] tracking-[0.3em] text-white/60 uppercase">{isSolving ? "◊.COLLAPSING" : "◊.STABLE"}</div>
+              <div className="text-[9px] tracking-[0.2em] text-white/60 uppercase">{isSolving ? "◊.COLLAPSING" : "◊.STABLE"}</div>
             </div>
             
             {result !== null && (
-                <div className="flex flex-col items-center gap-1 border-x border-white/10 px-10">
+                <div className="flex flex-col items-center border-x border-white/10 px-6 md:px-10">
                   <div className="text-[7px] tracking-[0.4em] text-white/20 uppercase">Resultant</div>
                   <div className="text-[11px] tracking-[0.2em] text-white font-bold">{result}</div>
                 </div>
             )}
 
-            <div className="flex flex-col items-center gap-1">
+            <div className="flex flex-col items-center">
               <div className="text-[7px] tracking-[0.4em] text-white/20 uppercase">Manifold</div>
-              <div className="text-[9px] tracking-[0.3em] text-white/60 uppercase">{orbit.q}:{orbit.p}</div>
-            </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const PhotonicComputer = React.memo(PhotonicComputerComponent);
-PhotonicComputer.displayName = 'PhotonicComputer';
-
-export default PhotonicComputer;
+              <div className="text-[9px] tracking-[0.2em] text-white/60 uppercase">{orbit.q}:{orbit.p}</div>
+        
