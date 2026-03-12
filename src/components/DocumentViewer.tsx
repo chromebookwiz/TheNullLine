@@ -14,7 +14,12 @@ function cn(...inputs: ClassValue[]) {
 
 
 interface ViewerProps {
-  file: NullFile;
+  file: {
+    name: string;
+    type: 'txt' | 'docx' | 'pdf' | 'app' | 'folder';
+    path: string;
+    children?: any;
+  };
   onClose?: () => void;
   embedded?: boolean;
 }
