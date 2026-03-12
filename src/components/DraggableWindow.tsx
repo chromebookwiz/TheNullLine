@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
-import { motion, AnimatePresence, useDragControls } from 'framer-motion';
+import React, { useState, createContext } from 'react';
+import { motion, useDragControls } from 'framer-motion';
 import { X, Minimize2, Maximize2, GripHorizontal } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -9,6 +9,12 @@ import { twMerge } from 'tailwind-merge';
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+
+/**
+ * Consumed by animated child apps (Three.js canvases, rAF loops) to pause
+ * rendering when the containing window is minimized.  True = suspended.
+ */
+export const WindowSuspendedContext = createContext(false);
 
 interface DraggableWindowProps {
   children: React.ReactNode;
@@ -40,14 +46,22 @@ const DraggableWindow = React.memo(function DraggableWindow({
         dragMomentum={false}
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        style={style}
+        style={{
+          ...style,
+          // Inline style always overrides Tailwind classes — collapses the h-[*]
+          // height when minimized so the window shrinks to just the title bar.
+          ...(isMinimized ? { height: 'auto' } : {}),
+        }}
         onPointerDown={onPointerDown}
         className={cn(
           "bottom-24 right-8 shadow-2xl transition-shadow duration-300 will-change-transform transform-gpu pointer-events-auto touch-action-none select-none",
           className || "w-80 md:w-96"
         )}
       >
-        <div className={cn("esoteric-glass rounded-2xl overflow-hidden border border-black/20 flex flex-col h-full", !className && "max-h-[700px]")}>
+        <div className={cn(
+          "esoteric-glass rounded-2xl overflow-hidden border border-black/20 flex flex-col",
+          !isMinimized && (className ? "h-full" : "max-h-[700px]"),
+        )}>
           {/* Header / Drag Handle */}
           <div 
             onPointerDown={(e) => dragControls.start(e)}
@@ -60,8 +74,9 @@ const DraggableWindow = React.memo(function DraggableWindow({
             <div className="flex items-center gap-1">
               <button 
                 onPointerDown={(e) => e.stopPropagation()}
-                onClick={(e) => { e.stopPropagation(); setIsMinimized(!isMinimized); }}
+                onClick={(e) => { e.stopPropagation(); setIsMinimized(v => !v); }}
                 className="p-1.5 hover:bg-black/10 rounded-lg transition-colors text-black/40 hover:text-black"
+                title={isMinimized ? 'Restore' : 'Minimize'}
               >
                 {isMinimized ? <Maximize2 size={12} /> : <Minimize2 size={12} />}
               </button>
@@ -75,15 +90,26 @@ const DraggableWindow = React.memo(function DraggableWindow({
             </div>
           </div>
 
-          {/* Content */}
-          <motion.div 
-            animate={{ height: isMinimized ? 0 : (className?.includes('h-') ? '100%' : 'auto'), opacity: isMinimized ? 0 : 1 }}
-            className="flex-1 min-h-0 overflow-y-auto custom-scrollbar bg-white"
-          >
-            <div className="p-0 text-sm leading-relaxed text-black/80 h-full">
-              {children}
+          {/* Content — hidden via display:none but NOT unmounted so app state is
+              preserved.  Child apps consume WindowSuspendedContext to halt their
+              render / animation loops while the window is minimised. */}
+          <WindowSuspendedContext.Provider value={isMinimized}>
+            <div
+              style={{
+                display: isMinimized ? 'none' : 'flex',
+                flex: 1,
+                minHeight: 0,
+                flexDirection: 'column',
+                overflow: 'hidden',
+              }}
+            >
+              <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar bg-white h-full">
+                <div className="text-sm leading-relaxed text-black/80 h-full">
+                  {children}
+                </div>
+              </div>
             </div>
-          </motion.div>
+          </WindowSuspendedContext.Provider>
         </div>
       </motion.div>
     </div>

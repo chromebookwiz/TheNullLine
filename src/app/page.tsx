@@ -44,6 +44,11 @@ const NullPromoApp = dynamic(() => import('@/components/NullPromoApp'), {
   loading: () => <div className="w-full h-full bg-black flex items-center justify-center text-white/20 text-[10px] uppercase tracking-widest">Loading Showcase...</div>
 });
 
+const CommunityApp = dynamic(() => import('@/components/CommunityApp'), {
+  ssr: false,
+  loading: () => <div className="w-full h-full bg-white flex items-center justify-center text-black/20 text-[10px] uppercase tracking-widest">Loading Community...</div>
+});
+
 
 type FileType = 'txt' | 'docx' | 'pdf' | 'app' | 'folder';
 
@@ -55,7 +60,7 @@ interface NullFile {
 }
 
 
-type AppWindowType = 'document' | 'photonic' | 'info' | 'evolve' | 'clicker' | 'simulation' | 'files' | 'forge' | 'deck' | 'hover' | 'promo';
+type AppWindowType = 'document' | 'photonic' | 'info' | 'evolve' | 'clicker' | 'simulation' | 'files' | 'forge' | 'deck' | 'hover' | 'promo' | 'community';
 interface WindowInstance {
   id: string;
   type: AppWindowType;
@@ -105,6 +110,8 @@ export default function Home() {
         openWindow('hover');
       } else if (file.name.toLowerCase().includes('promo') || file.name.toLowerCase().includes('showcase')) {
         openWindow('promo');
+      } else if (file.name.toLowerCase().includes('community') || file.name.toLowerCase().includes('donate')) {
+        openWindow('community');
       } else if (file.name.toLowerCase().includes('files')) {
         openWindow('files', file);
       } else {
@@ -144,7 +151,7 @@ export default function Home() {
               </DraggableWindow>
             ) : win.type === 'photonic' ? (
               <DraggableWindow
-                title="◊.VISUALIZER"
+                title="◊.NULL_PHOTON_SPHERE"
                 isOpen={true}
                 onClose={() => closeWindow(win.id)}
                 className="w-[98vw] md:w-[1100px] h-[90vh] md:h-[850px]"
@@ -165,6 +172,17 @@ export default function Home() {
                 onPointerDown={() => bringToFront(win.id)}
               >
                 <ShapeClicker />
+              </DraggableWindow>
+            ) : win.type === 'community' ? (
+              <DraggableWindow
+                title="◊.COMMUNITY"
+                isOpen={true}
+                onClose={() => closeWindow(win.id)}
+                className="w-[98vw] md:w-[600px] h-[90vh] md:h-[700px]"
+                style={{ zIndex: win.zIndex }}
+                onPointerDown={() => bringToFront(win.id)}
+              >
+                <CommunityApp />
               </DraggableWindow>
             ) : win.type === 'simulation' ? (
               <DraggableWindow

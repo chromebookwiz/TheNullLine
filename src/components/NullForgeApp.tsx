@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useContext } from 'react';
 import { motion } from 'framer-motion';
+import { WindowSuspendedContext } from './DraggableWindow';
 
 // ADE classification maps directly to crystal system (from NullForge doc)
 const CRYSTAL_MODES = [
@@ -26,74 +27,52 @@ const ELEMENTS = [
   { symbol: 'Ti', name: 'Titanium', color: '#669988', radius: 8 },
 ];
 
-// Generate 2D lattice site positions for a given grid type, in canvas coords
-function getLatticePoints(type: string, cx: number, cy: number, scale: number): [number, number][] {
-  const pts: [number, number][] = [];
-  const s = scale;
-  switch (type) {
-    case 'fcc': {
-      // 2D projection of FCC: square grid + face centres
-      for (let ix = -3; ix <= 3; ix++) for (let iy = -3; iy <= 3; iy++) {
-        pts.push([cx + ix * s, cy + iy * s]);
-        pts.push([cx + ix * s + s / 2, cy + iy * s + s / 2]);
-      }
-      break;
-    }
-    case 'bcc': {
-      for (let ix = -3; ix <= 3; ix++) for (let iy = -3; iy <= 3; iy++) {
-        pts.push([cx + ix * s, cy + iy * s]);
-        if (ix < 3 && iy < 3) pts.push([cx + ix * s + s / 2, cy + iy * s + s / 2]);
-      }
-      break;
-    }
-    case 'hex':
-    case 'graph': {
-      // Hexagonal / honeycomb
-      const h = s * Math.sqrt(3) / 2;
-      for (let ix = -4; ix <= 4; ix++) for (let iy = -4; iy <= 4; iy++) {
-        const xoff = iy % 2 === 0 ? 0 : s / 2;
-        pts.push([cx + ix * s + xoff, cy + iy * h]);
-        if (type === 'graph') pts.push([cx + ix * s + xoff + s / 3, cy + iy * h + h / 3]);
-      }
-      break;
-    }
-    case 'dia': {
-      // Diamond: two interpenetrating FCC, project as offset squares
-      for (let ix = -3; ix <= 3; ix++) for (let iy = -3; iy <= 3; iy++) {
-        pts.push([cx + ix * s, cy + iy * s]);
-        pts.push([cx + ix * s + s / 4, cy + iy * s + s / 4]);
-        pts.push([cx + ix * s + s / 2, cy + iy * s + s / 2]);
-        pts.push([cx + ix * s + 3 * s / 4, cy + iy * s + 3 * s / 4]);
-      }
-      break;
-    }
-    case 'quasi': {
-      // E₈ quasicrystal: pentagrid projection
-      const angles = Array.from({ length: 5 }, (_, k) => k * Math.PI / 5);
-      for (let r = 1; r <= 5; r++) {
-        for (let k = 0; k < 10; k++) {
-          const a = k * Math.PI / 5;
-          pts.push([cx + r * s * Math.cos(a), cy + r * s * Math.sin(a)]);
-          pts.push([cx + r * s * 0.618 * Math.cos(a + Math.PI / 10), cy + r * s * 0.618 * Math.sin(a + Math.PI / 10)]);
-        }
-      }
-      pts.push([cx, cy]);
-      break;
-    }
-    default: {
-      for (let ix = -3; ix <= 3; ix++) for (let iy = -3; iy <= 3; iy++)
-        pts.push([cx + ix * s, cy + iy * s]);
-    }
-  }
-  // Filter to canvas bounds with generous margin and deduplicate
-  const seen = new Set<string>();
-  return pts.filter(([x, y]) => {
-    const key = `${Math.round(x)},${Math.round(y)}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return x > 20 && x < cx * 2 - 20 && y > 20 && y < cy * 2 - 20;
+// Fibonacci sphere lattice for shell assembly
+function fibSpherePoints(n: number): Array<{ x: number; y: number; z: number }> {
+  const GA = Math.PI * (3 - Math.sqrt(5));
+  return Array.from({ length: n }, (_, i) => {
+    const y = 1 - (i / (n - 1)) * 2;
+    const r = Math.sqrt(Math.max(0, 1 - y * y));
+    const theta = GA * i;
+    return { x: r * Math.cos(theta), y, z: r * Math.sin(theta) };
   });
 }
+
+// Orthographic project with Y-rotation and slight perspective
+function project(p: { x: number; y: number; z: number }, cx: number, cy: number, R: number, rot: number) {
+  const cos = Math.cos(rot), sin = Math.sin(rot);
+  const rx = p.x * cos - p.z * sin;
+  const rz = p.x * sin + p.z * cos;
+  const fov = 1 + rz * 0.18;
+  return { x: cx + rx * R * fov, y: cy - p.y * R * fov, depth: rz };
+}
+
+// Quadratic bezier at t
+function bezierAt(t: number, x0: number, y0: number, cpX: number, cpY: number, x1: number, y1: number) {
+  const s = 1 - t;
+  return { x: s * s * x0 + 2 * s * t * cpX + t * t * x1, y: s * s * y0 + 2 * s * t * cpY + t * t * y1 };
+}
+
+interface FlyingAtom {
+  id: number;
+  fromX: number; fromY: number;
+  tx: number; ty: number;
+  cpX: number; cpY: number;
+  siteIdx: number;
+  progress: number;
+  speed: number;
+  rejected: boolean;
+  sortPulse: number;
+  sortBeamIdx: number;
+  beamAngles: number[];
+  ejecting: boolean;
+  ejectX: number; ejectY: number;
+  ejectVX: number; ejectVY: number;
+  ejectFade: number;
+}
+
+const SHELL_N = 120;
+const MAX_FLYING = 3;
 
 function drawADEOrbit(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number, q: number, p: number, rot: number, color: string) {
   ctx.beginPath();
@@ -109,158 +88,310 @@ function drawADEOrbit(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: 
 }
 
 export default function NullForgeApp() {
+  const isSuspended = useContext(WindowSuspendedContext);
   const [modeIdx, setModeIdx] = useState(0);
   const [elemIdx, setElemIdx] = useState(0);
   const [running, setRunning] = useState(false);
-  const [speed, setSpeed] = useState(3); // atoms per frame batch
+  const [speed, setSpeed] = useState(3);
   const [placedCount, setPlacedCount] = useState(0);
-  const [totalSites, setTotalSites] = useState(0);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const stateRef = useRef({
-    placed: [] as boolean[],
-    sites: [] as [number, number][],
+  const stateRef = useRef<{
+    placed: boolean[];
+    sites3d: { x: number; y: number; z: number }[];
+    beamPhase: number;
+    rotAngle: number;
+    placedCount: number;
+    flying: FlyingAtom[];
+    nextId: number;
+  }>({
+    placed: new Array(SHELL_N).fill(false),
+    sites3d: fibSpherePoints(SHELL_N),
     beamPhase: 0,
+    rotAngle: 0,
     placedCount: 0,
-    time: 0,
+    flying: [],
+    nextId: 0,
   });
 
   const mode = CRYSTAL_MODES[modeIdx];
   const elem = ELEMENTS[elemIdx];
 
-  // Rebuild lattice when mode changes
   const rebuildLattice = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const cx = canvas.width / 2, cy = canvas.height / 2;
-    const sites = getLatticePoints(mode.gridType, cx, cy, 42);
-    stateRef.current.sites = sites;
-    stateRef.current.placed = new Array(sites.length).fill(false);
-    stateRef.current.placedCount = 0;
+    const s = stateRef.current;
+    s.sites3d = fibSpherePoints(SHELL_N);
+    s.placed = new Array(SHELL_N).fill(false);
+    s.placedCount = 0;
+    s.flying = [];
+    s.rotAngle = 0;
     setPlacedCount(0);
-    setTotalSites(sites.length);
     setRunning(false);
-  }, [mode.gridType]);
+  }, []);
 
   useEffect(() => { rebuildLattice(); }, [rebuildLattice]);
 
   // Main canvas animation loop
   useEffect(() => {
+    if (isSuspended) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     let raf: number;
-    let lastPlace = 0;
 
-    const loop = (time: number) => {
+    const loop = (rawTime: number) => {
+      raf = requestAnimationFrame(loop);
       const s = stateRef.current;
-      s.time = time;
-      s.beamPhase = time * 0.002;
+      s.beamPhase = rawTime * 0.001;
+      if (running) s.rotAngle += 0.0025;
 
-      const { width: W, height: H } = canvas;
-      ctx.clearRect(0, 0, W, H);
+      const W = canvas.width, H = canvas.height;
       const cx = W / 2, cy = H / 2;
+      const shellR = Math.min(W, H) * 0.33;
+      const outerR = Math.min(W, H) * 0.50;
 
-      // Background ADE orbit
-      drawADEOrbit(ctx, cx, cy, Math.min(W, H) * 0.42, mode.q, mode.p, s.beamPhase * 0.3, `rgba(0,0,0,0.06)`);
-      drawADEOrbit(ctx, cx, cy, Math.min(W, H) * 0.28, mode.q, mode.p, -s.beamPhase * 0.2, `rgba(0,0,0,0.04)`);
+      ctx.clearRect(0, 0, W, H);
 
-      // Place atoms each frame if running
-      if (running && s.placedCount < s.sites.length) {
-        if (time - lastPlace > 16) { // ~60fps
-          const batch = speed;
-          for (let b = 0; b < batch; b++) {
-            const next = s.placed.findIndex(p => !p);
-            if (next !== -1) { s.placed[next] = true; s.placedCount++; }
-          }
-          lastPlace = time;
-          setPlacedCount(s.placedCount);
+      // Project all sphere sites
+      const projected = s.sites3d.map(p => project(p, cx, cy, shellR, s.rotAngle));
+
+      // ADE orbit overlay (faint background)
+      drawADEOrbit(ctx, cx, cy, shellR * 1.05, mode.q, mode.p, s.beamPhase * 0.3, 'rgba(0,0,0,0.04)');
+
+      // Sphere outline
+      ctx.beginPath();
+      ctx.arc(cx, cy, shellR, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(0,0,0,0.07)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      // Equator ellipse for depth cue
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, shellR, shellR * 0.14, 0, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(0,0,0,0.04)';
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+
+      // Back-hemisphere sites
+      for (let i = 0; i < SHELL_N; i++) {
+        if (projected[i].depth >= 0) continue;
+        const { x, y } = projected[i];
+        if (s.placed[i]) {
+          ctx.beginPath();
+          ctx.arc(x, y, 3, 0, Math.PI * 2);
+          ctx.fillStyle = elem.color + '44';
+          ctx.fill();
+        } else {
+          ctx.beginPath();
+          ctx.arc(x, y, 1.5, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(0,0,0,0.04)';
+          ctx.fill();
         }
       }
 
-      // Draw bonds between adjacent placed atoms
-      ctx.lineWidth = 0.6;
-      ctx.strokeStyle = `rgba(0,0,0,0.12)`;
-      for (let i = 0; i < s.sites.length; i++) {
-        if (!s.placed[i]) continue;
-        for (let j = i + 1; j < s.sites.length; j++) {
-          if (!s.placed[j]) continue;
-          const dx = s.sites[i][0] - s.sites[j][0];
-          const dy = s.sites[i][1] - s.sites[j][1];
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 50) {
+      // Advance flying atoms
+      const toRemove = new Set<number>();
+      for (let fi = 0; fi < s.flying.length; fi++) {
+        const fa = s.flying[fi];
+        if (fa.ejecting) {
+          fa.ejectX += fa.ejectVX * 2.5;
+          fa.ejectY += fa.ejectVY * 2.5;
+          fa.ejectFade -= 0.04;
+          if (fa.ejectFade <= 0) toRemove.add(fi);
+        } else {
+          fa.progress = Math.min(1, fa.progress + fa.speed * 0.016);
+          fa.sortPulse = Math.min(1, fa.sortPulse + fa.speed * 1.8 * 0.016);
+          if (fa.rejected && fa.sortPulse >= 0.92) {
+            fa.ejecting = true;
+            const pos = bezierAt(fa.progress, fa.fromX, fa.fromY, fa.cpX, fa.cpY, fa.tx, fa.ty);
+            fa.ejectX = pos.x;
+            fa.ejectY = pos.y;
+            fa.ejectFade = 1;
+          }
+          if (fa.progress >= 1 && !fa.rejected) {
+            if (!s.placed[fa.siteIdx]) {
+              s.placed[fa.siteIdx] = true;
+              s.placedCount++;
+              setPlacedCount(s.placedCount);
+            }
+            toRemove.add(fi);
+          }
+        }
+      }
+
+      // Draw ODT beams and flying atoms
+      for (let fi = 0; fi < s.flying.length; fi++) {
+        if (toRemove.has(fi)) continue;
+        const fa = s.flying[fi];
+        if (fa.ejecting) {
+          if (fa.ejectFade > 0) {
+            ctx.globalAlpha = fa.ejectFade;
             ctx.beginPath();
-            ctx.moveTo(s.sites[i][0], s.sites[i][1]);
-            ctx.lineTo(s.sites[j][0], s.sites[j][1]);
+            ctx.arc(fa.ejectX, fa.ejectY, elem.radius, 0, Math.PI * 2);
+            ctx.fillStyle = '#ff5544';
+            ctx.fill();
+            ctx.fillStyle = 'rgba(255,255,255,0.9)';
+            ctx.font = `bold ${Math.max(7, elem.radius * 0.85)}px monospace`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('✕', fa.ejectX, fa.ejectY);
+            ctx.globalAlpha = 1;
+          }
+          continue;
+        }
+        const pos = bezierAt(fa.progress, fa.fromX, fa.fromY, fa.cpX, fa.cpY, fa.tx, fa.ty);
+        const ax = pos.x, ay = pos.y;
+
+        // 6 convergent ODT beams
+        for (let b = 0; b < 6; b++) {
+          const ang = fa.beamAngles[b];
+          const srcX = cx + outerR * Math.cos(ang);
+          const srcY = cy + outerR * Math.sin(ang);
+          const alpha = 0.12 + 0.05 * Math.sin(s.beamPhase * 3 + b * 1.05);
+          const grd = ctx.createLinearGradient(srcX, srcY, ax, ay);
+          grd.addColorStop(0, 'rgba(80,200,255,0)');
+          grd.addColorStop(0.55, `rgba(80,200,255,${alpha})`);
+          grd.addColorStop(1, `rgba(130,230,255,${alpha * 2.8})`);
+          ctx.beginPath();
+          ctx.moveTo(srcX, srcY);
+          ctx.lineTo(ax, ay);
+          ctx.strokeStyle = grd;
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+          // Sort photon pulse
+          if (b === fa.sortBeamIdx) {
+            const pp = fa.sortPulse;
+            const pxs = srcX + (ax - srcX) * pp;
+            const pys = srcY + (ay - srcY) * pp;
+            ctx.beginPath();
+            ctx.arc(pxs, pys, 3.5, 0, Math.PI * 2);
+            ctx.fillStyle = fa.rejected ? 'rgba(255,80,60,0.95)' : 'rgba(200,255,240,0.95)';
+            ctx.fill();
+          }
+        }
+        // Convergence glow
+        const glowA = 0.22 + 0.1 * Math.sin(s.beamPhase * 5);
+        const grd2 = ctx.createRadialGradient(ax, ay, 0, ax, ay, 20);
+        grd2.addColorStop(0, `rgba(80,200,255,${glowA})`);
+        grd2.addColorStop(1, 'rgba(80,200,255,0)');
+        ctx.beginPath();
+        ctx.arc(ax, ay, 20, 0, Math.PI * 2);
+        ctx.fillStyle = grd2;
+        ctx.fill();
+        // Atom glow
+        const r = elem.radius;
+        const atomGrd = ctx.createRadialGradient(ax - r * 0.3, ay - r * 0.3, 0, ax, ay, r * 1.8);
+        atomGrd.addColorStop(0, '#ffffff');
+        atomGrd.addColorStop(0.35, elem.color);
+        atomGrd.addColorStop(1, elem.color + '00');
+        ctx.beginPath();
+        ctx.arc(ax, ay, r * 1.8, 0, Math.PI * 2);
+        ctx.fillStyle = atomGrd;
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(ax, ay, r, 0, Math.PI * 2);
+        ctx.fillStyle = elem.color;
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+        ctx.lineWidth = 0.8;
+        ctx.stroke();
+        ctx.fillStyle = '#fff';
+        ctx.font = `bold ${Math.max(7, r * 0.9)}px monospace`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(elem.symbol, ax, ay);
+      }
+
+      // Bonds between close placed front atoms
+      ctx.lineWidth = 0.5;
+      ctx.strokeStyle = elem.color + '35';
+      for (let i = 0; i < SHELL_N; i++) {
+        if (!s.placed[i] || projected[i].depth < 0) continue;
+        for (let j = i + 1; j < SHELL_N; j++) {
+          if (!s.placed[j] || projected[j].depth < 0) continue;
+          const dx = projected[i].x - projected[j].x;
+          const dy = projected[i].y - projected[j].y;
+          if (dx * dx + dy * dy < 32 * 32) {
+            ctx.beginPath();
+            ctx.moveTo(projected[i].x, projected[i].y);
+            ctx.lineTo(projected[j].x, projected[j].y);
             ctx.stroke();
           }
         }
       }
 
-      // Draw placed atoms
-      for (let i = 0; i < s.sites.length; i++) {
-        if (!s.placed[i]) {
-          // Ghost site
-          ctx.beginPath();
-          ctx.arc(s.sites[i][0], s.sites[i][1], elem.radius * 0.5, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(0,0,0,0.04)';
-          ctx.fill();
-          continue;
-        }
-        const [x, y] = s.sites[i];
-        // Glow
-        const grd = ctx.createRadialGradient(x, y, 0, x, y, elem.radius * 2.5);
-        grd.addColorStop(0, elem.color + 'aa');
+      // Front-hemisphere placed atoms
+      for (let i = 0; i < SHELL_N; i++) {
+        if (!s.placed[i] || projected[i].depth < 0) continue;
+        const { x, y, depth } = projected[i];
+        const brightness = 0.45 + 0.55 * ((depth + 1) / 2);
+        const grd = ctx.createRadialGradient(x, y, 0, x, y, elem.radius * 2);
+        grd.addColorStop(0, elem.color + 'bb');
         grd.addColorStop(1, elem.color + '00');
         ctx.beginPath();
-        ctx.arc(x, y, elem.radius * 2.5, 0, Math.PI * 2);
+        ctx.arc(x, y, elem.radius * 2, 0, Math.PI * 2);
         ctx.fillStyle = grd;
         ctx.fill();
-        // Atom body
         ctx.beginPath();
-        ctx.arc(x, y, elem.radius, 0, Math.PI * 2);
+        ctx.arc(x, y, 3 * brightness, 0, Math.PI * 2);
         ctx.fillStyle = elem.color;
         ctx.fill();
-        ctx.lineWidth = 0.8;
-        ctx.strokeStyle = 'rgba(255,255,255,0.4)';
-        ctx.stroke();
+      }
+      // Ghost sites (front)
+      for (let i = 0; i < SHELL_N; i++) {
+        if (s.placed[i] || projected[i].depth < 0) continue;
+        ctx.beginPath();
+        ctx.arc(projected[i].x, projected[i].y, 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(0,0,0,0.06)';
+        ctx.fill();
       }
 
-      // Draw incoming beam: next unplaced atom being delivered
-      const next = s.placed.findIndex(p => !p);
-      if (running && next !== -1) {
-        const [tx, ty] = s.sites[next];
-        const bx = cx + Math.cos(s.beamPhase * 2) * 30;
-        const by = cy + Math.sin(s.beamPhase * 2) * 30;
-        // Trap beam line
-        ctx.beginPath();
-        ctx.strokeStyle = `rgba(80,180,255,${0.3 + 0.2 * Math.sin(s.beamPhase * 8)})`;
-        ctx.lineWidth = 1.5;
-        ctx.setLineDash([4, 6]);
-        ctx.moveTo(bx, 0);
-        ctx.lineTo(tx, ty);
-        ctx.stroke();
-        ctx.setLineDash([]);
-        // Trap ring
-        const ringR = elem.radius * (1.5 + 0.5 * Math.sin(s.beamPhase * 8));
-        ctx.beginPath();
-        ctx.arc(tx, ty, ringR, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(80,200,255,0.7)`;
-        ctx.lineWidth = 1;
-        ctx.stroke();
+      // Spawn new flying atoms
+      if (running && s.flying.length < MAX_FLYING) {
+        const active = new Set(s.flying.map(f => f.siteIdx));
+        const nextIdx = s.placed.findIndex((placed, i) => !placed && !active.has(i));
+        if (nextIdx !== -1) {
+          const tgt = projected[nextIdx];
+          const srcAngle = Math.random() * Math.PI * 2;
+          const srcR = outerR * (0.85 + Math.random() * 0.15);
+          const fromX = cx + srcR * Math.cos(srcAngle);
+          const fromY = cy + srcR * Math.sin(srcAngle);
+          const midX = (fromX + tgt.x) / 2;
+          const midY = (fromY + tgt.y) / 2;
+          const inF = 0.35 + Math.random() * 0.3;
+          const cpX = midX + (cx - midX) * inF;
+          const cpY = midY + (cy - midY) * inF;
+          const rejected = Math.random() < 0.13;
+          const beamAngles = Array.from({ length: 6 }, (_, b) =>
+            srcAngle + b * (Math.PI / 3) + (Math.random() * 0.15 - 0.075)
+          );
+          const baseSpeed = (0.3 + Math.random() * 0.2) * (0.5 + speed * 0.07);
+          s.flying.push({
+            id: s.nextId++,
+            fromX, fromY, tx: tgt.x, ty: tgt.y, cpX, cpY,
+            siteIdx: nextIdx, progress: 0, speed: baseSpeed,
+            rejected, sortPulse: 0,
+            sortBeamIdx: Math.floor(Math.random() * 6),
+            beamAngles,
+            ejecting: false,
+            ejectX: 0, ejectY: 0,
+            ejectVX: (Math.random() - 0.5) * 4,
+            ejectVY: -2 - Math.random() * 2,
+            ejectFade: 1,
+          });
+        }
       }
 
-      raf = requestAnimationFrame(loop);
+      // Remove completed atoms (reverse order)
+      const indices = [...toRemove].sort((a, b) => b - a);
+      for (const i of indices) s.flying.splice(i, 1);
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [running, speed, mode, elem]);
+  }, [running, speed, mode, elem, isSuspended]);
 
-  const buildComplete = placedCount >= totalSites && totalSites > 0;
-  const progress = totalSites > 0 ? placedCount / totalSites : 0;
-  // Rough build time estimate: 1 μs per atom at 10⁶ atoms/s (from NullForge doc)
-  const buildTimeSec = (totalSites / 1e6).toFixed(3);
+  const buildComplete = placedCount >= SHELL_N;
+  const progress = placedCount / SHELL_N;
+  const buildTimeSec = (SHELL_N / 1e6).toFixed(3);
 
   return (
     <div className="w-full h-full flex flex-col md:flex-row bg-white font-mono select-none overflow-hidden">
@@ -277,13 +408,13 @@ export default function NullForgeApp() {
         <div className="absolute top-4 right-4 text-right space-y-0.5">
           <div className="text-[9px] tracking-[0.4em] text-black/30 uppercase font-bold">Atoms Placed</div>
           <div className="text-lg font-bold text-black">{placedCount.toLocaleString()}</div>
-          <div className="text-[9px] text-black/40">{totalSites.toLocaleString()} sites</div>
+          <div className="text-[9px] text-black/40">{SHELL_N} sites</div>
         </div>
 
         {/* Progress bar */}
         <div className="absolute bottom-4 left-4 right-4">
           <div className="flex justify-between text-[8px] text-black/30 uppercase tracking-widest mb-1">
-            <span>Fabrication Progress</span>
+            <span>Shell Assembly</span>
             <span>{(progress * 100).toFixed(1)}%</span>
           </div>
           <div className="h-[2px] bg-black/5 rounded-full">
@@ -295,7 +426,7 @@ export default function NullForgeApp() {
             />
           </div>
           {buildComplete && (
-            <div className="mt-2 text-[9px] text-center tracking-[0.3em] uppercase text-black/40 font-bold">◊ BUILD COMPLETE</div>
+            <div className="mt-2 text-[9px] text-center tracking-[0.3em] uppercase text-black/40 font-bold">◊ SHELL COMPLETE</div>
           )}
         </div>
       </div>
@@ -305,12 +436,12 @@ export default function NullForgeApp() {
         {/* Header */}
         <div className="p-5 border-b border-black/5 bg-black text-white shrink-0">
           <div className="text-[10px] tracking-[0.3em] font-bold uppercase">◊.NULL_FORGE</div>
-          <div className="text-[8px] text-white/30 mt-1 uppercase tracking-widest">Atomic Fabrication Bench</div>
+          <div className="text-[8px] text-white/30 mt-1 uppercase tracking-widest">Atomic Shell Fabrication</div>
         </div>
 
         {/* Crystal Type */}
         <div className="p-4 border-b border-black/5 shrink-0">
-          <div className="text-[9px] tracking-[0.3em] text-black/30 uppercase mb-2 font-bold">Crystal Lattice</div>
+          <div className="text-[9px] tracking-[0.3em] text-black/30 uppercase mb-2 font-bold">Crystal Structure</div>
           <div className="grid grid-cols-2 gap-1.5">
             {CRYSTAL_MODES.map((m, i) => (
               <button
@@ -348,8 +479,8 @@ export default function NullForgeApp() {
         {/* Speed */}
         <div className="p-4 border-b border-black/5 shrink-0">
           <div className="flex justify-between text-[9px] text-black/30 uppercase tracking-widest mb-2">
-            <span>Placement Rate</span>
-            <span className="font-bold text-black">{(speed * 60 / 1000).toFixed(2)}M atoms/s</span>
+            <span>ODT Pull Rate</span>
+            <span className="font-bold text-black">{(speed * 0.35 * 60).toFixed(0)} atoms/s</span>
           </div>
           <input
             type="range" min={1} max={20} value={speed}
@@ -364,23 +495,24 @@ export default function NullForgeApp() {
             onClick={() => setRunning(r => !r)}
             className={`w-full py-3 border font-bold text-[10px] tracking-[0.3em] uppercase transition-all ${running ? 'border-black bg-black text-white' : 'border-black hover:bg-black hover:text-white'}`}
           >
-            {running ? '⏸ PAUSE BUILD' : buildComplete ? '⏮ RUNNING' : '▶ START BUILD'}
+            {running ? '⏸ PAUSE BUILD' : buildComplete ? '◊ COMPLETE' : '▶ START BUILD'}
           </button>
           <button
             onClick={rebuildLattice}
             className="w-full py-2 border border-black/10 text-black/40 text-[9px] tracking-[0.3em] uppercase hover:border-black/40 hover:text-black transition-all"
           >
-            ↺ RESET LATTICE
+            ↺ RESET SHELL
           </button>
         </div>
 
         {/* Info */}
         <div className="p-4 mt-auto border-t border-black/5 bg-black/[0.01]">
           <div className="text-[8px] text-black/30 leading-relaxed uppercase space-y-1">
-            <div>α = pπ/q → {mode.q} reflection orbit</div>
+            <div>ODT convergent beams × 6 @ 1064 nm</div>
+            <div>Sort photon verifies atomic species</div>
+            <div>α = pπ/q → {mode.q}-fold orbital symmetry</div>
             <div>Est. build time: ~{buildTimeSec}s @ 10⁶ atoms/s</div>
             <div>Lattice: {mode.symbol}</div>
-            <div>Sub-diffraction: plasmonic ODT @ 1064nm</div>
           </div>
         </div>
       </div>
