@@ -147,8 +147,9 @@ export default function Home() {
                 style={{ zIndex: win.zIndex }}
                 onPointerDown={() => bringToFront(win.id)}
               >
-                {/* Placeholder for simulation app */}
-                <div className="w-full h-full flex items-center justify-center text-black/40 text-2xl">Simulation App Coming Soon</div>
+                <div className="w-full h-[75vh] md:h-[750px] dark-context rounded-xl overflow-hidden shadow-2xl relative">
+                  <PhotonicChip />
+                </div>
               </DraggableWindow>
             ) : win.type === 'files' ? (
               <DraggableWindow

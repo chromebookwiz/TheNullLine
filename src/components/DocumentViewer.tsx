@@ -89,19 +89,19 @@ const DocumentViewerComponent = ({ file, onClose, embedded }: ViewerProps) => {
           dangerouslySetInnerHTML={{ __html: content || '' }} 
         />
       ) : file.type === 'txt' ? (
-        <div className="flex flex-col gap-4 h-full">
-          <div className="flex justify-end">
-            <button
-              className="px-5 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold shadow hover:from-blue-600 hover:to-purple-600 transition-all text-xs tracking-widest uppercase"
-              onClick={() => alert('Compile action for ' + file.name)}
-            >
-              ◊ Compile
-            </button>
-          </div>
-          <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-black/80 flex-1 bg-white/80 rounded-lg p-4 border border-black/10">
-            {content}
-          </pre>
-        </div>
+        (() => {
+          const isHTML = content && /<[a-z][\s\S]*>/i.test(content);
+          return isHTML ? (
+            <div
+              className="prose max-w-none text-black/90 leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: content || '' }}
+            />
+          ) : (
+            <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-black/80 bg-white/80 rounded-lg p-4 border border-black/10">
+              {content}
+            </pre>
+          );
+        })()
       ) : (
         /* Hybrid TXT/HTML rendering */
         (() => {

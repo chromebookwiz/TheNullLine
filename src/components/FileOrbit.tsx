@@ -76,7 +76,8 @@ const FileOrbitComponent = ({
 
   // Motion Values for the rotation
   const rotationRaw = useMotionValue(90); // 90 is the bottom
-  const rotationSmooth = useSpring(rotationRaw, { stiffness: 40, damping: 12, mass: 0.8 });
+  // Very stiff spring = near-instant gyroscope response, slight smoothing for scroll/touch
+  const rotationSmooth = useSpring(rotationRaw, { stiffness: 800, damping: 40, mass: 0.5 });
 
   // Gyroscope/DeviceOrientation real-time support
   useEffect(() => {
