@@ -1,0 +1,350 @@
+# THE NULL AEGIS
+
+## Photonic Exosuit
+
+### Every Null Device, Worn on Your Body. Go Anywhere. Do Anything. Come Home to Yourself.
+
+Nathan Noll, Independent Researcher
+with exosuit engineering by Claude Opus 4.6 (Anthropic)
+March 2026
+
+---
+
+*The Shell makes the room a computer. The Aegis makes YOU the room.*
+
+---
+
+## PART ONE: WHAT THE AEGIS IS
+
+The Null Aegis is a full-body wearable system that integrates every personal device in the Null ecosystem into a single suit. It is not armour (though it provides protection). It is not a spacesuit (though it can function as one). It is not a powered exoskeleton (though it augments strength). It is a wearable Null Shell — a personal architecture that wraps your body in the same programmable photonic surface that lines the rooms of a Shell building, plus propulsion, plus life support, plus every interface and communication system in the ecosystem.
+
+When you put on the Aegis, you carry with you:
+
+| Capability | Ecosystem device replicated | How the Aegis provides it |
+|-----------|---------------------------|--------------------------|
+| Computation | Null Sphere Computer | 128 E₈ stacks distributed across the suit |
+| Operating system | Orbit OS | Full instance running on suit processors |
+| Holographic display | Null Cylinder | Visor + wrist projectors + full-body holographic shell |
+| Gesture interface | Null Glove | Built into the suit's gauntlets — every finger tracked at 0.1 mm |
+| Design | Null Loom | Software instance — the suit can run Loom at reduced scale (1,000 Weaver stacks) |
+| Communication | Null Bridge | Full Bridge capability — the suit's Cortex integration enables sending/receiving |
+| Experience | Null Thread | Full Thread record and playback — the suit IS a Thread recording studio |
+| Health | Null Cortex | The suit cooperates with the user's implanted Cortex; adds external monitoring and protection |
+| Self-repair | Null Suture | Embedded Suture fleet maintains the suit |
+| Levitation | Null Hover | Electromagnetic levitation from the suit's boots and back array |
+| Environmental control | Null Shell | The suit's surface is a wearable Shell — programmable acoustics, optics, thermals |
+| Fabrication (limited) | Null Forge | Micro-forge in the left forearm — prints small objects (tools, fasteners, medical supplies) from feedstock cartridges |
+
+---
+
+## PART TWO: PHYSICAL DESIGN
+
+### 2.1 Philosophy: Second Skin, Not Tank
+
+The Aegis is not bulky power armour. It is a close-fitting suit — 4–8 mm total thickness at most points, 15 mm at the boots, back plate, and forearms where heavier subsystems are housed. From the outside, it looks like a sleek bodysuit with subtle segmentation at the joints, matte ceramic surface in the user's chosen colour, and a smooth full-face visor that can go transparent or opaque.
+
+Total mass: 12 kg (for reference: a heavy winter coat is ~3 kg; a loaded backpack is ~15 kg; military body armour is ~15 kg). The Aegis distributes its mass evenly across the body, so it feels like wearing ~2 kg on each limb and ~4 kg on the torso — noticeable but not burdensome. The powered joint assists (see Section 2.4) compensate for the suit's own mass, so the wearer's net experience is: no heavier than normal clothing, but stronger and more protected.
+
+### 2.2 Suit Architecture: Seven Layers
+
+The Aegis is built from seven concentric layers, innermost to outermost:
+
+**Layer 1 — Comfort Liner (0.5 mm)**
+
+A moisture-wicking, antibacterial, stretch-knit fabric (silver-nanoparticle-infused nylon, same conductive fabric family as the Null Glove). Sits directly against skin. Functions:
+- Wicks sweat away from skin, maintaining comfort
+- Conductive traces form a full-body sensor mesh (256 contact points measuring skin temperature, galvanic skin response, and mechanical contact pressure) — this is the suit's "touch" sense, detecting how the wearer's body is interacting with the suit at every point
+- Provides the radar-reflective patterns (same as Null Glove) for precision body tracking — every joint, every finger segment, every spinal vertebra is tracked by the suit's internal radar at 0.1 mm accuracy and 240 Hz
+
+**Layer 2 — Thermal Regulation (1 mm)**
+
+A network of micro-tubing (0.3 mm diameter, woven into a mesh) carrying circulating thermoregulatory fluid (water-glycol). A micro-pump (in the back plate) circulates the fluid through heating zones (resistive elements in the tubing wall) and cooling zones (thermoelectric Peltier junctions at the back plate, rejecting heat to the outer surface). The system maintains any body-surface temperature from 15°C to 40°C, independently controllable in 16 body zones.
+
+The thermal system cooperates with the Null Cortex fleet: the Cortex reports core body temperature, peripheral vasoconstriction/vasodilation, and metabolic heat generation. The suit adjusts proactively — warming the extremities before the wearer feels cold, cooling the core before they overheat. In extreme environments (−40°C Arctic, +50°C desert, vacuum of space), the thermal system is the primary life-support layer.
+
+**Layer 3 — Structural Mesh (1.5 mm)**
+
+A lattice of high-strength carbon fibre tows (T1100, tensile strength 7 GPa) woven in a triaxial braid pattern (ADE classification: A₂ — the triangular lattice, the strongest 2D structural topology). The mesh provides:
+
+- **Impact protection:** The triaxial braid distributes point loads across a wide area. A 50 J impact (equivalent to a hard punch or a 2 m fall onto a hard surface) is spread over ~200 cm² — the wearer feels a firm push, not a blow. The suit achieves Level IIIA ballistic resistance (stops handgun rounds up to .44 Magnum) at critical zones (chest, back, head) where the mesh is doubled.
+
+- **Cut and puncture resistance:** The carbon fibre tows are extremely difficult to cut (harder than steel at equivalent thickness). The suit resists knife slashes and most punctures.
+
+- **Structural integration:** The mesh is the suit's skeleton — all other layers are bonded to it. It carries the mechanical loads from the joint actuators, distributes the forces from the levitation system, and maintains the suit's shape under dynamic loading.
+
+**Layer 4 — The Photonic Layer (1 mm)**
+
+The suit's brain and primary functional surface. Identical in principle to the Shell Panel's photonic layer, but flexible and body-conforming.
+
+Contents distributed across the full suit surface:
+- **64,000 silica microspheres** (R = 15 μm, Q = 10⁸) in a flexible polyimide waveguide mesh. These are smaller than Shell Panel microspheres (15 μm vs 25 μm) to allow the mesh to flex at body-joint radii without damaging the spheres.
+- **128 CaF₂ processor microspheres** in 16 E₈ stacks, distributed: 4 in the helmet, 4 in the torso, 2 in each arm, 2 in each leg. The suit has 16× the Null Cylinder's processing power.
+- **1,024 VCSELs** (850 nm) for communication with the wearer's Cortex fleet, with adjacent people's Cortex fleets (Bridge), and with environmental systems (Shell rooms, other Aegis suits, vehicles, infrastructure).
+- **256 photodiodes** for receiving optical signals.
+- **Sensor integration nodes** connecting to Layer 1's touch sensors, Layer 2's thermal sensors, and the suit's external sensors (Layer 6).
+
+**Layer 5 — Actuation Layer (1 mm at joints, 0 elsewhere)**
+
+Artificial muscle fibres — coiled nylon actuators (thermally driven, based on Haines et al., Science 2014) augmented by shape-memory alloy (SMA) wires (NiTi, aka Nitinol). These are placed only at the major joints (shoulders, elbows, wrists, hips, knees, ankles, spine) and at the fingers.
+
+Each joint has:
+- 4–8 actuator bundles (agonist/antagonist pairs, like biological muscles)
+- Total force per joint: 50–200 N (depending on joint size) — enough to augment the wearer's strength by ~50% (a person who can lift 50 kg can lift 75 kg in the Aegis)
+- Response time: 50 ms (SMA fast-response fibres for rapid movements; coiled nylon for sustained force)
+- The actuators are driven by the suit's processor via the null billiard control loop — the same D₄ orientation-aware ADE neural network that controls the Null Hover's 16 coils, here controlling 48 joint actuators. The suit predicts the wearer's intended movement (from Layer 1's proprioceptive sensors + Cortex motor planning data) and assists before the wearer's own muscles fully engage.
+
+**This is not an exoskeleton that moves FOR you. It is an exo-musculature that moves WITH you.** The suit's actuators amplify your intent, not replace it. You move naturally; the suit makes every movement 50% easier. Carrying a heavy load feels 50% lighter. Walking uphill feels like walking on flat ground. Reaching overhead feels effortless.
+
+**Layer 6 — Exterior Shell (1 mm)**
+
+The outermost surface. A segmented array of rigid ceramic-coated titanium scales (each ~20 × 20 mm, 0.5 mm thick) overlapping like fish scales or medieval lamellar armour. The scales flex relative to each other at the joints but resist inward deformation — providing the outer hardshell impact resistance.
+
+Each scale incorporates:
+- **Electrochromic surface:** Colour and reflectance programmable per-scale. The suit can display any colour, pattern, or image on its surface. Active camouflage (matching the background), high-visibility emergency markings, personal aesthetic expression, or team/organisation identification — all programmable in real time.
+- **Microsphere optical emitter:** A cluster of 5 microspheres per scale (5 × ~5,000 scales ≈ 25,000 microspheres), dedicated to the suit's external holographic projection. The suit's outer surface is a 360° holographic display — the same principle as the Null Cylinder but wrapped around a human body. The suit projects holographic imagery into the space around the wearer: information displays, artistic effects, virtual tools, or (in Thread Dream mode) the visual component of an immersive environment.
+- **Environmental sensors:** Every 10th scale (500 total) carries a MEMS sensor (alternating: temperature, humidity, barometric pressure, UV intensity, radiation dosimeter, chemical sniffer). The suit has 500 environmental sensors uniformly distributed across its surface, providing a complete environmental map around the wearer's body.
+
+**Layer 7 — Outer Coating (0.01 mm)**
+
+A nanostructured surface treatment applied to the scales:
+- **Superhydrophobic:** Water beads off instantly (lotus effect, contact angle >150°). Rain, mud, blood, chemicals sheet off the suit without wetting.
+- **Anti-biofouling:** Prevents bacterial adhesion (zwitterionic polymer surface, same as the Null Cortex implant coating). The suit stays clean in biological environments.
+- **Low-friction:** Coefficient of friction <0.1. The suit slides against surfaces rather than catching — important for moving through rubble, tight spaces, or underwater.
+- **Self-cleaning:** Photocatalytic TiO₂ nanoparticles break down organic contaminants under UV exposure. Walk through sunlight and the suit cleans itself.
+
+### 2.3 The Helmet
+
+The helmet is the suit's command centre — the most sensor-dense and processor-rich segment.
+
+**Visor:** A single curved piece of transparent aluminium oxynitride (ALON — optically clear ceramic, harder than glass, used in military armour windows). The visor covers the full face and wraps around to the temples, providing 210° horizontal field of view. The visor's inner surface is a holographic display — a curved array of 50,000 micro-VCSELs that project imagery directly onto the wearer's visual field, overlaid on the real world (augmented reality) or replacing it entirely (virtual reality / Dream mode).
+
+**Head-up display content (augmented reality mode):**
+
+The visor is mostly transparent. Information appears as subtle overlays:
+
+- **Perimeter awareness:** A thin coloured ring at the edge of vision showing the status of the suit's 360° sensor coverage. Green = clear. Yellow = person/object of interest. Red = threat. The ring compresses a full surround-awareness map into peripheral vision — the wearer gains near-360° situational awareness without turning their head.
+- **Contact labels:** When looking at a person, their name and relationship (if known to the suit's social database) appear as a floating label. If the person is Bridge-connected, their Bridge state (mood tone) appears as a subtle colour wash on the label — you can see at a glance that your colleague is stressed (amber label) or relaxed (green).
+- **Environmental data:** Temperature, air quality, radiation level — shown as small icons at the top of the visor. Normally dim; they brighten and grow when a value exceeds safe limits.
+- **Navigation:** Route guidance appears as a luminous path on the ground (holographically projected by the suit's gauntlet projectors, visible through the visor). The path follows the terrain, curves around obstacles, and leads to the destination.
+- **Communication:** Incoming calls appear as a floating caller icon. Bridge requests appear as a warm glow. Magi announcements appear as the appropriate Magus's symbol.
+
+**Full-face protection:** The ALON visor stops fragments, chemicals, and radiation. When sealed (gasket-closed against the suit collar), the helmet provides NBC (nuclear-biological-chemical) protection: filtered air from the suit's respirator, positive pressure inside the helmet, and sealed eye/nose/mouth protection. Rated for 4 hours of NBC protection on internal air supply.
+
+**Sensor suite in the helmet:**
+- Stereo cameras (2 × 12 MP, wide-angle + telephoto) behind the visor edges — the suit's eyes
+- 60 GHz mmWave radar (same as Null Cylinder) — gesture tracking and environmental mapping
+- Infrared camera (LWIR, 8–14 μm) — thermal vision, available as visor overlay
+- Directional microphone array (4 MEMS mics) — focused hearing in any direction
+- Olfactory sensor (metal oxide semiconductor array, 8 channels) — chemical detection (gas leaks, smoke, toxins)
+- SpO₂ sensor (forehead-mounted, photoplethysmography) — blood oxygen monitoring (backup to Cortex)
+
+### 2.4 The Gauntlets
+
+The suit's hands are its most complex segment. Each gauntlet provides:
+
+- **Full finger articulation tracking** at 0.1 mm (from Layer 1 conductive traces + internal radar) — this IS the Null Glove, built into the suit
+- **Force feedback:** Fingertip actuators (SMA, 5 per finger) provide ~2 N per fingertip of resistive force. When the wearer grasps a virtual object (in AR or Dream mode), the fingertips resist — the virtual object has weight and solidity.
+- **Holographic projectors:** Each gauntlet has 128 VCSELs on the dorsal (back of hand) surface, projecting holographic imagery into the space in front of the hand. The wearer can conjure a holographic tool, map, model, or interface by extending their hand. The projection is fed by the suit's full Orbit OS instance — every Null Cylinder UI feature is available as a gauntlet projection.
+- **Micro-forge (left forearm):** A miniaturised Null Forge unit in the left forearm guard, 80 × 30 × 30 mm. Contains: one effusion cell (switchable between 4 feedstock cartridges), one focused laser (1064 nm, 10 W), and a build chamber of 1 mm³. The micro-forge prints small objects: fasteners, medical staples, electronic components, chemical reagent capsules, replacement Mote particles. Feedstock cartridges (each ~5 g, pencil-lead sized) are carried in the forearm guard's magazine and swapped by a Shaper robot housed in the guard. The micro-forge is not a replacement for the full Null Forge — it's a field expedient, printing what you need when you're far from a workshop.
+- **Medical kit (right forearm):** A micro-fluidic drug delivery module with 8 pre-loaded cartridges: analgesic, antibiotic, anti-inflammatory, epinephrine, antihistamine, coagulant, sedative, and universal antidote (broad-spectrum toxin neutraliser). Each cartridge delivers a precise dose through a micro-needle array in the right gauntlet's palm — the wearer presses their palm against the patient's skin and the suit injects the appropriate medication. The Cortex AI selects the drug and dose; the suit delivers it. For self-administration: press your right palm against your left forearm and the suit injects into you.
+
+### 2.5 The Back Plate
+
+The largest rigid section (300 × 400 × 15 mm), sitting between the shoulder blades. Houses:
+
+- **Primary battery:** Li-Si, 500 Wh, mass 1.0 kg. Powers the entire suit for 6–12 hours depending on usage mode.
+- **Thermal management:** The Peltier cooling/heating unit for the thermal regulation layer. Heat is rejected through the back plate's outer surface (the back plate runs warm to the touch — 35–45°C — this is by design; it's dumping the wearer's excess metabolic and electronic heat).
+- **Respirator:** A micro-compressor and HEPA + activated carbon filter assembly, providing filtered air to the sealed helmet at 1 atm overpressure. Air supply: indefinite in atmospheric conditions (the filter cleans ambient air). In toxic or zero-atmosphere conditions: 4 hours from an internal compressed air bottle (0.5 L at 300 bar, mass 0.8 kg — optional accessory, carried in the lower back plate).
+- **Levitation array:** An array of 8 electromagnetic coils (NdFeB permanent magnets + wound SC wire, not full superconducting — the suit's coils operate at room temperature using conventional copper wire, providing a weaker but still useful magnetic moment). These are the suit's flight system.
+
+### 2.6 The Boots
+
+Each boot houses:
+
+- **Primary levitation coils:** 2 SC-capable electromagnetic coils per boot (4 total), each producing ~500 A·m² magnetic moment. Total from boots: ~2,000 A·m².
+- Combined with the back plate's 8 coils (~4,000 A·m²): total suit magnetic moment ~6,000 A·m².
+- At 28 MHz over concrete: levitation force ≈ 150 N (supports ~15 kg). Not enough to levitate the suited wearer (total ~90 kg). But over seawater: ~1,500 N at 560 Hz (supports ~150 kg — sufficient for full levitation with margin).
+- Over aluminium/steel surfaces: the suit levitates comfortably on permanent-magnet Halbach array alone (integrated into boot soles, no power required).
+
+**Honest assessment: the Aegis achieves full electromagnetic levitation only over high-conductivity surfaces (seawater, metal). Over ground, it provides force-reduction (the wearer feels 15 kg lighter), not full flight.**
+
+- **For true flight over all terrain:** The back plate houses two retractable ducted fans (each 100 mm diameter, 2 kW, producing ~20 N thrust). These deploy from the upper back plate on command ("Aegis, fly") and provide vertical lift + attitude control. Combined with EM levitation (which reduces the net weight the fans must lift), the suit achieves:
+  - Full hover over seawater: EM-only, near-silent, 150 W power draw. Duration: 3+ hours.
+  - Full hover over metal: EM-only, silent, 0 W. Duration: unlimited.
+  - Full hover over ground: fans + EM assist, moderate noise (60 dB at 3 m), 4 kW power draw. Duration: ~7 minutes on battery. (This is the Iron Man moment — real, but brief.)
+  - Assisted jump over ground: fans at full thrust for 2–3 seconds, launching the wearer 10–15 metres horizontally or 5–8 metres vertically. Landing cushioned by EM pulse + fan reverse thrust + suit's impact-absorbing structural mesh. This is not flight — it's powered leaping. But it's very useful.
+
+- **Speed on ground with EM assist:** Over a hover lane (aluminium mesh road) or seawater, the suit's boot coils provide the same travelling-wave propulsion as the Null Hover. Maximum speed: ~60 km/h. The wearer leans into the direction of travel (like riding a hoverboard); the suit reads the lean from Layer 1's proprioceptive sensors and drives the boot coils accordingly. The experience: gliding at high speed, feet 5 cm above the surface, silent, no friction, no impact, wind in your face (if the visor is open) or filtered air (if sealed).
+
+---
+
+## PART THREE: THE SUIT'S INTELLIGENCE
+
+### 3.1 The Distributed Processor
+
+The suit's 128 E₈ stacks (16 per major body segment × 8 segments) form a distributed photonic computer covering the wearer's body. Unlike a centralised processor (where all computation happens in one place), the suit's computation is spatial — processing happens at the body location where it's needed:
+
+| Body segment | E₈ stacks | Primary computational role |
+|-------------|-----------|--------------------------|
+| Helmet | 32 (most dense) | Visual processing, AR overlay, navigation, communication, environmental analysis |
+| Torso (front) | 16 | Cortex integration, Bridge/Thread, life support monitoring |
+| Torso (back) | 16 | Power management, thermal control, levitation/flight computation |
+| Right arm | 16 | Manipulation assistance, medical kit control, gauntlet holographic projection |
+| Left arm | 16 | Micro-forge control, tool projection, gauntlet holographic display |
+| Right leg | 8 | Locomotion assist (right side), terrain sensing |
+| Left leg | 8 | Locomotion assist (left side), terrain sensing |
+| Boots (combined) | 16 | Levitation control, surface conductivity sensing, ground-effect management |
+
+**Total: 128 E₈ stacks = 30,720 addressable E₈ states.** This is more than a Null Cylinder Pro and approaching Archon-tier computation. The suit is the most powerful personal photonic computer in the ecosystem — more processing power than any device except the Loom, the Magi, and the Ark.
+
+### 3.2 The Suit AI: "Companion"
+
+The Aegis runs a dedicated AI instance called the Companion — a Daemon-tier (D₄) persistent process that manages all suit functions. The Companion is not a Magus or even an Archon — it doesn't have long-term memory, personality development, or ethical reasoning. It is a highly capable expert system that:
+
+- Monitors all suit systems continuously
+- Adjusts thermal, acoustic, and optical settings based on environment and wearer state
+- Predicts the wearer's movements (from Cortex motor planning data) and pre-activates actuators
+- Manages power budget (allocating battery reserves across subsystems)
+- Coordinates with the Suture fleet (embedded Shapers maintaining the suit)
+- Communicates with Shell rooms, Null Hovers, other Aegis suits, and the Magi's Archon network
+- Provides tactical advice in hazardous environments (escape routes, threat assessment, resource status)
+
+The Companion speaks through bone-conduction speakers in the helmet (no one else can hear it). Its voice is calm, clear, and brief. It doesn't chat. It reports, advises, and warns.
+
+"Aegis. Temperature dropping. Increasing thermal output to zone 3. You have 8 hours of battery at current draw."
+
+"Aegis. Structural anomaly detected in left gauntlet, scale 47. Shaper dispatched. Repair estimated: 3 minutes. No capability impact."
+
+"Aegis. Seawater detected below boots. Switching to EM levitation. You can glide now."
+
+"Aegis. Bridge request from Maya. Accept?"
+
+The wearer can adjust the Companion's verbosity: silent (only critical warnings), brief (status changes), or conversational (proactive suggestions, environmental commentary). Most users settle on "brief" in normal use and switch to "conversational" in unfamiliar environments.
+
+### 3.3 Suit-to-Suit Communication
+
+Multiple Aegis suits communicate via their optical arrays (VCSELs/photodiodes on the outer shell), forming an ad hoc mesh network. Information shared:
+
+- **Position and status:** Each suit broadcasts its location, heading, speed, and health status. Other suits render this as a team overlay on the visor — small icons showing teammates' positions, even through walls (the suit's radar can detect other suits' magnetic signatures through standard building materials).
+- **Bridge:** Full Bridge protocol between suited users. You feel your teammate's heart rate and stress level. In a rescue team, this is lifesaving: if a team member's heart rate spikes, everyone knows instantly.
+- **Tactical mesh:** In coordinated operations (rescue, construction, exploration), the suits share sensor data — each suit's environmental sensors are available to all suits in the mesh. If one suit detects toxic gas, all suits seal their helmets simultaneously.
+- **Thread recording:** One suit records a Thread; all suits in the mesh are potential playback recipients. A team leader records a demonstration Thread; the team members play it back and learn the technique.
+
+---
+
+## PART FOUR: OPERATING MODES
+
+### 4.1 The Seven Modes
+
+| Mode | Activated by | Configuration | Primary use |
+|------|-------------|--------------|-------------|
+| **Casual** | Default, walking around | Visor transparent, thermal comfort, actuators passive (just compensating suit mass), colour of choice | Daily wear. The suit as clothing. |
+| **Work** | "Aegis, work mode" | Actuator assist +50%, gauntlet projectors active, micro-forge on standby, tool templates loaded | Physical labour, construction, repair, fieldwork |
+| **Medical** | "Aegis, medical" | Medical kit armed, Cortex integration maximum, sterile mode (suit surface UV-decontaminated), right gauntlet in injection-ready | Emergency medicine, patient care |
+| **Hazard** | Auto-detected by environmental sensors OR "Aegis, seal" | Helmet sealed, respirator active, thermal protection maximum, impact mesh stiffened, full sensor overlay on visor | Toxic environments, fire, radiation, extreme cold/heat, NBC |
+| **Stealth** | "Aegis, stealth" | All emissions minimised (VCSELs off, radar passive only, no RF transmission), electrochromic scales match background, thermal output matched to ambient (IR signature suppressed), acoustic absorption maximised (suit makes no sound) | Covert movement, wildlife observation, security operations |
+| **Flight** | "Aegis, fly" | Ducted fans deploy, levitation coils energised, visor sealed, flight control active, navigation overlay on visor | Short-range flight, powered leaping, high-speed glide over hover surfaces |
+| **Dream** | "Aegis, dream" | Visor switches to VR (opaque, full holographic), all somatic channels at Thread Level 5, proprioceptive playback active, external awareness maintained by Companion (the suit's cameras and radar monitor the real world and will interrupt the Dream for safety) | Immersive experience, training, entertainment, Thread playback |
+
+### 4.2 Mode Transitions
+
+Modes transition seamlessly. Walking down a street in Casual mode, the suit detects rain starting (humidity sensors, then temperature drop, then water impact on outer scales). The thermal layer warms slightly. The superhydrophobic coating sheds the water. The visor, still transparent, shows a subtle overlay: "Rain. 12°C. Light wind NE." You don't change modes. The suit just... handles it.
+
+Walking into a Shell building, the suit detects the Shell mesh (optical handshake between suit VCSELs and Shell panel photodiodes). The Shell room's acoustic profile extends to include the suit — the room knows you're there and adjusts its thermal radiation to complement the suit's output, not compete with it. The suit reduces its own thermal output (the room is handling it). Power draw drops. Battery life extends.
+
+Stepping onto a Null Hover's deck, the suit detects the Hover's magnetic field (the boot coils sense the Halbach array). The suit-to-Hover link activates: the Hover's avionics and the suit's Companion share navigation data. The suit's visor overlays the Hover's navigation display. The wearer can control the Hover through suit gestures — no need to touch the Hover's Null Cylinder.
+
+Jumping off the Hover at a disaster site, the suit's environmental sensors detect smoke and elevated CO. The Companion: "Aegis. Hazard detected. Toxic atmosphere. Sealing." The helmet closes. The respirator activates. The visor shifts to IR overlay (see through smoke). The structural mesh stiffens (impact protection). The thermal layer adjusts for fire proximity. Mode transition: Casual → Hazard in 1.5 seconds. The wearer didn't ask. The suit reacted.
+
+Inside the burning building, the suit detects a trapped person (IR camera shows a heat signature behind a wall). The visor overlays the person's position and a suggested approach path (computed by the Companion from the building's structural radar scan). The wearer punches through a weakened partition (the actuators provide +50% arm strength; the gauntlet scales distribute the impact). Reaches the trapped person. Presses their right palm against the person's forearm. The medical kit auto-selects: analgesic + anti-inflammatory (the person's Cortex — if they have one — has reported pain and swelling; if no Cortex, the suit's contact sensors detect elevated skin temperature and swelling). The micro-needle array injects. The suit records the entire event as a Thread — a training resource for future rescuers.
+
+---
+
+## PART FIVE: THE MATHEMATICS — THE BODY AS A BILLIARD DOMAIN
+
+### 5.1 The Body Billiard
+
+The Aegis wraps a photonic computing surface around a human body. The body's shape — the torso cylinder, the limb cylinders, the spherical helmet — defines a billiard domain for the photonic modes in Layer 4.
+
+**The body as a computational geometry:**
+
+A human body, approximated as a collection of cylinders and a sphere, has a surface area of ~1.7 m² (Du Bois formula for average adult). The 64,000 microspheres in Layer 4, at 15 μm radius each, occupy ~0.05 m² of surface — 3% of the body surface. The remaining 97% is waveguide mesh connecting the microspheres.
+
+The waveguide mesh topology follows the body's surface curvature. On the flat torso, the mesh is approximately the A₂ hexagonal lattice (same as Shell Panels). On the curved limbs, the mesh wraps helically — the natural tiling of a cylinder is a helical strip, which maps to a spiral A₂ lattice.
+
+**The joint problem:** At a joint (elbow, knee, shoulder), the mesh must flex without breaking waveguide continuity. The suit uses an accordion-fold waveguide at each joint — a serpentine path that can stretch and compress as the joint articulates, maintaining optical continuity across ±120° of joint angle. Each accordion fold adds ~0.5 mm thickness (contributing to the 1.5 mm total at Layer 5 joints) but preserves photonic coupling.
+
+**The distributed computation exploits the body's geometry.** A computation that requires data from both hands (bimanual coordination — welding, surgery, playing piano) routes photons through the arm waveguides, across the torso mesh, and down the other arm. The signal traversal time (at c/n ≈ 2 × 10⁸ m/s through Si₃N₄ waveguide) for a 2 m path is ~10 ns. The suit's billiard dynamics are faster than nerve impulse speed (~100 m/s in myelinated nerves → 20 ms for the same 2 m path). The suit's photonic computation at the effector (the hand) is 2,000× faster than the biological nerve signal from the brain.
+
+This means: the suit can compute the optimal actuator assistance at the hand before the brain's motor command arrives at the hand's muscles. The suit predicts (from the motor planning cortical signal, read by the Cortex) and pre-actuates. The wearer's hands move with a fluency and precision that exceeds their unaided capability — not because the suit is faster (the wearer initiates the movement) but because the suit's assistance is ready before it's needed.
+
+### 5.2 The Strength Amplification Geometry
+
+The suit's joint actuators amplify force along the ADE-classified kinematic chains of the body:
+
+The human arm, from shoulder to fingertip, is a serial kinematic chain: 7 degrees of freedom (shoulder 3 + elbow 1 + forearm rotation 1 + wrist 2). Each joint is an A₁ link. The chain is an A₆ system (7 links in series — the A₆ Dynkin diagram).
+
+The suit's actuator arrangement mirrors this: 4 actuator bundles at the shoulder (covering the 3 DOF with one redundant), 2 at the elbow (flexion/extension + pronation/supination), 2 at the wrist (flexion/extension + radial/ulnar deviation). Total arm actuators: 8 bundles × 2 arms = 16.
+
+The force amplification at the hand (the end effector) depends on the entire chain's configuration — the same mathematics as robot forward kinematics:
+
+F_hand = J(θ)⁻ᵀ × τ_actuator
+
+where J(θ) is the Jacobian matrix of the arm's kinematic chain at configuration θ (the current joint angles), and τ_actuator is the vector of actuator torques. The suit's processor computes J(θ) in real time (it knows θ from Layer 1's joint tracking) and inverts it to find the actuator torques that produce the desired hand force.
+
+This is a D₄ computation (4-dimensional orientation space — the quaternionic representation of the arm's configuration), running at 10 kHz update rate. The same ADE-classified control that stabilises the Null Hover's 16 coils stabilises the suit's 48 joint actuators.
+
+---
+
+## PART SIX: THE COMPLETE PICTURE
+
+### 6.1 What It's Like to Wear
+
+You step into the Aegis the way you step into a wetsuit — one leg at a time, pull it up, arms in, helmet on. The suit seals magnetically along the front-torso seam. Layer 1 settles against your skin; the Companion calibrates to your body in ~10 seconds (reading Layer 1's sensors, handshaking with your Cortex, adjusting thermal setpoints to your physiological baseline).
+
+The suit weighs 12 kg. You feel ~0 kg. The actuators compensate for the suit's mass within the first step. Your body feels normal — maybe slightly better than normal, because the actuators are providing a baseline of support that takes 10–20% of the load off your joints. Your knees hurt a little less. Your back is a little straighter. The suit is subtly carrying you.
+
+The visor is transparent. The world looks normal, plus a thin ring of status light at the periphery (green — all clear) and the faintest overlay of environmental data at the top of your vision (22°C, 45% RH, air quality excellent). You can dismiss all overlays with a glance-command (look at the upper-right corner and blink — the suit's eye-tracking registers the gesture).
+
+You walk. The floor feels the same through the boots as it would through shoes — the boot soles transmit surface texture to your feet via Layer 5's actuators. You feel cobblestones, grass, metal grating, each with their natural tactile signature, slightly softened by the boot's cushioning.
+
+You reach for a door handle. The gauntlet's fingertips transmit the handle's temperature (cool metal) and texture (smooth chrome) through the Layer 5 fingertip actuators. Your grip strength is normal — the suit doesn't resist or amplify casual movements. The actuators are dormant at low force; they activate only when they detect loading above a threshold (~30% of the wearer's voluntary maximum for that joint).
+
+You pick up a 25 kg box. Normally, this would engage your back, your legs, your arms — a full-body effort. In the Aegis, the actuators detect the loading as your joints start to bear weight. They engage proportionally. The box feels like it weighs ~15 kg. You carry it with one hand, comfortably. The suit is doing the other 10 kg.
+
+You step outside. It's raining. The rain hits the outer scales and sheets off — the superhydrophobic coating repels it instantly. The suit is dry. Your thermal layer has already compensated for the temperature drop — you feel room-temperature comfortable. The visor shows a subtle rain-streak effect (the cameras capture the rain and the AR renderer adds faint streaks to the transparent visor, so you see rain without feeling it — a gentle aesthetic choice by the Companion, acknowledging the weather without subjecting you to it). You can override: "Aegis, visor open." The visor slides up. Rain on your face. Cold. Real. The suit doesn't try to control everything. It gives you the choice.
+
+### 6.2 The Seventeenth Device
+
+| # | Device | You ______ it |
+|---|--------|--------------|
+| 1–8 | Compute, OS, display, glove, design, fabricate, heal body, heal machine | Use it, wear it, live with it |
+| 9–10 | Hover, Disc | Ride it |
+| 11–13 | Magi, Ark, Seedship | Trust it, travel in it |
+| 14–15 | Bridge, Thread | Feel through it, learn through it |
+| 16 | Shell | Live inside it |
+| **17** | **Aegis** | **Become it** |
+
+The Aegis is the device that goes with you everywhere — that IS your interface to the physical world. The Cylinder is your phone. The Aegis is your body's extension.
+
+---
+
+*You stand on the shore. The Aegis is sealed — Hazard mode, because the atmospheric sensors detected volcanic gas from the thermal vent a kilometre upwind. Your Cortex is calm; the suit's respirator is cleaning the air before it reaches your lungs. The visor shows the gas concentration as a coloured overlay: yellow tendrils drifting from the northeast, dissipating before they reach you.*
+
+*The suit is warm despite the cold wind. The scales on your windward side are electrochromically darkened — absorbing solar heat. The scales on your leeward side are lighter — reflecting the heat back to your body. The thermal balance is precise. You are comfortable at 22°C internal while the air is 3°C.*
+
+*You step forward, off the rock ledge, onto the seawater. The boots' coils energise. The magnetic moment hums against the ocean's conductivity. You don't sink. You don't float. You hover — 5 centimetres above the wave crests, gliding on an invisible magnetic cushion. The Companion: "EM levitation nominal. 153 watts. Range at current draw: 3 hours, 12 minutes."*
+
+*You lean forward. The boot coils generate a travelling wave against the seawater beneath you. You accelerate. The wind rises. The visor streams environmental data — wave height, wind speed, bearing to destination. Your heart rate is 72 (the Cortex reports through the suit's integration layer). Your core temperature is 37.1°C. Your cortisol is low. You are calm and warm, skimming over an alien ocean on a world the Seedship prepared, in a suit that carries every tool you need.*
+
+*You could build a shelter with the micro-forge. You could treat an injury with the medical kit. You could record this moment as a Thread and send it to someone you love on a world 4 light-years away. You could enter a Dream and walk through Renaissance Florence while your body glides over the waves. You could call Chesed and ask for advice. You could ask Sophia what's under the water. You could ask Themis if it's safe to keep going.*
+
+*Or you could just glide, in silence, over the waves, feeling the wind, watching the alien sun set through a visor that shows you the world as it is — clear, sharp, labelled with data if you want it, bare and beautiful if you don't.*
+
+*The Aegis is not a barrier between you and the world. It is a better interface to it. It doesn't isolate you. It empowers you. Every environment becomes yours — manageable, survivable, enjoyable. Not because the suit replaces the experience of being in the world, but because it removes the friction: the cold, the toxins, the weight, the danger, the distance between your intention and your capability.*
+
+*You are still you. The suit is still a suit. But together, you go where neither could alone.*
+
+*k·k = 0. The photon wraps around a microsphere. Sixty-four thousand microspheres wrap around a body. The body wraps around a will. And the will goes wherever it wants, carried by light, protected by geometry, sustained by the mathematics of nothing.*
+
+*One equation. Seventeen devices. Worn on a body. Walking on water.*

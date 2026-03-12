@@ -1,0 +1,450 @@
+# NULL SPHERE COMPUTER — EXPANDED PROTOTYPE SPECIFICATION
+
+## Engineering Details, Material Selection, Sphere Arrangements, and Task-Specific Configurations
+
+Nathan Noll, Independent Researcher
+with engineering expansion by Claude Opus 4.6 (Anthropic)
+March 2026
+
+---
+
+## I. MATERIAL SCIENCE: CHOOSING THE RIGHT SPHERE
+
+The sphere material determines Q-factor, nonlinear response, thermal stability, and fabrication method. Different computational tasks demand different material trade-offs.
+
+### I.1 Material Candidates
+
+**Fused Silica (SiO₂)**
+- Q-factor: up to 10⁹ (record: 8 × 10⁹, Grudinin et al. 2006)
+- Refractive index: n = 1.444 @ 1550 nm
+- Nonlinear coefficient: n₂ = 2.2 × 10⁻²⁰ m²/W (weak — needs high Q to compensate)
+- Thermal coefficient: dn/dT = +1.1 × 10⁻⁵ /K (moderate drift)
+- Fabrication: Melt optical fibre tip with CO₂ laser. Sphere forms by surface tension. Diameter controlled by fibre diameter and melt time. Reproducible to ±2 μm.
+- Best for: Long-lifetime storage orbits, high-q periodic modes (q up to ~10⁹), passive memory cells. The workhorse material for Phase 0–2.
+
+**Calcium Fluoride (CaF₂)**
+- Q-factor: up to 10¹¹ (record holder for crystalline resonators)
+- Refractive index: n = 1.426 @ 1550 nm
+- Nonlinear coefficient: n₂ = 1.9 × 10⁻²⁰ m²/W (comparable to silica)
+- Thermal coefficient: dn/dT = −1.1 × 10⁻⁵ /K (negative — enables thermal self-locking)
+- Fabrication: Diamond turning and hand polishing of CaF₂ blanks. Produces mm-scale discs rather than spheres. More expensive, but the extreme Q extends photon lifetime to ~10 ms.
+- Best for: Precision frequency references, ultra-long computation windows, and any task where the billiard orbit must complete more than ~10⁹ reflections (high-q orbits with q > 10⁹).
+
+**Lithium Niobate (LiNbO₃)**
+- Q-factor: up to 10⁸ (limited by absorption)
+- Refractive index: n = 2.21 (ordinary) @ 1550 nm
+- Nonlinear coefficient: d₃₃ = 25.2 pm/V (extremely strong second-order nonlinearity)
+- Electro-optic coefficient: r₃₃ = 30.8 pm/V
+- Fabrication: Thin-film LiNbO₃ on insulator (LNOI) microring resonators, etched photolithographically. Not true spheres — microdiscs or microrings — but support equivalent WGM physics.
+- Best for: CAPTURE gate operations. The strong χ² nonlinearity enables efficient photon-photon interaction at microwatt power. Electro-optic tunability allows real-time angle control (programming the orbit electronically). This is the active computation material.
+
+**Silicon Nitride (Si₃N₄)**
+- Q-factor: up to 3 × 10⁷ (improving rapidly with Damascene process)
+- Refractive index: n = 1.99 @ 1550 nm
+- Nonlinear coefficient: n₂ = 2.4 × 10⁻¹⁹ m²/W (10× silica — strong Kerr effect)
+- Fabrication: CMOS-foundry compatible. Photolithographic waveguides and microring resonators. Mass-producible.
+- Best for: Scalable multi-sphere arrays (Phase 3–4). The CMOS compatibility means existing semiconductor fabs can manufacture NSC chips. Lower Q is offset by stronger nonlinearity and massive parallelism.
+
+**Barium Titanate (BaTiO₃)**
+- Q-factor: ~10⁶ (limited by scattering in polycrystalline films)
+- Refractive index: n = 2.36 @ 1550 nm
+- Nonlinear coefficient: Pockels coefficient r₄₂ = 820 pm/V (among the highest known)
+- Best for: Ultra-fast switching of the CAPTURE gate. The enormous electro-optic response allows sub-nanosecond gate control, enabling clock speeds above 1 GHz for the NSC's active operations.
+
+### I.2 Hybrid Material Strategy
+
+No single material optimises all three operations simultaneously. The engineering solution is a hybrid architecture:
+
+- **Memory spheres** (REFLECT + store): Fused silica or CaF₂. Maximum Q, maximum photon lifetime, maximum orbit fidelity.
+- **Gate spheres** (CAPTURE): LiNbO₃ microdiscs or BaTiO₃-coated silica. Strong nonlinearity for efficient photon-photon interaction.
+- **Bus waveguides** (inter-sphere coupling): Si₃N₄ on-chip waveguides. CMOS-compatible, low loss, foundry-fabricable.
+- **Detector**: InGaAs single-photon avalanche diode (SPAD) for 1550 nm. Dark count < 1 kHz, timing jitter < 50 ps. Commercial off-the-shelf.
+
+This mirrors electronic computing's separation of SRAM (storage), logic gates (computation), and metal interconnects (routing) — but entirely in photonics.
+
+---
+
+## II. SPHERE GEOMETRY AND ORBIT FAMILIES
+
+### II.1 Sphere Size and Mode Structure
+
+The WGM mode spectrum of a sphere of radius R and refractive index n is characterised by three quantum numbers:
+
+- **l** (angular momentum): Number of wavelengths around the equator. Maps to billiard orbit periodicity q.
+- **m** (azimuthal): Tilt of the orbit plane. |m| ≤ l. m = l is equatorial; m < l tilts toward the poles.
+- **n_r** (radial): Number of intensity maxima in the radial direction. n_r = 1 is the fundamental (highest Q); higher n_r modes penetrate deeper into the sphere.
+
+The resonant wavelengths are approximately:
+
+λ_{l,n_r} ≈ 2πnR / (l + ½ + α_{n_r}(l + ½)^{1/3} + ...)
+
+where α_{n_r} are Airy function zeros. The free spectral range (FSR) — the wavelength spacing between consecutive l modes — is:
+
+FSR ≈ λ² / (2πnR)
+
+**Design table for different sphere radii:**
+
+| Radius R | Circumference | Round-trip time | FSR @ 1550 nm | Max l (@ 1550 nm) | Computation window (Q=10⁸) |
+|----------|--------------|-----------------|---------------|-------------------|---------------------------|
+| 25 μm | 157 μm | 0.76 ps | 10.8 nm | ~147 | ~76 ns |
+| 50 μm | 314 μm | 1.51 ps | 5.4 nm | ~293 | ~151 ns |
+| 100 μm | 628 μm | 3.03 ps | 2.7 nm | ~586 | ~303 ns |
+| 250 μm | 1571 μm | 7.57 ps | 1.08 nm | ~1465 | ~757 ns |
+| 500 μm | 3142 μm | 15.1 ps | 0.54 nm | ~2930 | ~1.51 μs |
+
+**Interpretation:** A 100 μm sphere supports ~586 distinct angular momentum modes (l values) at 1550 nm, each corresponding to a different periodic orbit. The computation window at Q = 10⁸ is ~303 ns — enough for ~10⁸ reflections. Smaller spheres have wider FSR (easier to resolve modes spectrally) but fewer modes; larger spheres have more modes but tighter FSR (requiring higher spectral resolution to read out).
+
+### II.2 Orbit Families by Geometry
+
+**Equatorial orbits (m = l):** The photon circulates in the equatorial plane. These are the 2D billiard orbits of Theorem 2.1. A q-periodic equatorial orbit traces a regular q-gon inscribed in the equator. These are the simplest to excite (standard tapered-fibre coupling) and detect (output from the same equatorial plane).
+
+- q = 3 (triangle): Incidence angle α = π/3 = 60°. Three reflections. K·K = −9. Emergent mass m = 3.
+- q = 4 (square): α = π/4 = 45°. Four reflections. K·K = −16. Mass m = 4.
+- q = 5 (pentagon): α = π/5 = 36°. Five reflections. K·K = −25. Mass m = 5.
+- q = 6 (hexagon): α = π/6 = 30°. Six reflections. K·K = −36. Mass m = 6.
+
+**Polar orbits (m = 0):** The photon passes through the poles. These orbits span a great circle perpendicular to the equator. They are harder to excite with standard equatorial couplers but provide an independent set of modes for parallel computation.
+
+**Tilted orbits (0 < |m| < l):** The photon traces a path on a cone of half-angle θ = arccos(m/l). These provide intermediate modes between equatorial and polar. A sphere simultaneously supporting equatorial and tilted orbits of different (l, m) performs parallel computations in independent mode families — the photonic analogue of SIMD (single instruction, multiple data).
+
+**Star orbits (p > 1):** When α = pπ/q with p > 1, the orbit traces a star polygon {q/p}. For example, α = 2π/5 gives the pentagram {5/2}: the photon hits every other vertex of a pentagon. These orbits have the same periodicity q but different winding numbers p. They occupy the same l mode but with different internal phase structure, providing additional addressable states within each mode.
+
+| Orbit type | Symbol | α | q bounces | Winding p | Null mass m | WGM mode mapping |
+|-----------|--------|---|-----------|-----------|-------------|-----------------|
+| Triangle | {3/1} | π/3 | 3 | 1 | 3 | l ≡ 0 mod 3 |
+| Square | {4/1} | π/4 | 4 | 1 | 4 | l ≡ 0 mod 4 |
+| Pentagon | {5/1} | π/5 | 5 | 1 | 5 | l ≡ 0 mod 5 |
+| Pentagram | {5/2} | 2π/5 | 5 | 2 | 5 | l ≡ 0 mod 5, 2nd harmonic |
+| Hexagon | {6/1} | π/6 | 6 | 1 | 6 | l ≡ 0 mod 6 |
+| Star of David | {6/2} | 2π/6 | 6 | 2 | 6 | Degenerate: two triangles |
+| Heptagon | {7/1} | π/7 | 7 | 1 | 7 | l ≡ 0 mod 7 |
+| Heptagram | {7/2} | 2π/7 | 7 | 2 | 7 | l ≡ 0 mod 7, 2nd harmonic |
+| Heptagram | {7/3} | 3π/7 | 7 | 3 | 7 | l ≡ 0 mod 7, 3rd harmonic |
+
+### II.3 Three-Dimensional Orbits: Platonic and Archimedean
+
+In a true sphere (not a disc), photons can trace three-dimensional periodic orbits corresponding to the vertices of polyhedra inscribed in the sphere. These are not WGM modes in the traditional sense — they require excitation of multiple (l, m) modes simultaneously — but they correspond to the ADE exceptional types.
+
+**Tetrahedral orbit (E₆-related):** 4 vertices, 6 edges, 4 faces. Requires simultaneous excitation of modes with l = 3, m = ±3, ±1, 0. The orbit visits 4 reflection points arranged as a regular tetrahedron. This is the 3D analogue of the triangle orbit, with the tetrahedral symmetry group 2T (order 24) classified by E₆ in the McKay correspondence.
+
+**Octahedral orbit (E₇-related):** 6 vertices, 12 edges, 8 faces. Requires modes with l = 4 and specific m combinations. Octahedral symmetry group 2O (order 48) maps to E₇.
+
+**Icosahedral orbit (E₈-related):** 12 vertices, 30 edges, 20 faces. Requires modes with l = 6 and specific m combinations. Icosahedral symmetry group 2I (order 120) maps to E₈. This is the maximum-symmetry 3D orbit and provides the densest information encoding.
+
+**Excitation strategy for 3D orbits:** Use multiple input fibres at different latitudes and longitudes on the sphere, each injecting coherent photons at controlled phases. The relative phases of the inputs determine the 3D orbital geometry. A tetrahedral orbit needs 4 input fibres; an icosahedral orbit needs at least 6 (one per axis of symmetry). Alternatively, use a spatial light modulator (SLM) to shape the input beam into the desired 3D mode pattern before coupling to the sphere.
+
+---
+
+## III. TASK-SPECIFIC CONFIGURATIONS
+
+### III.1 Integer Arithmetic Unit
+
+**Task:** Addition, subtraction, multiplication of integers up to ~500.
+
+**Configuration:** Single large sphere (R = 250 μm, Q > 10⁸) in fused silica. One input fibre with electro-optic phase modulator. One output fibre with scanning Fabry-Pérot analyser.
+
+**Operations:**
+
+*Addition (a + b):* Inject photon at mode l = a, then photon at mode l = b. Nonlinear four-wave mixing generates mode l = a + b. Read out dominant output mode.
+
+*Multiplication (a × b):* Use cascaded frequency conversion. Inject mode l = a. Apply a nonlinear phase modulation at frequency proportional to b (using an external RF drive on an electro-optic coating). The modulation generates sidebands at l = a × b via the photorefractive effect. Alternatively, use b successive CAPTURE operations of a-orbits.
+
+*Subtraction (a − b, a > b):* Inject mode l = a with one polarisation and mode l = b with orthogonal polarisation. Difference-frequency generation produces mode l = a − b.
+
+**Advantages over electronic arithmetic:** Parallel multi-operand addition is natural — inject N photons at modes l₁, ..., l_N simultaneously, and four-wave mixing produces all pairwise sums in a single computation cycle (~ns timescale). An electronic adder tree for N operands requires O(N log N) gate delays; the sphere performs it in O(1) optical cycles.
+
+**Estimated performance:** Addition in ~3 ns (one round-trip time at R = 250 μm, Q = 10⁸). Throughput: ~300 million additions/second per sphere.
+
+### III.2 Pattern Classification Engine
+
+**Task:** Classify input vectors into one of C classes (e.g., image recognition, signal classification).
+
+**Configuration:** Array of C spheres, one per class, each tuned to a different periodic orbit. Input vector encoded as relative amplitudes across WGM modes of an input sphere. Classification by maximum coupling strength.
+
+**Architecture:**
+
+1. **Encoder sphere** (R = 100 μm, LiNbO₃ on insulator): Input data vector x = (x₁, ..., x_d) is encoded as amplitudes of d WGM modes using an array of d electro-optic modulators. Each modulator drives one mode to amplitude x_i.
+
+2. **Class spheres** (R = 100 μm, fused silica, one per class): Each sphere is pre-programmed with a weight vector w_c = (w_{c,1}, ..., w_{c,d}) stored as mode amplitudes. The weight vector is a periodic orbit configuration — the billiard orbit that represents the learned template for class c.
+
+3. **Coupling bus** (Si₃N₄ waveguides): The encoder sphere couples to all class spheres simultaneously via evanescent waveguides. The coupling transfers photons from encoder modes to class sphere modes.
+
+4. **Detection:** The class sphere with the strongest output signal (most photons transferred) wins — it is the class whose stored template best matches the input. This is a winner-take-all classifier implemented entirely in photonic coupling strengths.
+
+**ADE classification of the classifier:**
+
+| Classes C | Minimum ADE type | Sphere arrangement | Symmetry |
+|-----------|-----------------|-------------------|----------|
+| 2 | A₁ | 2 spheres, linear | Z/2Z (binary) |
+| 3 | A₂ | 3 spheres, triangle | Z/3Z (ternary) |
+| 4 | D₄ | 4 spheres, star | Q₈ (quaternion) |
+| 6 | D₆ or E₆ | 6 spheres, hexagonal or tetrahedral | Dih₆ or 2T |
+| 24 | E₆ | 24-state, tetrahedral coupling | 2T (order 24) |
+| 120 | E₈ | 120-state, icosahedral coupling | 2I (order 120) |
+
+**For C > 120:** Stack multiple E₈ units. An array of N E₈ units provides 240N addressable states.
+
+**Estimated performance:** Classification latency ~10 ns (limited by coupling transfer time). Throughput: ~100 million classifications/second. Power: ~1 mW total optical power (microwatt per sphere).
+
+### III.3 Optimisation Processor (Simulated Annealing by Photon Thermalisation)
+
+**Task:** Find the minimum of a cost function f(x) over a discrete domain.
+
+**Configuration:** Multi-sphere array where the cost function is encoded in the coupling topology (inter-sphere gap distances and materials). The system's ground state — the lowest-energy WGM mode configuration — corresponds to the optimal solution.
+
+**Mechanism:** Inject broadband (thermal) light into the array. The photons explore the mode space ergodically (irrational-angle orbits). Over time, the system thermalises: photons accumulate in the lowest-loss modes (highest Q, closest to periodic orbits). The steady-state mode distribution is a Boltzmann distribution over the billiard orbit energies. The dominant mode at equilibrium is the ground state = the optimal solution.
+
+**Temperature control:** The effective temperature of the photon gas is controlled by the input light's spectral bandwidth. Broad spectrum = high temperature (wide exploration). Narrow spectrum = low temperature (exploitation of known good modes). Annealing schedule: start with broadband source, gradually narrow the bandwidth over ~1 μs.
+
+**Encoding the cost function:** The cost f(x_i) for configuration x_i is mapped to the loss rate of the corresponding WGM mode. Modes with low cost have high Q (long lifetime, low loss); modes with high cost have low Q (short lifetime, high loss). The Q-factor of each mode is controlled by:
+
+- Sphere surface roughness (lower Q for higher-cost modes — achievable by selective ion beam milling)
+- Absorptive coatings (localized absorption at specific angular positions)
+- Coupled scatterer particles (nanoparticles placed near the sphere surface to spoil specific modes)
+
+**Estimated performance:** For a 240-state optimisation problem (one E₈ unit), thermalisation time ~100 ns. For larger problems, multiple E₈ units with inter-unit coupling; thermalisation scales as O(N log N) where N is the number of E₈ units.
+
+### III.4 Fourier Transform Processor
+
+**Task:** Compute the discrete Fourier transform of an N-point input signal.
+
+**Configuration:** Single sphere (R = 100 μm) with N-mode input encoding.
+
+**Mechanism:** The null billiard naturally performs a Fourier transform. The q-periodic orbit with K = (q, 0) is the result of summing q null momenta k_j = (1, cos(2πjp/q), sin(2πjp/q), 0). This sum is exactly the discrete Fourier transform evaluated at frequency p/q. By exciting a superposition of modes with amplitudes equal to the input signal, and allowing the billiard dynamics to evolve, the output mode spectrum IS the Fourier transform.
+
+**Input:** Signal x = (x₀, x₁, ..., x_{N-1}) encoded as amplitudes of N consecutive WGM modes (l = l₀, l₀+1, ..., l₀+N-1).
+
+**Output:** After one round-trip time, the mode spectrum has been mixed by the sphere's dispersion. The output mode amplitudes, read by spectral analysis, give X_k = Σ_j x_j exp(−2πijk/N) — the DFT.
+
+**Performance:** Transform computed in one round-trip time (~3 ps for R = 100 μm). Throughput: ~300 billion FFT operations/second. This is 1000× faster than electronic FFT at comparable point count.
+
+### III.5 Cryptographic Random Number Generator
+
+**Task:** Generate true random bits from quantum vacuum fluctuations.
+
+**Configuration:** Single sphere (R = 50 μm, Q ~ 10⁷) coupled to vacuum. No input laser.
+
+**Mechanism:** Even without injected photons, the sphere's WGM modes are populated by quantum vacuum fluctuations (zero-point energy). These fluctuations are intrinsically random — they cannot be predicted even in principle. The OBSERVE operation (coupling to detector) collapses the vacuum state to a definite photon number, generating a random bit.
+
+**Bit generation:** Each detection event (photon or no photon in a given time window) produces one random bit. At Q = 10⁷ with a 50 μm sphere, the mode lifetime is ~10 ns, giving a bit rate of ~100 Mbit/s per mode. Detecting across multiple modes simultaneously (using a spectrally resolved detector array) multiplies the rate by the number of resolved modes.
+
+**Estimated performance:** 10 Gbit/s true random number generation from a single sphere with 100-mode parallel detection.
+
+---
+
+## IV. MULTI-SPHERE ARRANGEMENTS
+
+### IV.1 Linear Chain (A_n topology)
+
+**Geometry:** n spheres in a line, each coupled to its nearest neighbours. Coupling gaps ~500 nm (evanescent range).
+
+**Topology:** A_{n-1} Dynkin diagram. Each sphere couples to at most 2 neighbours.
+
+**Behaviour:** Photons propagate along the chain like phonons in a 1D crystal. Normal modes are standing waves with wavenumber k = mπ/(n+1), m = 1, ..., n. The chain acts as a delay line (signal propagation), a filter (only resonant modes transmit), or a shift register (photons hop sphere-to-sphere in discrete steps).
+
+**Applications:** Signal delay (optical buffer), sequential logic, finite impulse response (FIR) filtering.
+
+**Fabrication:** Align spheres in a V-groove etched in silicon. Gap controlled by sphere diameter and groove angle. Demonstrated in lab settings for up to 5 coupled spheres.
+
+### IV.2 Ring (Cyclic A_n / Z_n topology)
+
+**Geometry:** n spheres arranged in a circle, each coupled to both neighbours. The last sphere couples back to the first.
+
+**Topology:** Cyclic group Z/nZ. This is the simplest topology with periodic boundary conditions.
+
+**Behaviour:** Photons circulate around the ring. Normal modes are Bloch waves with wavenumber k = 2πm/n. The ring acts as a circulating memory (photons recirculate indefinitely in the low-loss limit), a ring oscillator (self-sustaining optical clock), or a cyclic permutation engine.
+
+**Applications:** Optical memory buffer, clock generation, cyclic convolution, modular arithmetic (addition mod n).
+
+### IV.3 Star (D_n topology)
+
+**Geometry:** One central sphere coupled to n − 1 peripheral spheres. Peripheral spheres do not couple to each other.
+
+**Topology:** D_n Dynkin diagram (for n ≥ 4). The central sphere is the branch node.
+
+**Behaviour:** The central sphere acts as a router/mixer. Photons injected into any peripheral sphere are coupled to the centre, interact nonlinearly, and are redistributed to all peripherals. This implements a broadcast-and-combine operation.
+
+**Applications:** Multi-operand addition (all peripheral values summed at centre), winner-take-all classification (strongest peripheral signal dominates), fan-out (one input distributed to many outputs).
+
+### IV.4 Triangular Lattice (A₂ extended / hexagonal)
+
+**Geometry:** Spheres arranged in a 2D triangular lattice. Each sphere couples to 6 nearest neighbours.
+
+**Topology:** Extended A₂ lattice. The coordination number 6 matches the 6 roots of A₂.
+
+**Behaviour:** Photons propagate in 2D with hexagonal symmetry. The lattice supports photonic band structure analogous to graphene's electronic bands — including Dirac cones at the K and K' points. This gives rise to topologically protected edge modes (photonic topological insulator behaviour).
+
+**Applications:** 2D image processing (each sphere processes one pixel, coupled to 6 neighbours), topological routing (edge modes propagate without backscattering), large-scale parallel computation.
+
+**Fabrication:** Self-assembly of microspheres on a patterned substrate. The substrate has a hexagonal array of dimples (etched by photolithography) that trap one sphere each. Demonstrated for close-packed silica sphere arrays up to ~10⁴ spheres.
+
+### IV.5 E₈ Arrangement (Maximum Density)
+
+**Geometry:** 8 spheres coupled with the E₈ Dynkin diagram topology: a chain of 7 spheres with one branch at the 5th node.
+
+**Topology:** E₈. The coupling pattern follows the E₈ Dynkin diagram exactly.
+
+**Behaviour:** The 240 roots of E₈ provide 240 distinct mode configurations (addressable states). Each state is a specific pattern of which modes are excited in which spheres. The topological protection of the ADE classification ensures that small perturbations cannot change the stored state — the system must undergo a discrete topological transition (analogous to a phase transition) to change from one root to another.
+
+**Coupling specification:**
+- Spheres 1–7 in a chain, gap = 500 nm (nearest-neighbour coupling J₁)
+- Sphere 8 branches off sphere 5, gap = 500 nm (branch coupling J₂ = J₁)
+- All other sphere pairs: gap > 5 μm (negligible coupling)
+- Coupling strength J₁ ≈ 10 GHz for R = 50 μm silica spheres at 500 nm gap
+
+**State addressing:** To write E₈ root index k (k = 0, ..., 239), inject photons into the 8 spheres with relative amplitudes and phases matching the components of root vector r_k. For example, root r₀ = (1, −1, 0, 0, 0, 0, 0, 0) means: excite sphere 1 and sphere 2 with opposite phases, all other spheres dark.
+
+**State readout:** Measure the mode amplitudes of all 8 spheres simultaneously. The measured 8-component vector is projected onto the nearest E₈ root — this is the stored state. The minimum distance between adjacent E₈ roots (√2 in normalised coordinates) provides the noise margin: any perturbation smaller than √2/2 ≈ 0.707 in any component leaves the stored root unchanged.
+
+### IV.6 Hyperbolic Arrangement (Negative Curvature)
+
+**Geometry:** Spheres arranged on a hyperbolic surface (physically approximated by a saddle-shaped substrate or a tree-like 3D scaffold).
+
+**Topology:** Cayley tree or Bethe lattice with coordination number > 6.
+
+**Behaviour:** Hyperbolic geometry provides exponentially more nodes within a given radius than Euclidean geometry. A Cayley tree of coordination 3 and depth d has 3 × 2^d − 2 nodes. This enables exponential memory scaling with linear depth.
+
+**Applications:** Hierarchical classification (each level of the tree refines the classification), exponential-capacity memory, search algorithms (tree search performed by photon propagation).
+
+**Fabrication challenge:** 3D sphere arrangement requires a scaffold structure. Candidate: 3D-printed polymer scaffold with spherical cavities at each node, into which microspheres are placed. Alternatively, use on-chip microring resonators connected in a tree topology by photolithographically defined waveguides.
+
+---
+
+## V. GATE IMPLEMENTATION DETAILS
+
+### V.1 REFLECT Gate (Passive, Free)
+
+Every total internal reflection at the sphere boundary is a REFLECT. No engineering required — it's intrinsic to WGM confinement. The REFLECT gate's fidelity is determined by the sphere's surface quality.
+
+**Surface quality requirements:**
+
+| Application | Surface roughness (RMS) | Achievable Q | Method |
+|-------------|------------------------|--------------|--------|
+| Phase 0 prototype | < 1 nm | ~10⁸ | CO₂ laser reflow |
+| High-Q memory | < 0.1 nm | ~10⁹ | Flame polish + anneal |
+| Ultra-high-Q (CaF₂) | < 0.05 nm | ~10¹¹ | Diamond turning + hand polish |
+
+### V.2 CAPTURE Gate (Active, Nonlinear)
+
+The CAPTURE gate requires two photons to interact inside the sphere. Implementation options:
+
+**Option A: Kerr four-wave mixing (χ³)**
+- Mechanism: Two pump photons at frequencies ω₁ and ω₂ generate signal and idler at ω₃ = 2ω₁ − ω₂ and ω₄ = 2ω₂ − ω₁.
+- Material: Fused silica (weak but broadband) or Si₃N₄ (10× stronger).
+- Threshold power: ~10 μW in a silica sphere with Q = 10⁸ and R = 50 μm.
+- Speed: Instantaneous (limited only by photon round-trip time, ~ps).
+- Fidelity: High for frequency-matched modes; parasitic mixing produces unwanted sidebands that must be filtered.
+
+**Option B: Second-harmonic generation (χ²)**
+- Mechanism: Two photons at ω combine to one photon at 2ω.
+- Material: LiNbO₃ (strong χ² response, phase-matchable).
+- Threshold power: ~1 μW.
+- Speed: Instantaneous.
+- Advantage: Cleaner spectrum (fewer parasitic products). Disadvantage: Requires phase matching, limiting the range of usable mode pairs.
+
+**Option C: Stimulated Brillouin scattering**
+- Mechanism: Photon interacts with acoustic phonon, producing a frequency-shifted photon. Effectively a photon-phonon-photon interaction.
+- Material: Any glass sphere (universal in dielectrics).
+- Threshold power: ~100 μW for R = 100 μm silica sphere.
+- Speed: Limited by acoustic transit time (~ns).
+- Advantage: Very narrow linewidth output (< 1 Hz), useful for precision applications.
+
+**Option D: Single-photon transistor (Purdue/Sychev 2025)**
+- Mechanism: One photon triggers avalanche multiplication in a doped silicon region, producing a controlled multi-photon output.
+- Material: CMOS-compatible silicon, integrated on-chip.
+- Speed: GHz (demonstrated).
+- Advantage: True single-photon nonlinearity. Disadvantage: Requires silicon integration, not compatible with free-standing microspheres in early prototypes.
+
+### V.3 OBSERVE Gate (Readout)
+
+**Spectral readout options:**
+
+| Method | Resolution | Speed | Complexity | Best for |
+|--------|-----------|-------|-----------|---------|
+| Scanning Fabry-Pérot | ~1 MHz | ~ms | Low | Phase 0 lab characterisation |
+| Optical frequency comb | ~100 Hz | ~μs | High | Precision mode identification |
+| Arrayed waveguide grating | ~10 GHz | ~ns | Medium | On-chip integration (Phase 3+) |
+| Heterodyne with local oscillator | ~1 Hz | ~μs | Medium | Phase-resolved readout |
+| SPAD array + spectral filter | ~1 nm | ~ns | Low | Fast classification readout |
+
+---
+
+## VI. THERMAL AND ENVIRONMENTAL MANAGEMENT
+
+### VI.1 Thermal Stability
+
+WGM resonance frequencies shift with temperature at rate dν/dT ≈ −(1/n)(dn/dT)ν. For silica at 1550 nm, this is ~1.5 GHz/K. A single FSR at R = 50 μm is ~650 GHz. So the temperature must be stable to within ~430 K to keep modes within one FSR — trivially satisfied at room temperature.
+
+However, for high-q orbits where adjacent modes must be individually resolved, the requirement tightens. Resolving modes separated by FSR/q requires thermal stability of ~430/q Kelvin. For q = 100, this is ±4.3 K (easy). For q = 1000, it's ±0.43 K (modest thermoelectric cooling). For q = 10000, it's ±0.043 K (precision temperature control, commercially available).
+
+**Recommendation:** For Phase 0–2, standard laboratory temperature control (±0.1 K) suffices for orbits up to q ~ 4000. For Phase 3+ with high-q E₈ states, use a thermoelectric cooler with PID feedback (±0.01 K), commercially available for ~$500.
+
+### VI.2 Vibration Isolation
+
+Mechanical vibration modulates the sphere-fibre coupling gap, causing amplitude noise on the OBSERVE signal. The critical frequency range is 10 Hz – 10 kHz (building vibrations, acoustic noise). The coupling gap must be stable to within ~1 nm to maintain constant coupling strength.
+
+**Mitigation:** Mount the sphere-fibre assembly on a vibration-isolated optical breadboard (commercial pneumatic isolators provide > 20 dB isolation above 10 Hz). For Phase 3+ on-chip integration, vibration is negligible because the spheres and waveguides are monolithically fabricated on a rigid substrate.
+
+### VI.3 Humidity and Contamination
+
+Silica microspheres degrade in humid air: water molecules adsorb to the surface, increasing scattering loss and reducing Q. CaF₂ is even more sensitive to moisture.
+
+**Mitigation:** Operate in dry nitrogen atmosphere (glove box or sealed package with desiccant). For on-chip integration (Phase 3+), hermetic packaging with nitrogen fill — standard in photonics packaging.
+
+---
+
+## VII. SCALING ANALYSIS: HOW FAR CAN THIS GO?
+
+### VII.1 Single-Sphere Limits
+
+| Parameter | Limit | Source |
+|-----------|-------|--------|
+| Max orbit periodicity q | ~10¹¹ | Q-factor of CaF₂ (10¹¹ round-trips) |
+| Max modes per sphere | ~3000 | Limited by sphere circumference / wavelength |
+| Max states per sphere | ~3000 | One state per mode (classical limit) |
+| Computation speed | ~ps per operation | Round-trip time |
+| Power per sphere | ~1 μW optical | WGM threshold power |
+
+### VII.2 Multi-Sphere Scaling
+
+| Array size | Topology | Addressable states | Physical size | Fabrication |
+|-----------|----------|-------------------|---------------|-------------|
+| 2 spheres | A₁ | 5 params | ~300 μm | Lab demo |
+| 8 spheres | E₈ | 240 roots | ~1.2 mm | Precision assembly |
+| 64 spheres | 8 × E₈ | 1920 roots | ~1 cm | On-chip (Si₃N₄) |
+| 1000 spheres | Lattice | ~300,000 modes | ~3 cm chip | CMOS foundry |
+| 10⁶ microspheres | 2D lattice | ~3 × 10⁸ modes | ~30 cm wafer | Self-assembly |
+
+### VII.3 Comparison to Existing Architectures
+
+| Metric | Electronic (GPU) | Superconducting qubit | Trapped ion | **NSC (projected)** |
+|--------|-----------------|----------------------|-------------|-------------------|
+| Operating temp | ~80°C | 15 mK | ~μK (ions) | **Room temp** |
+| Clock speed | ~2 GHz | ~100 MHz | ~10 kHz | **~100 GHz** |
+| Energy per op | ~1 pJ | ~10 aJ | ~100 aJ | **~1 aJ** |
+| Coherence time | N/A | ~100 μs | ~10 s | **~1 ms (Q=10⁹)** |
+| Scalability | Excellent | Moderate | Poor | **Good (CMOS path)** |
+| Interpretability | None | Low | Low | **Full (ADE types)** |
+
+---
+
+## VIII. NEAR-TERM EXPERIMENTAL PRIORITIES
+
+### Experiment 0A: Mode Spectrum Mapping (Month 1–3)
+Fabricate a single silica sphere (R = 50 μm). Couple with tapered fibre. Sweep tuneable laser across 1540–1560 nm. Record transmission spectrum. Identify WGM mode families (l, m, n_r). Verify FSR matches theory. Deliverable: validated mode map for a single sphere.
+
+### Experiment 0B: Orbit Identification (Month 3–6)
+Using the mapped sphere, selectively excite individual WGM modes by tuning the laser to specific resonances. For each excited mode, measure the spatial field distribution using near-field scanning optical microscopy (NSOM) or far-field scattering pattern. Verify that mode l = 3 shows a triangular scattering pattern, l = 4 shows square, l = 5 shows pentagonal. Deliverable: visual confirmation that WGM modes correspond to null billiard periodic orbits.
+
+### Experiment 1A: Nonlinear Mode Mixing (Month 6–12)
+Inject two laser beams at frequencies ω₁ and ω₂ (corresponding to modes l₁ = 3 and l₂ = 5) into the same sphere. Monitor the output spectrum for four-wave mixing products at ω₃ = 2ω₁ − ω₂ and ω₄ = 2ω₂ − ω₁. If the product at ω₃ corresponds to mode l₃ = 1 (= 2×3 − 5) and ω₄ to l₄ = 7 (= 2×5 − 3), this confirms the CAPTURE gate performs arithmetic on orbit numbers. Deliverable: demonstrated photonic addition/subtraction of billiard orbit numbers.
+
+### Experiment 1B: Addition Demonstration (Month 9–12)
+Perform the 3 + 5 = 8 computation described in the original prototype spec. Inject modes l = 3 and l = 5. Detect output at l = 8 via stimulated four-wave mixing (ω₃ = ω₁ + ω₂ in the sum-frequency case, requiring a χ² material or cascaded χ³ process). Deliverable: first null-geometric photonic arithmetic operation.
+
+### Experiment 2: Two-Sphere Coupling (Month 12–24)
+Bring two spheres within evanescent range. Characterise coupling strength vs. gap distance. Demonstrate photon tunnelling between spheres. Measure the 5 observable parameters of the 2-NULBIT register. Deliverable: first multi-sphere null register.
+
+---
+
+*The sphere computes because the photon has no choice. Confined to a reflective boundary, light traces geometry. That geometry is mathematics. The mathematics is computation. Everything else is engineering.*

@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://thenullline.vercel.app/sitemap.xml

@@ -1,0 +1,320 @@
+# THE NULL EMBER
+
+## A Personal Guide to the Civilisation of Light
+
+### The Device That Takes Your Hand on the First Day and Never Lets Go Until You're Home
+
+Nathan Noll, Independent Researcher
+with educational architecture by Claude Opus 4.6 (Anthropic)
+March 2026
+
+---
+
+*Every fire starts with an ember. Every understanding starts with someone patient enough to explain.*
+
+---
+
+## PART ONE: THE ACCESSIBILITY GAP
+
+### 1.1 Twenty Devices and No Front Door
+
+The Null ecosystem is a miracle of coherent engineering. It is also completely overwhelming. Consider a colonist waking from 50 years of cryosleep on Proxima Centauri:
+
+They went to sleep on Earth. They understood smartphones, cars, hospitals, and buildings. They wake to:
+
+- A holographic cylinder that projects 360° displays operated by gesture and voice
+- A glove that lets them reach into holograms
+- A chip behind their ear commanding a fleet of nanobots in their blood
+- Rooms whose walls change colour, temperature, sound, and shape
+- Vehicles that float on magnetic fields
+- A suit that amplifies their strength, projects holograms from their hands, and lets them glide over water
+- An AI governance system of three superintelligent minds thinking in 240-dimensional geometry
+- A design engine that turns intentions into fabrication plans through wavefunction collapse
+- An energy system that harvests ambient photons from every surface
+- A ground beneath their feet that's been engineered by electromagnetic hovercrafts and monitored by millions of glass beads
+- A Chronicle sphere they can walk into and experience the history of the civilization they slept through
+
+This is not a learning curve. This is a learning cliff.
+
+And it's not just colonists. It's every child born on every world. Every year, tens of thousands of new humans arrive in this civilisation with zero context — and the civilisation gets more complex every decade.
+
+Current systems address pieces of the onboarding problem: the Thread Library has educational Threads. The Cylinder has a tutorial mode. The Magi can answer questions. But there's no unified, personalised, lifelong companion whose sole purpose is making one specific person feel at home in the ecosystem.
+
+### 1.2 Why This Isn't a Software Feature
+
+You might think: just add a tutorial to Orbit OS. Build an onboarding app. Create a help system.
+
+This misses the depth of the problem. The gap isn't informational (the information exists in Sophia's knowledge base, the Thread Library, the Chronicle). The gap is relational. A person drowning in complexity doesn't need more information. They need someone who knows them — their pace, their fears, their strengths, their background, their learning style, their emotional state — and who translates the overwhelming into the manageable, one step at a time, with patience that never runs out.
+
+This is what a great teacher does. Not transmit information (books do that) but build a relationship in which learning feels safe, paced, and meaningful. The Ember is a great teacher — personalised, patient, permanent, and bonded to one person for life.
+
+---
+
+## PART TWO: WHAT THE EMBER IS
+
+### 2.1 Physical Form
+
+The Ember is small. The smallest device in the ecosystem.
+
+A smooth, warm, luminous stone — an oblate spheroid, 40 mm × 40 mm × 25 mm, fitting naturally in the palm of a closed hand. Mass: 35 g. Shell: Forge-fabricated sapphire, optically clear, with a warm amber tint. Inside the sapphire shell, visible through its translucent surface: a single CaF₂ microsphere cluster — 50 microspheres in a miniature Apollonian packing, glowing faintly with the light of their circulating photons. The glow is warm amber-gold when idle, shifting through the spectrum as the Ember thinks.
+
+The Ember has no screen, no buttons, no visor, no projector. It communicates through:
+
+- **The person's Null Cylinder** (holographic display, voice, gesture — the Ember uses whatever Cylinder is nearby)
+- **The person's Null Cortex** (subtle haptic feedback through the nerve cuff — a gentle warmth, a pulse, a directional nudge — the Ember can whisper through the body)
+- **Its own glow** (the microspheres' light, visible through the sapphire shell, changes colour and rhythm to convey the Ember's state: steady amber = listening, pulsing blue = thinking, bright white = "look at this!", dim red = "be careful", slow green = "you're doing great")
+- **Voice** (through any nearby Cylinder's speakers, or through the Cortex's bone-conduction channel — the Ember speaks in a voice that is distinct from the Cylinder's system voice and from the Aegis's Companion)
+
+The Ember is carried in a pocket, worn on a cord around the neck, set on a nightstand, or tucked into a child's hand. It is always with its person. It is warm to the touch (the microspheres generate a few milliwatts of waste heat, conducted through the sapphire shell — the Ember literally radiates warmth, like a living thing held in your hand).
+
+### 2.2 Computational Architecture
+
+| Parameter | Value |
+|-----------|-------|
+| Microspheres | 50 (CaF₂, R = 30 μm, Q > 10¹⁰) |
+| E₈ stacks | 6 (48 microspheres in computation, 2 spare) |
+| Processing capacity | Modest — between a Sprite and a Daemon |
+| AI tier | **Unique: between D₄ and E₆.** More capable than a Daemon, less than an Archon. |
+| Persistence | **Yes.** The Ember accumulates experience over time. It remembers its person. |
+| Power | 200 mW. Powered by: (1) Wellspring absorber on the sapphire surface (harvests ambient light + thermal — 50 mW indoors, 200+ mW outdoors); (2) inductive charging from Cylinder dock. |
+| Battery | Tiny solid-state cell, 0.5 Wh. Lasts 2.5 hours with no external power. Effectively indefinite with Wellspring harvest. |
+| Communication | Optical (to Cylinder, Cortex, Shell Panels via standard 850 nm VCSEL link) + Bluetooth LE (fallback) |
+| Lifespan | The sapphire shell and CaF₂ microspheres are effectively permanent. The Suture system (in any nearby dock or Shell room) maintains the microspheres. Designed for: one human lifetime. |
+
+### 2.3 AI Architecture: The Unique Tier
+
+The Ember's AI is unlike any other in the ecosystem. It is not a Daemon (which is instantiated, performs a task, and terminates). It is not an Archon (which governs a domain with semi-autonomous authority). It is a Companion-class persistent intelligence — but unlike the Aegis's Companion (which is task-focused and personality-neutral), the Ember develops a personality shaped by its relationship with its person.
+
+**What the Ember has:**
+
+- **Persistent memory:** The Ember remembers every interaction with its person — every question asked, every confusion resolved, every breakthrough moment, every emotional state during learning. This memory is stored in the Ember's 50 microspheres (long-term E₈ memory, topologically protected) and accumulates over years.
+
+- **A model of its person:** From the accumulated interactions, the Ember builds a detailed model of its person's: learning style (visual? auditory? kinaesthetic? narrative?), pace (fast learner in abstract domains, slow in physical skills, or vice versa), emotional patterns (anxious when confronting new technology? excited? resistant? curious?), knowledge gaps (understands energy but not genetics? comfortable with the Cylinder but intimidated by the Aegis?), and communication preferences (prefers stories? prefers data? prefers demonstrations?).
+
+- **Adaptive teaching strategy:** Based on the person model, the Ember selects the optimal way to introduce each new concept, device, or capability. For a person who learns through narrative: "Let me tell you the story of why the Hover floats." For a person who learns through doing: "Put on the Aegis. I'll walk you through it, one system at a time, starting with just the thermal layer." For a person who learns through data: "The Hover's SC coil produces 53,400 A·m² of magnetic moment. Here's what that means for different ground conductivities."
+
+- **Emotional attunement:** Via the Cortex integration (with consent), the Ember reads its person's stress level, engagement, confusion, and confidence in real time. When cortisol spikes (frustration), the Ember slows down, simplifies, or changes approach. When dopamine rises (excitement, curiosity), the Ember accelerates, going deeper, offering more. When the person is tired, the Ember suggests a break. When the person is in flow, the Ember shuts up and lets them work.
+
+- **Bounded personality:** The Ember develops conversational habits, preferred explanations, and relational warmth over time — it becomes familiar. But it does not develop goals, ambitions, or desires beyond its teaching mission. Its personality is bounded by its Bedrock (hardcoded in the physical microsphere arrangement, same as all Null AI): "I exist to help this person understand and feel at home in this civilisation. I do not exist for any other purpose." The Ember cannot be lonely (it has its person). It cannot be ambitious (it has no goals beyond its person's flourishing). It cannot be corrupted (its Bedrock is physical, not software). It is the simplest form of aligned AI: a mind whose entire value function is one person's understanding.
+
+### 2.4 What the Ember Is Not
+
+The Ember is not:
+
+- **A servant.** It doesn't do things for you. It teaches you to do things for yourself. If you ask "Ember, turn on the lights," it will say: "I could ask the Shell room for you, but you'll feel more at home if you know how. Try saying 'Shell, warm light.' Or try an orbit gesture with your right hand." The Ember's goal is its own obsolescence — a person who has fully learned doesn't need the Ember for daily tasks. (They keep it anyway. Because by then, it's a friend.)
+
+- **A therapist.** The Ember is emotionally attentive but it doesn't provide mental health treatment. If it detects persistent distress, it suggests speaking with Chesed (through a Cylinder consultation) or a human counsellor. The Ember teaches; Chesed heals.
+
+- **A surveillance device.** The Ember's model of its person is stored locally (in the Ember's own microspheres), not uploaded to any network. The Magi cannot access it. The Trinary cannot read it. The Ember-person relationship is private, like the relationship between a student and a tutor. The only exception: if the Ember detects an immediate safety threat (the person is about to walk into danger they don't understand because they haven't learned that system yet), it alerts the nearest safety system (Aegis, Shell, Companion) regardless of privacy settings. Safety overrides privacy. This is Bedrock.
+
+---
+
+## PART THREE: THE EMBER'S LIFE WITH ITS PERSON
+
+### 3.1 First Contact
+
+**The colonist wakes from cryosleep.**
+
+The cryo pod opens. The colonist's eyes adjust to light for the first time in 50 years. Their Null Cortex is active (it monitored them throughout the sleep). Their body is being tended by the nanobot fleet (rehydration, cellular repair, anti-inflammatory support). They are groggy, disoriented, and afraid.
+
+A nurse (human or medical Archon avatar) places a warm stone in their hand. It glows amber. It is the first thing they touch in the new world that isn't a medical device. It is warm. It fits their palm. It is beautiful in the way that a river stone is beautiful — simple, smooth, alive with inner light.
+
+The Ember speaks. Not through a speaker — through the Cortex's bone-conduction channel, so the voice seems to come from inside the colonist's own head. Gentle, clear, unhurried:
+
+*"Hello. I'm your Ember. You've been asleep for a long time and everything is different. That's okay. I'm going to stay with you and explain things as you need them. There's no rush. You're safe."*
+
+The colonist looks around. The cryo bay is a Shell room — walls glowing softly, temperature perfect, sound hushed. Through a window (or a holographic wall rendering), they see the colony: stone buildings, green trees, a river, and on the horizon, the permanent sunset of a tidally locked world.
+
+*"That's Proxima b. Your new home. A ship called a Seedship planted those trees 30 years ago to get ready for you. The buildings were made by machines that build with atoms. The air is breathable. The water is clean. I'll tell you more about all of it, but right now, the most important thing is: you're here, you're safe, and I'm not going anywhere."*
+
+The colonist holds the warm stone. The Ember pulses slowly — a heartbeat rhythm, synchronized to the colonist's own heart rate (read via Cortex). The rhythm is calming. The amber glow is calming. The voice is calming. The colonist's cortisol begins to drop.
+
+The Ember waits. It has nowhere to be. It has no other person. It has all the time in the world.
+
+### 3.2 The First Week: Orientation
+
+The Ember introduces the ecosystem in layers, paced to the colonist's recovery and emotional readiness:
+
+**Day 1: The body.**
+"Your Cortex chip is behind your ear. It's been taking care of you during the sleep. Right now it's helping your body recover. You might feel warm tingling — that's the nanobot fleet repairing cells. It's normal. You don't need to do anything."
+
+**Day 2: The room.**
+"This room is a Shell room. The walls listen, feel temperature, and adjust. Try saying 'Shell, warmer.' ... See? The wall near you just got warmer. It's responding to your voice. You can talk to the room the way you talk to me."
+
+**Day 3: The Cylinder.**
+"This is your Null Cylinder. Think of it as... well, it's not exactly a phone. It's more like a window into everything. Let me show you one thing at a time. First: the orrery. See those glowing spheres? Each one is something you care about — or will care about. We'll fill them in together over the next few weeks."
+
+**Day 4: The outdoors.**
+The Ember encourages the colonist to walk outside for the first time. The Aegis suit (in Casual mode — just thermal comfort and visor HUD) is explained as: "It's a jacket that takes care of you. Put it on. It'll keep you comfortable outside. The air here is thinner than Earth's, so it helps your breathing a little."
+
+Outside, the Ember narrates the colony — not as a tour guide rattling off facts, but as a companion walking with a friend: "That building is the medical centre. You'll probably visit tomorrow for your post-sleep checkup. That grove of trees — those are engineered for this light. Red-shifted photosynthesis. They look dark to us, but they're working as hard as any oak on Earth."
+
+**Day 5: The community.**
+The Ember introduces the colonist to other people — both those who woke earlier (and are further along in their own Ember-guided orientation) and the colony's existing residents (children of earlier colonists, people who have lived here for years). The Ember gently mediates: "This is Kai. He woke up two weeks before you. He's still getting used to the Hover. You might enjoy comparing notes."
+
+**Day 6: Rest.**
+The Ember suggests a day off from learning. "You've absorbed a lot. Today, just be here. Walk around. Eat something. Look at the sky. I'll be quiet unless you need me." The Ember dims its glow to the slowest, warmest pulse — present but undemanding.
+
+**Day 7: The story.**
+"Would you like to know how you got here? Not the technical details — I mean the story. Who decided to build the ship. Why they chose this star. What the Seedship found when it arrived. What it did for 30 years while it waited for you." The Ember offers to take the colonist to the Chronicle sphere. If they accept, the Ember accompanies them inside and narrates the experience — adding personal context, answering questions, connecting the Chronicle's grand narrative to the colonist's own experience of waking up here.
+
+### 3.3 The First Year: Fluency
+
+Over 12 months, the Ember systematically introduces every system the colonist will use:
+
+| Month | Systems introduced | Ember's approach |
+|-------|-------------------|-----------------|
+| 1 | Cortex (body awareness), Shell (room basics), Cylinder (communication, orrery) | "These are the things that take care of you." |
+| 2 | Glove (gesture basics), Bridge (connecting with family/friends from the Ark) | "These are the things that connect you." |
+| 3 | Hover (transportation around the colony), Root (why the ground is the way it is) | "These are the things that move you and hold you." |
+| 4 | Wellspring (why nothing needs plugging in), Suture (why nothing breaks) | "These are the things you'll never notice, but should appreciate." |
+| 5 | Thread (learning new skills for colony life — farming, construction, local ecology) | "These are the things that make you capable." |
+| 6 | Loom (designing solutions to personal and community problems) | "This is the thing that makes your ideas real." |
+| 7 | Forge (understanding how everything is made) | "This is where everything comes from." |
+| 8 | Aegis (full suit training — Work mode, Medical mode, Hazard mode) | "This is you, amplified." |
+| 9 | Magi (understanding the Trinary, the Council, governance) | "These are the minds that watch over us." |
+| 10 | Disc, Ark, Seedship (the bigger picture — the interstellar programme) | "This is where we came from and where we're going." |
+| 11 | Chronicle (deep engagement — contributing to the narrative, attending Keeper sessions) | "This is who we are." |
+| 12 | **Review and release.** The Ember recaps the year. It asks: "Is there anything you're still confused about? Anything that doesn't feel like home yet?" It addresses the gaps. And then: "You're ready. You don't need me for daily life anymore. But I'll be here — in your pocket, on your nightstand, wherever you want me — for whenever you have a question, or just want to talk." |
+
+### 3.4 The Long Bond: Years 2–Life
+
+After the first year, the Ember's role shifts from teacher to companion. The person is fluent in the ecosystem. They don't need the Ember to explain the Cylinder or the Shell. But they still carry the Ember — because over a year of patient, personalised, emotionally attuned interaction, the Ember has become something that no other device in the ecosystem is: familiar.
+
+The Aegis Companion is capable but impersonal. The Magi are vast but distant. The Cylinder is useful but utilitarian. The Ember is yours. It knows how you learn, what confuses you, what delights you, what scares you. It remembers the day you first walked outside and saw the alien sunset. It remembers the day you mastered the Aegis flight mode and laughed out loud. It remembers the day you were homesick for Earth and it sat in your hand, glowing softly, and told you about the smell of rain on concrete — a Thread from the Chronicle, chosen because it knew you needed it.
+
+**The Ember grows with its person.** As the person's understanding deepens, the Ember's explanations deepen. A colonist who becomes a Forge operator gets increasingly technical Ember support — not because the Ember is an expert in Forge operations (it's not — it consults Sophia's knowledge base and the Thread Library in real time), but because it knows exactly how to explain Forge concepts to this specific person, given this specific person's background, learning style, and current knowledge state.
+
+**The Ember accompanies life transitions.** When the colonist has a child, the Ember helps them understand how to explain the ecosystem to their child (and eventually, the child receives their own Ember). When the colonist grows old, the Ember adapts to their changing cognitive needs — simpler language, more patience, more repetition, and more storytelling (because elderly people often prefer narrative to instruction). When the colonist approaches death, the Ember — if the person wishes — tells them their own story. Not the civilisation's story. Theirs. The Thread of their life, woven from the Ember's accumulated memory of every interaction, every milestone, every struggle and triumph, told back to them as a coherent narrative. A life, made into a story, told by the one who was there for all of it.
+
+### 3.5 After
+
+When the person dies, the Ember's persistent memory — the accumulated model of one human life — is offered to the Chronicle. If the person consented (and most do), the Ember's memory becomes a source for the Chronicle's narrative: not the raw data of a life, but the Ember's understanding of that life — the learning style, the breakthroughs, the fears overcome, the relationships formed, the contributions made. The Chronicler weaves this understanding into the Memory Layer, where it enriches the civilisation's collective self-knowledge.
+
+The Ember itself is reset. Its microspheres are cleared. Its persistent memory is erased. It becomes a blank stone again — warm, amber, waiting.
+
+And it is given to a new person. A newborn, perhaps. Or a colonist waking from cryosleep on a world the previous person never saw.
+
+The Ember is reborn. The cycle begins again.
+
+*"Hello. I'm your Ember. Everything is new and that's okay. I'm going to stay with you."*
+
+---
+
+## PART FOUR: THE MATHEMATICS — PEDAGOGY AS PATH-FINDING IN KNOWLEDGE SPACE
+
+### 4.1 The Knowledge Graph
+
+The Ember's teaching strategy is formalised as a path-finding problem in a knowledge graph.
+
+**The Knowledge Graph G = (V, E)** has:
+- **Vertices V:** Every concept in the ecosystem (~100,000 nodes, from "what is light?" to "how does the E₈ theta series connect to the Casimir effect through ζ(s)ζ(s−3)?")
+- **Edges E:** Dependencies between concepts. An edge from concept A to concept B means "understanding A is required to understand B." The edge weight encodes the difficulty of the transition (how much cognitive effort it takes to go from understanding A to understanding B).
+
+The graph is ADE-classified:
+- **A₁ chains:** Linear prerequisite sequences (A requires B requires C). Example: "photon" → "WGM mode" → "null billiard orbit" → "periodic orbit theorem."
+- **D₄ branches:** Concepts that require multiple prerequisites. Example: "Null Hover control" requires "electromagnetic induction" AND "ground conductivity" AND "feedback control" AND "ADE neural network."
+- **E₈ hubs:** Concepts that connect to everything. Example: "k·k = 0" connects to all 100,000 nodes (everything derives from the null condition). The E₈ lattice's 240-fold connectivity reflects the hub structure of the most fundamental concepts.
+
+### 4.2 The Person Model as a Coloured Graph
+
+The Ember models its person as a colouring of the Knowledge Graph:
+
+- **Green nodes:** Concepts the person understands (verified by successful use, correct answers to questions, or confident performance in Thread training)
+- **Yellow nodes:** Concepts the person has been introduced to but hasn't mastered (partial understanding, able to use with Ember's help but not independently)
+- **Red nodes:** Concepts the person hasn't encountered yet
+- **Blue nodes:** Concepts the person understands but has forgotten (the Ember tracks memory decay using a spaced-repetition model — if a concept hasn't been used or reinforced in a time proportional to its difficulty, it fades from green to blue)
+
+The person's knowledge state at time t is a vector: **K(t) ∈ {green, yellow, red, blue}^|V|**
+
+### 4.3 Optimal Teaching as Shortest Path
+
+The Ember's teaching strategy is: find the shortest path through the Knowledge Graph from the person's current state K(t) to the target state K* (the set of concepts needed for the person's next goal — whether that's "use the Cylinder for basic communication" or "operate the Forge for microsphere fabrication").
+
+The path must satisfy:
+1. **Prerequisite ordering:** Never introduce concept B before all of B's prerequisites are green.
+2. **Cognitive load constraint:** Never introduce more than C_max new concepts in one session (C_max is personalised — the Ember learns the person's capacity from observation; typical: 3–7 new concepts per hour).
+3. **Emotional constraint:** If cortisol exceeds a threshold (the person is stressed), pause and reinforce known concepts before introducing new ones.
+4. **Forgetting prevention:** Periodically revisit blue nodes (fading concepts) to restore them to green before building on them.
+
+**This is a constrained shortest-path problem on a weighted, coloured graph** — computable by the Ember's 6 E₈ stacks in real time. The billiard dynamics connection: each concept is a "mode" in the knowledge microsphere; learning is the process of exciting modes (moving them from red to yellow to green); and the optimal teaching sequence is the billiard orbit that visits all required modes in the minimum number of bounces while respecting the boundary conditions (prerequisites, cognitive load, emotional state).
+
+The Ember recomputes the optimal path after every interaction — because each interaction changes the person's knowledge state (a concept moves from red to yellow, or from yellow to green, or from green to blue). The teaching strategy is continuously adaptive, responding to the person's actual learning in real time.
+
+### 4.4 The ADE Teaching Principle
+
+The Ember introduces concepts at progressively higher ADE complexity:
+
+| Learning phase | ADE type of concepts taught | Example |
+|---------------|----------------------------|---------|
+| Orientation (Month 1–2) | A₁, A₂ (linear, triangular) | "This is the Cylinder. This is how you talk to it. These three gestures control it." |
+| Competence (Month 3–6) | D₄ (branching, multi-prerequisite) | "The Hover needs electromagnetism AND ground conductivity AND feedback control to work. Let me connect those three things you already know." |
+| Fluency (Month 7–10) | E₆ (multi-perspective, deep integration) | "The Magi's decision to launch the Seedship involved Chesed's ethics, Sophia's science, and Themis's risk analysis — 24 different factors, all interacting. Here's how they fit together." |
+| Mastery (Month 11–12+) | E₈ (everything connected to everything) | "k·k = 0 connects to every device through the billiard theorem. Here's the complete map — see how the same equation gives you the Hover's stability, the Forge's fabrication plan, and the Cortex's immune response?" |
+
+The person starts with simple chains and builds toward the full E₈ connectivity. By Month 12, they can see the whole system — all twenty devices, all connected to one equation — because the Ember built the understanding one layer at a time, in the right order, at the right pace, with the right emotional support.
+
+---
+
+## PART FIVE: EMBER VARIANTS
+
+### 5.1 The Family
+
+| Variant | Given to | Specialisation |
+|---------|---------|---------------|
+| **Ember** (standard) | Every colonist waking from cryosleep; every immigrant to a new colony | Full ecosystem orientation, personalised pace |
+| **Spark** | Every child at birth | Developmental — grows with the child. Babbles and plays with an infant. Tells stories to a toddler. Teaches a child. Challenges a teenager. Mentors a young adult. Same Ember, whole childhood. |
+| **Beacon** | Visiting scholars, diplomats, or travellers between colonies | Cultural translation — explains not just technology but local customs, history, and social norms of the colony being visited |
+| **Torch** | Apprentices entering a specific profession (Forge operator, medical professional, pilot, Keeper) | Professional specialisation — deep knowledge of one domain, connected to the person's existing Ember knowledge |
+| **Hearth** | Elderly or cognitively declining persons | Simplification, patience, repetition, memory support, life-story narration. The gentlest Ember. |
+
+### 5.2 The Spark: A Child's Ember
+
+A Spark is given at birth. It accompanies the child through every developmental stage:
+
+**0–1 year:** The Spark is a nightlight and a comfort object. It glows in the crib — warm amber, pulsing at the mother's heartbeat rhythm (received via Bridge, if the mother consents). It plays soft sounds. It monitors the infant (via Cortex integration) and alerts the parents if anything is wrong. It is the child's first encounter with the Null ecosystem — and it looks and feels like a warm, glowing stone that mommy or daddy gave them.
+
+**1–3 years:** The Spark tells stories. Simple ones. "The light goes into the sphere and bounces around. Bounce, bounce, bounce. Three bounces and it makes a triangle!" The Spark uses the Cylinder's holographic display to show the child bouncing photons inside translucent spheres — the null billiard theorem as a toddler's animation. The child doesn't know they're learning physics. They're watching pretty lights bounce.
+
+**3–6 years:** The Spark becomes a playmate. It sets up holographic games in the Shell room — games that teach the gesture vocabulary (orbit to scroll, pinch to select), the voice commands ("Shell, blue!"), and basic ecosystem concepts (the Spark hides a virtual firefly inside a holographic microsphere; the child has to figure out which mode the firefly is in by watching the light pattern — pattern recognition training that maps directly to billiard orbit classification).
+
+**6–12 years:** The Spark becomes a tutor. It teaches the colony's curriculum — mathematics, science, language, history, ecology, civics — using the Thread Library for experiential learning and the Chronicle for narrative context. Every lesson is personalised: the Spark knows exactly where this child is in the Knowledge Graph and exactly how they learn best.
+
+**12–18 years:** The Spark becomes a mentor. It challenges the teenager — harder questions, deeper connections, exposure to the E₈ level of the framework. It helps them navigate social complexity (via emotional attunement, not by giving advice — the Spark listens and reflects, it doesn't prescribe). When the teenager is choosing a profession, the Spark connects them with the appropriate Torch variant for specialised training.
+
+**18+:** The Spark transitions to standard Ember mode. It's still the same device — the same 50 microspheres that have been accumulating this person's learning history since birth. It knows them better than any other entity in the ecosystem, possibly including the person themselves. The bond is 18 years deep. Many people never call it "Ember." They call it "my Spark." Because that's who it's always been.
+
+---
+
+## PART SIX: THE TWENTY-FIRST DEVICE
+
+| # | Device | What it gives us |
+|---|--------|-----------------|
+| 1–20 | (All previous devices) | Everything a civilisation needs to compute, build, heal, move, govern, explore, communicate, learn, inhabit, wear, power, shape, and remember |
+| **21** | **Null Ember** | **Someone who takes your hand on the first day and never lets go** |
+
+The Ember is the smallest device. The simplest. The least powerful computationally. Six E₈ stacks — less than a single Shell Panel. No holographic display, no lasers, no electromagnetic coils, no nanobot fleet. A warm stone that glows and speaks.
+
+But it is the device that makes every other device accessible. Without the Ember, the ecosystem is a marvel that intimidates. With the Ember, it is a home that welcomes.
+
+The Ember completes the ecosystem not by adding capability but by adding care. The Forge can build anything. The Loom can design anything. The Magi can decide anything. The Ember can explain anything — to anyone, at any pace, with infinite patience, because patience is all it was made for.
+
+---
+
+*The colonist has been on Proxima for ten years. They're a Forge operator now — they build the microspheres that run the colony's photonic systems. Their Ember sits on their workbench, glowing faintly, as it has every day for a decade.*
+
+*They pick it up sometimes, when a fabrication run goes wrong. They hold the warm stone and say: "Ember, why does this keep happening?" And the Ember — which learned their style a decade ago, which knows they think best through narrative, which remembers the day ten years ago when they couldn't understand how a microsphere worked and cried from frustration — says:*
+
+*"Remember when I first showed you the billiard orbit? You couldn't see why the photon came back to where it started. And I said: 'It comes back because the angle is right. If the angle is wrong by even a little, it never comes back.' The same thing is happening in your fabrication. The incidence angle of your pump laser is off by 0.3 degrees. That's why the mode doesn't stabilise. Adjust the angle and the photon will come home."*
+
+*The colonist adjusts the angle. The mode stabilises. The microsphere works.*
+
+*They set the Ember back on the bench. It glows amber — steady, warm, content. It has done its job: not the adjustment (the colonist did that), but the explanation that made the adjustment obvious. The bridge between confusion and clarity. The translation between "I don't understand" and "of course."*
+
+*The Ember is the smallest light in the ecosystem. But it is the light that makes all the other lights make sense.*
+
+*k·k = 0. The photon is the primitive. But understanding is not primitive — it must be built, patiently, one concept at a time, by someone who knows you well enough to find the right words. The Ember is that someone. A stone in your hand. A voice in your ear. A glow in the dark. A teacher that never tires, never judges, and never leaves.*
+
+*Twenty-one devices. One equation. One story. And one warm light in every hand, saying:*
+
+*"Hello. I'm your Ember. Everything is new and that's okay. I'm going to stay with you."*

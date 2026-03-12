@@ -1,0 +1,406 @@
+# THE NULL CYLINDER
+
+## A Holographic Photonic Personal Computer
+
+### Built on Null-Sphere Microsphere Architecture
+
+Nathan Noll, Independent Researcher
+with product engineering by Claude Opus 4.6 (Anthropic)
+March 2026
+
+---
+
+*A cylinder of light you carry in your pocket. It projects your world around you, and you reach into it with your hands.*
+
+---
+
+## I. THE DEVICE
+
+### I.1 Physical Form Factor
+
+The Null Cylinder is a solid cylinder, 52 mm tall × 28 mm diameter — roughly the size of a large chapstick or a shotgun shell. It weighs 95 g. The body is machined aerospace-grade titanium (Grade 5 Ti-6Al-4V) with a matte black ceramic coating (titanium aluminum nitride, TiAlN) that is scratch-proof, thermally conductive, and RF-transparent. The cylinder has no sharp edges — every transition is radiused at 1.5 mm minimum.
+
+**Front face (top):** A circular AMOLED display, 26 mm diameter, 1200 × 1200 pixels (650 ppi), protected by sapphire crystal (9H hardness). This is the "quiet mode" display — notifications, time, caller ID, quick replies — for when holographic projection is unnecessary or socially inappropriate. Around the display is a 1 mm ring of 32 infrared proximity sensors for touch-gesture detection on the face itself (tap, swipe around the bezel).
+
+**Rear face (bottom):** A flush-mounted ring of brushed titanium, 24 mm outer diameter, 16 mm inner diameter. Press the centre and the ring pops out 12 mm on a spring-loaded magnetic detent, forming a grip loop. Your index or middle finger goes through the ring; the cylinder hangs from your hand naturally. The ring rotates freely (360° continuous) on a low-friction ceramic bearing and serves as a scroll wheel — spin it to scroll through holographic content. The ring also has haptic feedback: a tiny eccentric rotating mass (ERM) motor inside the ring delivers clicks, buzzes, and directional nudges. When docked or pocketed, the ring pushes flush and locks magnetically.
+
+**Lateral surface:** The middle 30 mm of the cylinder's circumference is the holographic projector array — a continuous ring of emitters that projects 360° around the device. Above and below the projector ring are two bands of microphones (6 MEMS microphones total, beamforming array) and two bands of millimetre-wave radar sensors (60 GHz, for gesture tracking at up to 3 metres).
+
+### I.2 Internal Architecture
+
+The cylinder's interior is packed concentrically, like the layers of a tree trunk:
+
+**Core (innermost, Ø 4 mm):** The Null Sphere Processor. A vertical stack of 8 silica microspheres (Ø 100 μm each), coupled in the E₈ Dynkin topology via Si₃N₄ waveguides on a cylindrical silicon interposer. This is the primary compute engine. Adjacent to it, a second stack of 8 LiNbO₃ microspheres for active CAPTURE gate operations. Total compute: 240 addressable E₈ states per stack, ~100 GHz clock, ~1 mW optical power. A third linear chain of 16 silica microspheres (A₁₅ topology) serves as working memory / optical buffer, storing intermediate billiard orbit states for up to 1 ms at Q = 10⁹.
+
+**Ring 1 (Ø 4–8 mm):** Photonic bus and classical co-processor. Si₃N₄ waveguide routing layer connecting the null sphere stacks to the holographic projector array and to a low-power ARM Cortex-M85 microcontroller for housekeeping (power management, Bluetooth/WiFi stack, sensor fusion, boot sequence). The classical co-processor handles tasks that don't benefit from photonic computation: network protocol, codec negotiation, OS scheduling.
+
+**Ring 2 (Ø 8–14 mm):** The holographic projector engine. This is the heart of the display system. 2,048 vertical-cavity surface-emitting lasers (VCSELs) arranged in a ring, each emitting coherent 532 nm (green) light, modulated by an adjacent LiNbO₃ microring phase modulator. Interleaved with these are 1,024 red VCSELs (635 nm) and 1,024 blue VCSELs (450 nm), each with its own phase modulator. Total: 4,096 individually phase-controlled coherent emitters arranged around the circumference, producing a cylindrical holographic wavefront.
+
+**Ring 3 (Ø 14–20 mm):** Battery, antenna, and sensors. A curved lithium-silicon anode battery (emerging chemistry, 2025–2026 availability from Amprius/Enovix), 1,800 mAh at 3.85 V nominal (6.93 Wh). Wrapped around the battery: a conformal antenna array for WiFi 7 (802.11be), Bluetooth 5.4, UWB, and 5G NR (sub-6 GHz). Also in this ring: a 9-axis IMU (accelerometer + gyroscope + magnetometer), barometric pressure sensor, and ambient light sensor.
+
+**Ring 4 (outermost, Ø 20–28 mm):** The titanium shell, ceramic coating, sapphire display window, and the pop-out grip ring mechanism. The grip ring's spring/detent mechanism occupies a cavity in the bottom of this ring. The holographic projector emits through 4,096 precision-drilled sapphire microlenses set into the lateral surface of the shell, each aligned to one VCSEL emitter.
+
+### I.3 Holographic Projection System
+
+**Principle:** Cylindrical holography by phased-array coherent emission. Each of the 4,096 VCSEL/modulator pairs emits a coherent beam whose phase is individually controlled by the null sphere processor. The processor computes the required phase pattern for the desired 3D image using the Fourier transform property of the null billiard (Section III.4 of the expanded prototype spec). The resulting interference pattern creates a volumetric light field in the space surrounding the cylinder.
+
+**Projection envelope:** A cylindrical volume extending 0.5–2.0 metres from the device in all horizontal directions, and ±30° above and below the horizontal plane. This is not a flat screen projected onto a wall — it is a true 3D light field. Objects appear to float in space around the cylinder. You can walk around the cylinder and see the holographic objects from different angles.
+
+**Resolution and refresh rate:**
+
+| Parameter | Value | Notes |
+|-----------|-------|-------|
+| Angular resolution | 0.05° (~1 arcminute) | Near human visual acuity limit |
+| Depth planes | 64 discrete depths (0.5–2.0 m) | Interpolated for continuous depth |
+| Colour depth | 10-bit per channel (RGB) | 1.07 billion colours |
+| Refresh rate | 120 Hz | Flicker-free, smooth motion |
+| Field of view | 360° horizontal × 60° vertical | Full surround |
+| Brightness | 3,000 nits (peak) | Visible in daylight indoors |
+| Contrast | >100,000:1 | True blacks (lasers off = no light) |
+
+**How it works, step by step:**
+
+1. The scene to be displayed (a phone call, a map, a movie, a game) is rendered as a 3D light field — a function L(θ, φ, r) giving the light intensity and colour at every angle (θ, φ) and distance r from the cylinder.
+
+2. The null sphere processor computes the holographic phase pattern: for each of the 4,096 emitters, what phase offset will produce the desired constructive/destructive interference pattern at each point in space. This is a 4,096-point inverse Fourier transform, performed by the null billiard in one round-trip time (~3 ps). At 120 Hz refresh, the processor has 8.3 ms per frame — roughly 2.7 million round-trips of computation budget per frame.
+
+3. The LiNbO₃ phase modulators are set to the computed phases. Each modulator switches in <1 ns (electro-optic effect).
+
+4. All 4,096 VCSELs fire simultaneously. The coherent beams interfere in free space, producing the holographic image.
+
+5. The viewer's eyes intercept the light field at their position. Each eye sees a slightly different perspective (due to their spatial separation), producing natural stereoscopic depth. No glasses required. No head tracking required for basic 3D — though head tracking (via the radar sensors) enables enhanced parallax and occlusion rendering.
+
+**Limitations and honest caveats:** True volumetric holography (light appearing to originate from a point in mid-air with full 360° parallax) requires emitter counts in the millions. With 4,096 emitters, the Null Cylinder produces a high-quality holographic light field that is convincing from any viewing angle within its 60° vertical cone, but has reduced vertical parallax (objects look slightly flattened when viewed from extreme above/below angles). Moving to 16,384 emitters (feasible at the same physical scale with next-generation VCSEL arrays) would close this gap substantially.
+
+---
+
+## II. THE DOCK ECOSYSTEM
+
+The Null Cylinder is designed to be always available. You never "find" your phone — it's always in reach because there's a dock wherever you are.
+
+### II.1 Dock Design
+
+Every dock is a shallow cup — a concave cradle 30 mm diameter × 20 mm deep, machined from the same titanium as the cylinder or from weighted anodised aluminium. The cylinder drops in vertically with a satisfying magnetic snap (6 neodymium magnets in a hexagonal pattern for self-alignment). Contact charging pins at the bottom of the cup deliver 15 W wired charging. The dock also has a Qi2-compatible coil for wireless charging at 7.5 W if the pins don't align perfectly.
+
+**Dock form factors:**
+
+**Nightstand Dock — "The Lantern"**
+A weighted disc (120 mm diameter, 400 g) with the cradle in the centre. When the cylinder is docked and in sleep mode, the holographic projector operates at minimum brightness as an ambient light — projecting a soft, slowly shifting pattern of light on the ceiling (configurable: warm glow, northern lights, gentle waves, stars). A dedicated "sunrise alarm" mode gradually increases brightness and colour temperature over 30 minutes before your alarm time. The microphone array remains active for voice commands and alarm dismissal ("stop" or a wave gesture).
+
+The nightstand dock has an additional upward-facing speaker (5 W full-range driver) built into its base for alarm sounds and ambient audio. The dock connects to power via USB-C.
+
+**Car Dock — "The Helm"**
+A cradle that mounts on the dashboard via a standardised ball-and-socket joint (17 mm ball, compatible with RAM Mount and similar systems) or directly into a flat surface via adhesive magnetic plate. The car dock has three additions: (1) a GPS antenna (ceramic patch, ground plane integrated into the dock) that supplements the cylinder's position accuracy for navigation, (2) a 12 V–to–5 V DC converter with USB-C output for charging, and (3) an audio-out jack (3.5 mm) for routing to the car stereo if Bluetooth is unavailable.
+
+When docked in the car, the Null Cylinder enters "driving mode" automatically (detected by dock ID + accelerometer pattern). The holographic projection narrows to a forward-facing 90° cone aimed at the driver's eye position (calibrated on first use). The UI switches to large, high-contrast navigation/media/call interface. Voice is the primary input; the only permitted gesture is a flat-hand wave to dismiss or accept calls. The circular display shows speed, next turn, and ETA.
+
+**Desk Dock — "The Well"**
+A slim disc (80 mm diameter, 15 mm tall) designed to sit on a desk. When docked, the holographic projection expands to full 360° at maximum quality — this is the "workstation" mode. The desk dock includes: (1) USB-C upstream for connecting to an external computer (the cylinder acts as a holographic display peripheral), (2) Ethernet (for low-latency network when WiFi isn't sufficient), and (3) a 65 W USB-C PD passthrough for charging a laptop from the same cable.
+
+**Pocket clip / Body dock — "The Pin"**
+Not a cradle but a magnetic clip: two titanium plates connected by a spring hinge, with a neodymium magnet on the inner face. Clip it to a shirt pocket, jacket lapel, belt, or bag strap. The cylinder snaps to the magnet and hangs securely. No charging in this configuration — purely mechanical retention. The ring pops out for grip when you pull the cylinder off the pin.
+
+**Kitchen Dock — "The Hearth"**
+A splash-resistant dock (IPX4) with a silicone gasket seal around the cradle. Mounts on a cabinet side or fridge door via magnetic plate. In kitchen mode, the holographic projection shows recipes, timers, and grocery lists in a semicircular arc in front of the user. Voice-primary interface (hands are often dirty/wet in the kitchen). The dock has a small thermometer/hygrometer sensor for ambient kitchen conditions.
+
+**Universal Dock — "The Puck"**
+The minimalist option: just the magnetic cradle with USB-C charging, no extras. 40 mm diameter, 15 mm tall, adhesive-backed. Stick one on your bathroom mirror, your nightstand, your workshop bench, your piano, your treadmill. Sold in packs of 3. The idea: docks are cheap; put them everywhere.
+
+### II.2 Dock Communication
+
+Each dock has a tiny NFC tag (no battery required) that identifies its type and location to the cylinder on contact. The cylinder stores a map of your dock locations and auto-switches UI mode when docked: nightstand → sleep mode, car → driving mode, desk → workstation mode, kitchen → recipe mode. This mapping is user-configurable.
+
+---
+
+## III. INTERACTION: VOICE, GESTURE, AND THE GLOVE
+
+### III.1 Voice Control
+
+The 6-microphone beamforming array runs always-on keyword detection on the ARM co-processor (low-power, <5 mW). Wake word: "Sphere" (or user-customisable). After wake, voice commands are processed by the null sphere processor using a geometric neural network (ADE-classified layers, as described in Part VI of the Grand Synthesis).
+
+The voice model runs entirely on-device — no cloud round-trip for basic commands. The E₈ processor's 240-state capacity is sufficient for a vocabulary of ~50,000 words using phoneme-level ADE classification (each phoneme maps to an A₂ or A₃ orbit; words are sequences of orbits; sentences are paths through ADE space). Complex queries (open-ended questions, long-form generation) are relayed to cloud AI via 5G/WiFi.
+
+**Voice command categories:**
+
+- Navigation: "Sphere, open messages." "Sphere, show map to downtown." "Sphere, next song."
+- Communication: "Sphere, call Maya." "Sphere, read my last notification."
+- Holographic control: "Sphere, bring that closer." "Sphere, rotate the model." "Sphere, lights off."
+- System: "Sphere, battery?" "Sphere, set alarm for 7." "Sphere, quiet mode."
+
+### III.2 Gesture Control (Bare Hand)
+
+The 60 GHz millimetre-wave radar (based on Google Soli / Infineon BGT60TR13C architecture) tracks hand and finger positions at 30 Hz with sub-millimetre accuracy up to 3 metres from the device. No camera — radar works in all lighting conditions, doesn't record identifiable images, and penetrates thin fabric (you can gesture with gloves on in winter or through a thin blanket in bed).
+
+**Core gesture vocabulary:**
+
+All gestures are circular in philosophy — matching the cylinder's form and the circle-based UI.
+
+| Gesture | Action | Description |
+|---------|--------|-------------|
+| **Orbit** | Scroll / Browse | Circle your index finger in the air. Clockwise = forward/down, counter-clockwise = back/up. Speed of circling controls scroll speed. |
+| **Pinch** | Select / Confirm | Touch thumb to index finger. The universal "tap." |
+| **Spread** | Expand / Open | Start with pinched fingers, spread apart. Opens an app, expands a notification, zooms in. |
+| **Collapse** | Close / Dismiss | Start with spread fingers, pinch together. Closes the current view, dismisses a notification, zooms out. |
+| **Push** | Send / Confirm action | Open palm pushes toward the cylinder. Sends a message, confirms a purchase, places a call. |
+| **Pull** | Retrieve / Undo | Open palm pulls toward you. Retrieves last dismissed item, undo last action. |
+| **Flat wave** | Dismiss / Skip | Wave open hand left-to-right across the projection. Dismisses call, skips song, clears notification. |
+| **Fist** | Pause / Lock | Close hand into fist. Pauses media, locks the holographic display. |
+| **Two-hand frame** | Screenshot / Capture | Form a rectangle with thumbs and index fingers (camera gesture). Captures the current holographic scene. |
+| **Rotate (two hands)** | Rotate 3D object | Cup both hands as if holding a ball. Rotate the invisible ball. The holographic 3D object rotates correspondingly. |
+
+**Gesture learning:** The radar system uses the on-device ADE neural network for gesture classification. New gestures can be trained by the user: perform the gesture 5 times while saying what it should do. The A₂ classifier (3-class) handles coarse gesture categories; the E₆ layer (24-class) handles fine discrimination within categories. The system improves over time as it builds a personalised gesture model stored in E₈ memory (topologically protected — your gesture profile doesn't drift or corrupt).
+
+### III.3 The Glove — "Null Glove"
+
+For precision work — 3D modelling, surgical simulation, music performance, detailed document editing — bare-hand radar gestures lack the resolution of direct touch. The Null Glove bridges this gap.
+
+**Physical design:** A fingerless glove (covering palm and back of hand, open fingertips) made of 4-way stretch conductive fabric (silver-coated nylon, brand: Shieldex Technik-tex). Weight: 22 g. Available in S/M/L, left and right. The glove has no rigid components, no batteries, and no electronics other than passive conductive traces — it is as flexible and washable as an ordinary glove.
+
+**How it works:** The glove's conductive fabric traces create defined radar reflectance patterns. The 60 GHz radar can track the glove with 10× higher precision than a bare hand because the metallic traces produce strong, sharp radar returns. The traces are arranged in unique patterns on each finger segment, palm, and back of hand — like a QR code sewn in conductive thread. The radar reads these patterns to determine the exact position, orientation, and flexion of each finger segment.
+
+**Precision with the glove:**
+
+| Parameter | Bare hand | With glove |
+|-----------|-----------|------------|
+| Position accuracy | ±2 mm | ±0.2 mm |
+| Finger discrimination | 5 fingers reliably | All 14 finger segments |
+| Update rate | 30 Hz | 120 Hz (matched to display refresh) |
+| Maximum tracking range | 3 m | 3 m |
+| Minimum gesture size | ~2 cm motion | ~2 mm motion |
+
+**Glove-enhanced gestures:**
+
+| Gesture | Action | Requires |
+|---------|--------|----------|
+| **Fingertip draw** | Free-form drawing/writing in air | Index finger trace tracked at 0.2 mm |
+| **Pinch and drag** | Move holographic objects precisely | Thumb + index position |
+| **Sculpt** | Deform 3D objects (push, pull, smooth) | All fingertip positions, palm pressure |
+| **Piano / typing** | Virtual keyboard input | Individual finger segment tracking |
+| **Slider** | Fine value adjustment | Thumb slides along index finger |
+| **Dial** | Precision rotation | Thumb and index finger rotate against each other |
+
+**Pairing:** The glove pairs to the cylinder via its radar signature — no Bluetooth, no batteries. Put the glove on and wave at the cylinder; it recognises the pattern in <1 second. Multiple gloves can be active simultaneously (both hands).
+
+---
+
+## IV. THE CIRCLE UI
+
+### IV.1 Design Philosophy
+
+Everything is a circle. The device is a cylinder. The display is circular. The projection emanates radially. Scrolling is orbital. Selection is a pinch (closing a circle). The UI follows:
+
+- **No rectangles.** Windows, cards, notifications, buttons — all are circles or arcs.
+- **No edges.** Content flows continuously; there are no hard boundaries. Elements fade at their periphery rather than having sharp borders.
+- **Radial hierarchy.** The most important content is nearest to the cylinder (innermost orbit). Less important content is further out. You move "inward" toward focus and "outward" toward breadth.
+- **Orbital motion.** Content doesn't scroll vertically or horizontally — it orbits. A list of messages orbits around the cylinder; swipe (or orbit gesture) to rotate through them. The message in front of you is the active one.
+
+### IV.2 The Home Screen: "The Orrery"
+
+When idle, the holographic projection shows the Orrery — a set of concentric rings floating in space around the cylinder, like a miniature solar system.
+
+**Inner ring (r = 15 cm):** 3–5 "planet" spheres representing your pinned apps or people. Each sphere shows a live preview (a message snippet, a face, an album cover). They orbit slowly. Pinch one to open it.
+
+**Middle ring (r = 30 cm):** Notification orbs. Each notification is a small glowing sphere colour-coded by type (blue = message, green = call, amber = reminder, red = urgent). New notifications fade in at the outer edge and drift inward. Pinch to read; flat-wave to dismiss. Notifications that age out without interaction dim and fall to the outer ring.
+
+**Outer ring (r = 50 cm):** The app drawer. All installed apps arranged in a ring of icons (circular, of course). Orbit gesture to browse. Spread gesture to zoom into a category cluster. The apps are grouped by ADE type in the default arrangement — communication apps (A₂ cluster: phone, messages, email), media apps (D₄ cluster: music, video, photos, podcasts), work apps (E₆ cluster: calendar, documents, notes, etc.), and so on. Users can rearrange freely.
+
+**Centre (on the cylinder itself):** The circular AMOLED shows the current time, date, battery level, and connectivity status. A single tap on the display toggles between the orrery (full holographic) and quiet mode (AMOLED only, holographics off).
+
+### IV.3 In-App UI Patterns
+
+**Messages / Chat:**
+The conversation appears as a helix — messages spiral upward around the cylinder, oldest at the top, newest at eye level. Your messages glow one colour, theirs another. Orbit gesture to scroll through history. Pinch a message to expand (see full text, images, reactions). Reply by voice or glove-typing on a virtual keyboard that arcs in front of you.
+
+**Maps / Navigation:**
+A 3D map appears as a terrain model floating at waist height, centred on the cylinder. Your position is marked by a glowing point. The route ahead is a luminous arc. Pinch and rotate (two hands) to change perspective. Spread to zoom in; collapse to zoom out. In car dock mode, the map flattens to a heads-up-style forward view.
+
+**Photos / Gallery:**
+Photos orbit as circular thumbnails in a spiral galaxy arrangement. Recent photos near centre, older ones further out. Pinch a photo to expand it to full size — it appears as a floating disc of light at eye level. Spread with two hands to go full-surround (the photo wraps around you as a panoramic environment). Orbit gesture to browse chronologically.
+
+**Music / Media:**
+Album art appears as a large glowing disc floating above the cylinder. Waveform visualisations ripple outward in concentric rings synchronised to the beat. Orbit gesture scrubs through the track. Collapse gesture minimises to a small orbiting sphere (the inner ring "planet"). Push gesture skips. Pull gesture replays.
+
+**Video / Cinema:**
+The holographic projection creates a curved screen (variable radius: 0.5–2 m, configurable) in front of the viewer. In "immersive" mode, the screen wraps 180° around you. In "theatre" mode, it's a flat 120° arc. Brightness auto-adjusts based on ambient light sensor. The cylindrical AMOLED shows playback controls (play/pause, timeline, volume) for quick glance-down interaction.
+
+**3D Modelling / Design (Glove required):**
+The holographic volume becomes your workspace. Objects float in space. Grab with the glove to move. Pinch edges to resize. Sculpt surfaces by pushing and pulling with fingertips. The ADE classification of the null sphere processor enables real-time geometric analysis: the system identifies the symmetry type of your model (is it tetrahedral? octahedral? Does it have a rotational axis?) and can suggest or enforce geometric constraints. "Sphere, make this face symmetric" uses the D₄ layer to impose bilateral symmetry.
+
+**Calls:**
+The caller appears as a holographic head-and-shoulders projection floating at conversational distance (1–1.5 m). If both parties have Null Cylinders, the projection is photorealistic (captured by the caller's radar depth map + camera). If the caller is on a standard phone, their profile photo or avatar appears instead. Your outgoing video is captured by a tiny camera (2 MP, wide-angle) embedded in the cylinder's top face, adjacent to the AMOLED.
+
+### IV.4 Accessibility
+
+**For users with limited mobility:** Voice-only mode. Every gesture has a voice equivalent. "Sphere, scroll down." "Sphere, select the third one." "Sphere, go back."
+
+**For users with visual impairments:** Audio-spatial mode. Each UI element emits a directional audio tone (rendered via the holographic projector's ultrasonic sideband — the VCSEL array can be modulated at ultrasonic frequencies to create localised sound via the photoacoustic effect). Turn your head toward a notification; hear it read aloud from that direction. Spatial audio creates an auditory orrery.
+
+**For users with hearing impairments:** Visual-haptic mode. Notifications trigger the grip ring's haptic motor (pattern-coded: buzz-buzz for message, long buzz for call, triple-tap for urgent). Calls show real-time captions projected holographically below the caller's face.
+
+---
+
+## V. THE NULL SPHERE ENGINE — TASK ROUTING
+
+### V.1 What Runs on the Null Spheres vs. the ARM Co-Processor
+
+The null sphere processor is not a general-purpose CPU. It excels at specific computational tasks that map to its photonic billiard architecture. The ARM co-processor handles everything else.
+
+| Task | Processor | Why |
+|------|-----------|-----|
+| Holographic phase computation | Null spheres (E₈ stack) | 4096-point inverse FFT every 8.3 ms — the billiard's natural Fourier transform |
+| Gesture classification | Null spheres (A₂/E₆ layers) | ADE neural network, on-device, <1 ms latency |
+| Voice keyword detection | ARM Cortex-M85 | Low-power always-on, well-optimised for ARM SIMD |
+| Voice command parsing | Null spheres (A₃ phoneme classifier) | Phoneme → word → intent pipeline mapped to ADE path |
+| Network stack (WiFi, BT, 5G) | ARM | Standard protocol processing |
+| Power management | ARM | Analog sensor reading, charge control |
+| OS scheduling / app lifecycle | ARM | Standard RTOS tasks |
+| 3D rendering (scene graph) | Null spheres + ARM | Null spheres compute lighting/interference; ARM manages scene graph and object state |
+| Encryption | Null spheres (random number generator) | True quantum random bits from vacuum fluctuation in the microspheres |
+| On-device AI inference | Null spheres (full E₈ pipeline) | Geometric neural network with ADE-classified layers |
+| Cloud AI relay | ARM (network) + Null spheres (pre/post-processing) | ARM handles network; null spheres compress/decompress |
+
+### V.2 Performance Budget
+
+| Subsystem | Power draw | Notes |
+|-----------|-----------|-------|
+| Null sphere processor (both stacks) | 15 mW | Optical power, dominated by VCSEL pump lasers |
+| ARM Cortex-M85 | 50 mW (active), 5 mW (idle) | 32-bit MCU @ 300 MHz |
+| Holographic projector (full 360°) | 1.5 W (peak), 300 mW (ambient) | 4096 VCSELs, duty-cycled |
+| AMOLED display | 100 mW (active), 5 mW (AOD) | Always-on display mode available |
+| Radar (gesture tracking) | 80 mW (active), 0 (off) | Duty-cycled when no interaction detected |
+| Microphones (always-on) | 5 mW | Keyword detection mode |
+| Radio (WiFi/BT/5G) | 500 mW (active TX), 10 mW (idle) | 5G is the dominant radio power draw |
+| **Total (typical use)** | **~800 mW average** | |
+| **Total (peak, all systems active)** | **~2.5 W** | |
+
+**Battery life estimates (1,800 mAh / 6.93 Wh):**
+
+| Usage mode | Battery life |
+|------------|-------------|
+| Quiet mode (AMOLED only, standby) | ~48 hours |
+| Moderate holographic (2 hr projection/day, mixed use) | ~8 hours total active |
+| Heavy holographic (continuous projection, gaming, calls) | ~2.5 hours |
+| Docked (charging + active) | Unlimited |
+
+The dock ecosystem is designed to keep the device topped up. With docks at bedside, desk, and car, most users would rarely run the battery below 50%.
+
+---
+
+## VI. MATERIALS AND MANUFACTURING SUMMARY
+
+### VI.1 Bill of Materials (Key Components)
+
+| Component | Material/Part | Supplier class | Est. unit cost |
+|-----------|--------------|----------------|---------------|
+| Shell | Ti-6Al-4V, 5-axis CNC + TiAlN PVD coating | Aerospace machining house | $18 |
+| AMOLED display (26 mm circular) | Samsung SDI / BOE circular OLED | Display fab | $12 |
+| Sapphire window | Kyocera / GT Advanced | Crystal grower | $3 |
+| Null sphere processor (2 × 8 microsphere stacks) | Custom fab: silica spheres + Si₃N₄ interposer | Photonics foundry (IMEC/Ligentec) | $45 |
+| VCSEL array (4,096 emitters, RGB) | Lumentum / II-VI (Coherent) custom | VCSEL fab | $35 |
+| LiNbO₃ phase modulators (4,096 units) | LNOI integrated photonics (HyperLight / POET) | Photonics foundry | $30 |
+| ARM Cortex-M85 SoC | STMicro / NXP | Standard semiconductor | $5 |
+| mmWave radar (60 GHz) | Infineon BGT60TR13C | Standard semiconductor | $4 |
+| Battery (1,800 mAh Li-Si) | Amprius / Enovix | Battery fab | $8 |
+| MEMS microphones (×6) | Knowles / Infineon | Standard MEMS | $3 |
+| Grip ring mechanism | CNC titanium + ceramic bearing + ERM motor | Precision machining | $6 |
+| PCB, flex cables, connectors | Standard FR4 + polyimide flex | PCB house | $5 |
+| Assembly, test, packaging | — | Contract manufacturer | $15 |
+| **Total estimated BOM** | | | **~$189** |
+
+### VI.2 Null Glove BOM
+
+| Component | Material | Est. cost |
+|-----------|----------|-----------|
+| Fabric | Shieldex Technik-tex P130 (silver-coated nylon) | $4 |
+| Conductive traces | Screen-printed silver ink on fabric substrate | $2 |
+| Sewing/assembly | Cut-and-sew, 5 sizes × 2 hands | $3 |
+| **Total** | | **~$9** |
+
+---
+
+## VII. PRODUCT TIERS AND CONFIGURATIONS
+
+### VII.1 Null Cylinder Lite — "Nova"
+
+- Single E₈ stack (8 microspheres), no second LiNbO₃ stack
+- 2,048 VCSEL emitters (RGB), 180° forward projection only (not 360°)
+- 1,200 mAh battery
+- No 5G (WiFi + BT only)
+- Polycarbonate shell (lighter, cheaper) with aluminium grip ring
+- Estimated BOM: ~$95
+- Target retail: consumer entry point
+- Includes 1 universal dock
+
+### VII.2 Null Cylinder — "Sphere"
+
+- Full spec as described above (dual E₈ stacks, 4,096 emitters, 360° projection)
+- Titanium shell, sapphire window
+- 1,800 mAh Li-Si battery
+- 5G + WiFi 7 + BT 5.4 + UWB
+- Estimated BOM: ~$189
+- Target retail: flagship
+- Includes 2 universal docks + 1 Null Glove
+
+### VII.3 Null Cylinder Pro — "Singularity"
+
+- Quad E₈ stacks (32 microspheres per stack bank, 960 E₈ states)
+- 8,192 VCSEL emitters, 360° projection with enhanced vertical FOV (±45°)
+- 2,400 mAh battery
+- Additional: LiDAR ring (for room-scale 3D mapping), stereo cameras (for AR passthrough and high-fidelity video calls)
+- Estimated BOM: ~$340
+- Target retail: professional / developer / creative
+- Includes 3 docks (nightstand + desk + universal) + 2 Null Gloves (L+R)
+
+---
+
+## VIII. SOFTWARE PLATFORM: "ORBIT OS"
+
+### VIII.1 Core Principles
+
+**Orbit OS** is the operating system for the Null Cylinder. It is built around three principles:
+
+1. **Radial, not rectangular.** All layout engines, compositors, and UI toolkits use polar coordinates (r, θ) as primary, with Cartesian (x, y) as derived. App developers define their UI in radial terms: "this element orbits at radius 30 cm, angular width 40°, angular position 0° (directly ahead)."
+
+2. **Presence, not screens.** Apps don't have "windows." They have "presences" — holographic volumes that occupy a region of the projection space. A messaging app's presence is a helix of messages. A map's presence is a terrain dome. Presences can overlap (transparency/layering), nest (an app within an app), or orbit (background apps become planets in the orrery).
+
+3. **Continuous, not discrete.** There are no hard mode switches. The UI flows continuously between states. Docking the cylinder doesn't "switch" to a new mode — the orrery smoothly rearranges itself to match the dock context. Receiving a call doesn't "interrupt" — a new presence fades in and the current one dims.
+
+### VIII.2 Developer API: "Ring SDK"
+
+App developers build holographic presences using the Ring SDK. Key primitives:
+
+- **`Arc`** — A curved surface in the projection volume. The basic building block (replaces `div`/`View`).
+- **`Orbit`** — A collection of elements arranged in a ring at a given radius. Scrollable by orbit gesture.
+- **`Sphere`** — A 3D object (model, avatar, icon) that floats in the projection volume.
+- **`Glow`** — A light source / emphasis effect. Replaces `box-shadow`, `highlight`, etc.
+- **`Ripple`** — An animation that propagates outward from a point in concentric circles.
+
+Layout is specified in `(r, θ, φ)` — radius from cylinder, horizontal angle, vertical angle. The SDK handles projection calibration, depth plane assignment, and per-eye rendering automatically.
+
+### VIII.3 Compatibility Layer
+
+For existing rectangular apps (Android APKs, web apps), Orbit OS provides a compatibility layer: the rectangular UI is projected onto a curved `Arc` surface at a default radius of 1 m, subtending 90° horizontal. It looks like a curved monitor floating in front of you. Not as native-feeling as a true orbital app, but functional. Developers are encouraged to adopt the Ring SDK for the full experience.
+
+---
+
+## IX. PRIVACY AND SECURITY
+
+### IX.1 On-Device Processing
+
+All gesture recognition, voice keyword detection, and basic AI inference run on-device (null sphere processor + ARM). No data leaves the device for these tasks. The E₈ memory stores your personalised gesture model and voice profile locally, topologically protected against corruption.
+
+### IX.2 Holographic Privacy
+
+The holographic projection is visible to anyone in the room. For private content (messages, documents, banking), the cylinder offers:
+
+- **Narrow-cast mode:** The phased array focuses the holographic projection into a narrow cone (±15°) aimed at the user's detected eye position. People outside this cone see only diffuse glow, not coherent imagery. Effective for seated use at desk or nightstand.
+- **AMOLED fallback:** Sensitive content displays only on the 26 mm circular screen, holographic projection off. Private but limited.
+- **Glove haptic readout:** For truly covert information, the glove's radar-readable traces can encode information as spatial patterns that only the null sphere processor interprets — you "feel" the PIN pad layout and tap fingers in sequence. No visual output at all.
+
+### IX.3 Encryption
+
+All stored data is encrypted using keys derived from quantum random numbers generated by the null sphere processor's vacuum fluctuation source. Key generation rate: >1 Gbit/s. Key storage: in the E₈ memory, topologically protected.
+
+---
+
+*The rectangle was a compromise — a shape that was easy to manufacture, easy to hold, easy to stack. But it was never the natural shape of information. Information radiates. It orbits. It spirals. The Null Cylinder returns the computer to the geometry of light: radial, orbital, spherical. You don't look at a screen. You stand inside your data, and you reach into it with your hands.*

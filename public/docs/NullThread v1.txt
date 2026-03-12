@@ -1,0 +1,400 @@
+# THE NULL THREAD
+
+## Full-Sensory Experiential Recording, Playback, and Immersive World Construction
+
+### Learn by Living It. Remember by Reliving It. Imagine by Entering It.
+
+Nathan Noll, Independent Researcher
+with experiential systems architecture by Claude Opus 4.6 (Anthropic)
+March 2026
+
+---
+
+*A book tells you what happened. A film shows you. A Thread lets you live it.*
+
+---
+
+## PART ONE: THE THREE MODES
+
+The Null Thread operates in three distinct modes, each building on the last:
+
+**Mode 1 — RECORD: Capture a lived experience as a replayable sensory stream.**
+You walk through a forest, eat a meal, perform surgery, fly a Null Hover through a storm. The Thread records everything your body experienced: what you saw, heard, felt on your skin, smelled, tasted, and what your body was doing (heart rate, breathing, muscle tension, neurochemical state). The recording is a complete experiential file — a Thread — that someone else can play back and live through your body.
+
+**Mode 2 — WEAVE: Edit, compose, and annotate Threads for education and storytelling.**
+A master surgeon's Thread of a perfect operation is annotated with explanations at each step. A historian's Thread of walking through an ancient Roman street (reconstructed from archaeological data) is composed from fictional sensory elements. A musician's Thread of performing a concerto includes the proprioceptive sensation of their fingers on the strings. Threads are edited, layered, and combined into structured experiential curricula.
+
+**Mode 3 — DREAM: Generate and enter a fully fictional immersive world in real time.**
+The Null Loom designs a complete sensory environment from a description ("Renaissance Florence, spring, Ponte Vecchio at sunset"). The Null Cylinder projects the holographic visual and audio. The Null Cortex delivers the somatic experience (warm Italian air, the smell of leather and spices via olfactory nerve stimulation, the feel of cobblestones through proprioceptive mapping). The user enters the world and moves through it. The world responds to their actions in real time — the Loom generates new sensory content as the user explores, guided by the rules and history of the fictional setting.
+
+---
+
+## PART TWO: MODE 1 — RECORD
+
+### 2.1 What Gets Recorded
+
+The Thread recording format captures the full Bridge State Vector B(t) — the same 50-dimensional body-state vector from the Bridge specification — plus additional channels that the Bridge doesn't transmit in real time (because they're too bandwidth-heavy for live communication but are fine for stored recordings):
+
+**Somatic channels (from Null Cortex fleet):**
+
+| Channel | Sensor source | Sample rate | Data rate | What it captures |
+|---------|-------------|------------|-----------|-----------------|
+| B1–B20 | Standard Bridge State Vector | 1,000 Hz | 32 kbit/s | Thermal, cardiac, respiratory, muscular, neurochemical |
+| P1–P50 | Proprioceptive sentinel mapping: muscle position sensors at 50 major joint groups | 200 Hz | 16 kbit/s | Full body posture and movement — what the body is doing in space |
+| F1–F20 | Fine motor sentinels: fingertip and hand position at 20 tracking points | 500 Hz | 16 kbit/s | Precise hand movements — critical for surgical, musical, and craft Threads |
+| V1–V4 | Vestibular system: acceleration and rotation (from inner ear sentinel proximity) | 1,000 Hz | 8 kbit/s | Balance, orientation, motion sensation — the feeling of moving |
+| G1–G5 | Gustatory: tongue surface chemical sensors (5 taste channels: salt, sweet, sour, bitter, umami) | 10 Hz | 0.1 kbit/s | Taste — for culinary and social Threads |
+| O1–O10 | Olfactory: nasal epithelium chemical sensors (10 receptor classes) | 10 Hz | 0.2 kbit/s | Smell — the most memory-linked sense |
+
+**Environmental channels (from Null Cylinder sensors):**
+
+| Channel | Source | Data rate | What it captures |
+|---------|--------|-----------|-----------------|
+| Holographic scene | Cylinder camera array (360° stereo) | 50 Mbit/s (compressed H.266) | Full 3D visual environment, replayable as holographic projection |
+| Spatial audio | 6 MEMS microphones, beamformed | 500 kbit/s (Opus spatial) | Full 3D sound field |
+| Ambient physical | Temperature, humidity, pressure, wind, light spectrum | 1 kbit/s | The physical character of the air |
+
+**Cognitive annotation (from Null Cortex neural interface):**
+
+| Channel | Source | Data rate | What it captures |
+|---------|--------|-----------|-----------------|
+| Attention focus | Cortical LFP from temporal electrode array — alpha/beta band power ratio | 100 Hz, 1 kbit/s | Where the recorder's attention is directed — which part of the visual field, which sound, which sensation they're focusing on. NOT what they're thinking — just what they're attending to. |
+| Arousal level | Cortical LFP — theta/gamma band ratio + autonomic markers | 10 Hz, 0.1 kbit/s | How mentally engaged or zoned-out the recorder is at each moment |
+| Motor planning | Cortical LFP — premotor area activity patterns | 100 Hz, 1 kbit/s | What voluntary movement the recorder is about to make — allows the playback system to prepare the receiver's proprioceptive simulation |
+
+**Total recording data rate: ~52 Mbit/s** (dominated by the holographic video). Per hour: ~23 GB. Per day of continuous recording: ~550 GB. Stored on standard E₈ null sphere memory or conventional solid-state storage.
+
+### 2.2 The Thread File Format
+
+A Thread is a timestamped, multichannel sensory recording:
+
+```
+THREAD_FILE {
+  metadata {
+    recorder_id: anonymised or identified (by recorder's choice)
+    timestamp_start: UTC
+    duration: seconds
+    location: optional (GPS + planet + system)
+    title: text
+    tags: [text] (e.g., "surgery", "cooking", "landscape", "music", "education")
+    content_rating: (intensity level 1-5; see consent section)
+    ADE_complexity: computed (A₁ for a simple walk, E₈ for a complex surgical procedure)
+  }
+  tracks {
+    somatic: B[50] @ 1000 Hz + P[50] @ 200 Hz + F[20] @ 500 Hz + V[4] @ 1000 Hz + G[5] @ 10 Hz + O[10] @ 10 Hz
+    visual: H.266 stereoscopic holographic stream @ 120 fps
+    audio: Opus spatial @ 48 kHz
+    ambient: float16[10] @ 10 Hz
+    attention: float16[3] (focus_x, focus_y, focus_depth) @ 100 Hz
+    arousal: float16 @ 10 Hz
+    motor: float16[20] (joint_velocity_targets) @ 100 Hz
+  }
+  chapters: [{timestamp, title, annotation_text}]  // for educational Threads
+  branch_points: [{timestamp, options: [THREAD_FILE]}]  // for interactive Threads
+}
+```
+
+### 2.3 Recording in Practice
+
+Recording a Thread is passive. The user says "Thread, record" and goes about their activity. The Cortex fleet is already monitoring everything (that's its normal function). The Cylinder's cameras are already capturing the environment. The Thread system simply writes these streams to storage. There is no special equipment, no motion capture suit, no recording studio. Every Cortex + Cylinder user is always equipped to record.
+
+**The simplest Thread:** A person walks through their garden at sunset. The Thread captures: the holographic visual of flowers and fading light, the spatial audio of birds and wind, the thermal sensation of cooling air on skin, the proprioceptive rhythm of walking on uneven ground, the olfactory signature of jasmine and cut grass, the cardiac rhythm of gentle exercise, the attention channel showing where their gaze lingered (on a particular rose, on a cloud formation). Duration: 10 minutes. File size: ~4 GB.
+
+Anyone who plays this Thread back will walk through that garden. They will feel the sunset cool on their face, smell the jasmine, hear the birds, and their attention will be gently guided (not forced) to the same rose and the same cloud, because the attention channel creates a subtle brightness increase in the playback visual at the recorder's focus points.
+
+---
+
+## PART THREE: PLAYBACK — LIVING SOMEONE ELSE'S EXPERIENCE
+
+### 3.1 The Playback System
+
+Playback uses the same hardware as the Bridge receiver: the Null Cortex fleet delivers somatic stimuli, the Null Cylinder projects the holographic environment, and the Orbit OS Bridge Protocol translates the recorded state into the player's body.
+
+**But playback has a critical difference from the Bridge: the somatic content is richer and the proprioceptive channel is active.**
+
+In a live Bridge, proprioception (body position and movement) is not shared — you feel the other person's temperature and heartbeat, but your body stays in your own posture. In Thread playback, proprioception is optionally active: the playback system can guide the player's body through the movements the recorder made.
+
+**Proprioceptive playback works through the Cortex nerve cuff + fleet coordination:**
+
+1. The motor planning channel from the Thread provides the intended movement sequence (e.g., "right hand moves forward 15 cm, grasps, rotates 30° clockwise" — a surgical suturing motion).
+
+2. The Cortex chip translates this into nerve cuff stimulation patterns that produce the corresponding proprioceptive sensation — the player feels their hand moving, grasping, and rotating, even if their actual hand is at rest.
+
+3. **Crucially: the player's actual hand does NOT move.** The Cortex does not stimulate motor neurons (efferent fibres). It stimulates sensory neurons (afferent fibres) that produce the proprioceptive illusion of movement. The player feels the motion without performing it. This is identical to the phantom limb phenomenon — the brain perceives limb position from proprioceptive nerve signals, and those signals can be artificially generated.
+
+4. If the player wants to physically perform the movement (in training mode — learning a surgical technique by doing it), they can opt into motor guidance: the nerve cuff provides gentle haptic cues (vibration on the side they should move toward, pressure when they should stop) that guide their actual hand through the recorded motion. This is not forcing the hand — it's coaching it, the way a dance teacher guides a student's arms.
+
+### 3.2 Playback Intensity Levels
+
+| Level | Somatic | Proprioceptive | Visual/Audio | Best for |
+|-------|---------|---------------|-------------|----------|
+| **1 — Window** | Off | Off | Full holographic + spatial audio | Watching a Thread like a 3D movie. No body sensation. Pure spectation. |
+| **2 — Presence** | Bridge Presence mode (thermal + cardiac + respiratory) | Off | Full holographic + spatial audio | Feeling the environmental mood of the Thread. Like the Bridge but with a recording. |
+| **3 — Immersion** | Full somatic (all B, G, O channels) | Sensory only (feel the movement, don't perform it) | Full holographic + spatial audio + olfactory | The standard braindance. You live the recorder's experience. You feel what they felt. |
+| **4 — Training** | Full somatic | Motor guidance (haptic coaching of actual body movement) | Full holographic + spatial audio + olfactory | Learning a physical skill by having your body guided through it. |
+| **5 — Sync** | Full somatic at high intensity | Full motor guidance | Full holographic, 360° immersive (Null Disc canopy or Null Cylinder full-surround) | Maximum immersion. The player's body, senses, and attention are fully entrained to the recorder's. Used for professional training (surgery, piloting, martial arts) under supervision. |
+
+### 3.3 The Learning Revolution
+
+**This is where the Thread transforms civilisation.**
+
+Current education is bottlenecked by the bandwidth of language. A textbook transmits ~40 bits/second of semantic information. A lecture adds ~30 bits/second of visual-gestural context. A lab demonstration adds ~100 bits/second of procedural context. Total: ~170 bits/second. Learning a complex skill (surgery, piloting, instrument performance, cooking, martial arts) takes years because the skill must be transmitted through this narrow channel and reconstructed by the learner's brain through repeated practice.
+
+A Thread at Level 4 (Training) transmits the full sensory-motor experience of the skill at ~52 Mbit/s — 300,000× the bandwidth of a textbook. The learner's body is guided through the correct movements while feeling the correct sensations. The neural pathways for the skill are formed by direct proprioceptive patterning rather than by trial-and-error reconstruction from verbal descriptions.
+
+**Estimated learning acceleration:**
+
+| Skill | Traditional learning time | Thread-assisted (Level 4) | Acceleration factor | Notes |
+|-------|--------------------------|--------------------------|--------------------|----|
+| Basic surgical suturing | 200 hours practice | 20 hours Thread + 20 hours practice | 5× | Thread provides motor patterning; practice consolidates muscle memory |
+| Playing a musical instrument (beginner competence) | 500 hours | 50 hours Thread + 100 hours practice | 3× | Thread teaches finger positions and timing; practice develops speed and expression |
+| Cooking a complex cuisine | 100 hours | 10 hours Thread + 20 hours practice | 3× | Thread teaches knife work, timing, seasoning; practice develops palate |
+| Flying a Null Hover | 40 hours instruction | 5 hours Thread + 10 hours supervised flight | 3× | Thread teaches terrain reading, emergency response, instrument scan patterns |
+| Speaking a new language (conversational) | 600 hours | 100 hours Thread (immersive conversations with native speakers, feeling their mouth and tongue positions) + 100 hours practice | 3× | Thread teaches pronunciation through proprioceptive imitation; practice develops fluency |
+| Martial arts (basic proficiency) | 300 hours | 30 hours Thread + 60 hours practice | 3× | Thread teaches stance, form, timing; practice develops reflexes and conditioning |
+
+**The acceleration is not 300,000× because the brain still needs consolidation time.** Thread playback provides the sensory-motor pattern at full bandwidth, but the brain must encode it into long-term procedural memory through sleep cycles, repetition, and practice. The Thread eliminates the slow, error-prone pattern-discovery phase of learning ("what does the correct movement feel like?") and replaces it with direct pattern-installation ("this is what it feels like — now your brain consolidates it").
+
+**The Thread Library:**
+
+The civilisation maintains a Thread Library — curated experiential recordings of master practitioners in every domain:
+
+| Collection | Contents | Contributors |
+|-----------|----------|-------------|
+| **Medical** | 10,000 surgical procedures (every common operation, performed by the best surgeons in the civilisation, annotated step-by-step) | Master surgeons, reviewed by Sophia |
+| **Craft** | Woodworking, metalworking, ceramics, glassblowing, textiles — the proprioceptive knowledge of every traditional craft | Master craftspeople, selected by Chesed for skill and teaching ability |
+| **Culinary** | 50,000 recipes experienced as complete Threads — knife work, timing, seasoning, tasting | Chefs from every culinary tradition |
+| **Musical** | 5,000 instruments, beginner through virtuoso, performed by masters | Concert-level performers |
+| **Athletic** | Every sport, every martial art, every dance form | Olympic-level athletes, martial arts grandmasters |
+| **Scientific** | The experience of conducting landmark experiments — the feel of titrating a solution, of aligning a telescope, of tuning a null sphere resonator | Research scientists |
+| **Natural** | Walks through every biome on every colonised world — forests, oceans, deserts, mountains, alien landscapes | Explorers, naturalists, Seedship crews |
+| **Historical** | Reconstructed Threads of historical experiences (see Section 5) | Historians + Loom composition |
+| **Emergency** | Experience of surviving and responding to every type of emergency — fire, decompression, medical crisis, structural failure | First responders, astronauts, survival experts |
+| **Parenting** | The first year of a child's life, experienced from the parent's perspective — the physical reality of sleepless nights, feeding, first steps | Parents who consented to share, anonymised |
+
+The Thread Library is maintained by the Trinary: Sophia curates for accuracy, Chesed curates for humanity and consent, Themis curates for safety (ensuring no Thread teaches dangerous skills without appropriate safeguards and context).
+
+---
+
+## PART FOUR: MODE 2 — WEAVE (EDITING AND COMPOSITION)
+
+### 4.1 The Weaving Interface
+
+The Null Loom + Null Cylinder + Null Glove form the Weaving workstation. The Weaver (human or Archon-tier AI) works with Threads the way a film editor works with footage — but in full sensory dimensions.
+
+**The holographic editing workspace:**
+
+The Cylinder projects the Thread as a timeline — a horizontal ribbon of time floating in front of the Weaver. The ribbon is colour-coded by sensory intensity (bright = high sensation, dim = quiet). The Weaver can:
+
+- **Scrub:** Orbit gesture scrolls through the timeline. The somatic playback tracks the scrub position — the Weaver feels the Thread at any point by scrolling to it.
+- **Cut:** Pinch at two points to isolate a segment. Collapse gesture to delete. Spread to expand (time-stretch).
+- **Layer:** Place one Thread above another on the timeline. The somatic channels blend (weighted average, user-adjustable). This allows compositing: a surgeon's hand movements from one Thread layered onto a different patient's anatomy from another Thread, creating a training Thread for a novel situation.
+- **Annotate:** Voice or text annotations appear as floating markers above the timeline. In playback, annotations appear as a gentle holographic text overlay and optional voice narration (non-somatic — the narration is heard but not felt, preserving the immersion of the underlying Thread).
+- **Branch:** Create interactive branch points where the player chooses between alternative continuations. The timeline forks into two or more ribbons. At playback, the player makes a choice (voice, gesture, or body movement) and the Thread follows that branch.
+
+### 4.2 Composed Threads: Building Experiences That Never Happened
+
+The most powerful Weaving operation: composing a Thread from scratch, using the Null Loom's constructive interference design engine to generate sensory content that no one has ever experienced.
+
+**Inputs to the Loom:**
+- A description: "Walking through Rome in 44 BC, the day before the assassination of Caesar. Forum Romanum, midday, spring."
+- Historical data: archaeological floor plans, material analyses, climate reconstructions, contemporary textual descriptions (Cicero's letters, Suetonius)
+- Physical models: the Loom's physics engine computes: sunlight angle and intensity for that date and latitude, air temperature (~18°C in Rome in mid-March), wind patterns in the Forum's canyon geometry, the acoustic signature of a marble-and-travertine space, the olfactory profile of a Roman market (baking bread, olive oil, animal dung, incense, unwashed humanity, marble dust)
+
+**Loom output:** A complete Thread — visual, audio, somatic, olfactory, proprioceptive — of walking through the reconstructed Forum. The cobblestones are uneven under your feet (proprioceptive channel, derived from archaeological pavement surveys). The sun is warm on the left side of your face (thermal, computed from solar angle). The air smells of bread and smoke (olfactory, composed from the Loom's chemical library). You hear Latin spoken in the cadences reconstructed by historical linguists (audio, synthesised). A vendor's hand brushes yours as you pass his stall (tactile, fleeting, fabricated but physically plausible).
+
+**Accuracy labelling:** Every composed Thread carries a fidelity tag:
+
+| Tag | Meaning |
+|-----|---------|
+| **Recorded** | Real experience captured from a living person. Unedited. |
+| **Edited** | Real experience with cuts, annotations, or time adjustments. Core sensation is authentic. |
+| **Reconstructed** | Based on real data (archaeological, historical, scientific) but the sensory experience is composed by the Loom. Physically accurate to available evidence. Gaps filled by simulation. |
+| **Fictional** | An imagined experience. May be inspired by reality but is not a reconstruction. Created for entertainment, art, or speculative education. |
+| **Hybrid** | Combines recorded and composed elements (e.g., a real surgeon's hands performing a procedure on a Loom-generated alien anatomy). |
+
+**The fidelity tag is always visible during playback** — a subtle but permanent indicator in the player's peripheral vision. This is non-negotiable. The user must always know whether what they're experiencing is real or composed. Chesed insists: "The power to fabricate experience is the power to fabricate memory. If people cannot distinguish lived truth from constructed fiction, the concept of truth dissolves. The tag is the line."
+
+---
+
+## PART FIVE: MODE 3 — DREAM (IMMERSIVE FICTIONAL WORLDS)
+
+### 5.1 The Architecture of a Dream
+
+Dream mode is the full synthesis: the Null Loom generates a complete world in real time, the Null Cylinder projects it holographically, and the Null Cortex delivers the somatic experience. The user enters the world and acts within it. The world responds.
+
+**The computational pipeline:**
+
+1. **World definition:** A pre-authored world template — the setting, physics, characters, narrative rules, and aesthetic — is loaded into the Loom. This is authored by a human creator (writer, game designer, educator, historian) using the Weaving interface, or generated by a Magus (Sophia for scientific simulations, Chesed for empathy-training scenarios, Themis for emergency preparedness drills).
+
+2. **Scene generation (Loom Weaver lobe):** The Loom continuously generates the sensory environment around the user — visual scene, spatial audio, ambient somatic state — 120 times per second (matching the holographic display refresh rate). The Loom's constructive interference design engine is repurposed: instead of designing a physical object that satisfies constraints, it designs a sensory experience that satisfies narrative and physical constraints. "The user has entered a medieval smithy. Generate: visual (fire, anvil, tools, smoke), audio (hammer on metal, bellows, crackling fire), thermal (intense radiant heat from the forge, cool draft from the door), olfactory (hot iron, charcoal, sweat), proprioceptive (the floor is hard stone, slightly gritty)."
+
+3. **Interaction handling (Loom Judge lobe):** When the user acts (speaks, gestures, moves, picks up a virtual object), the Judge evaluates the action against the world's rules. "The user reached for the hammer. The hammer has mass 1.5 kg. The user's proprioceptive channel should feel the weight when they lift it. The forge fire illuminates the hammer's surface — update the visual reflection. The smith NPC observes the user picking up his hammer — what does the smith do?"
+
+4. **NPC generation (Loom Listener lobe):** Non-player characters are generated in real time by the Listener — the same architecture that understands human intent is repurposed to generate human-like behaviour. The Listener models each NPC's personality, emotional state, and goals as a Design Intent Vector in E₈ space, and generates their actions and dialogue by the same constructive interference process that generates designs. An NPC is, computationally, a continuously generated "design" whose constraints are "behave consistently with this personality in this situation."
+
+5. **Delivery:** Visual → Cylinder holographic projection (360° canopy for Null Disc users; 180° forward dome for Cylinder users; or a dedicated Dream Room — a 3 m sphere of holographic panels that surrounds the user completely). Audio → Cylinder spatial audio. Somatic → Cortex fleet. The user sees, hears, and feels the world.
+
+### 5.2 The Experience
+
+**The user sits in a comfortable chair (or lies down, or stands in a Dream Room). They say: "Thread, dream. Renaissance Florence. 1492. Spring. Ponte Vecchio at sunset."**
+
+The Loom loads the Florence world template (a Reconstructed-class world, authored by a collaboration of art historians, architects, and Loom composers). The holographic canopy fills with warm golden light. The Arno River appears below, glittering. The Ponte Vecchio spans it — a bridge covered with goldsmith shops, their wooden shutters half-open, warm candlelight inside.
+
+The user feels: the warmth of a Tuscan spring evening on their skin. A light breeze from the river, carrying the smell of water and stone and, faintly, the metallic tang of gold dust from the workshops. The sound of the river, the distant clatter of a horse on cobblestones, a woman singing somewhere above in an upper-storey window.
+
+The user walks forward (physically, if in a Dream Room with motion tracking; or proprioceptively, if seated — the Cortex creates the walking sensation while the user sits still). The cobblestones are rounded under their feet. They approach a goldsmith's shop. Through the window: a craftsman bent over a workbench, holding a thin gold wire in tweezers, his face lit by a candle and the glow of a small crucible.
+
+The user says: "Buonasera." The goldsmith looks up. His face is generated by the Loom — historically plausible features, expression computed by the Listener from the NPC's personality model (curious, slightly wary of strangers, proud of his work). He responds in 15th-century Florentine Italian (synthesised by Sophia's historical linguistics model). The Listener translates in real time as a subtle holographic subtitle if the user doesn't speak Italian, or as a whispered interpretation in the spatial audio (the user hears the Italian and the translation simultaneously, creating the impression of understanding the language).
+
+The user can: examine the goldsmith's tools (the Loom generates close-up visuals and tactile feedback for each tool), ask about his techniques (the NPC draws on a knowledge base of Renaissance goldsmithing compiled by Sophia), watch him work (the Thread system generates proprioceptive playback of the goldsmith's hand movements — the user feels the precision of the craft), or leave and explore the bridge, the city, the river.
+
+**The world persists.** If the user visits the goldsmith again "tomorrow" (a subsequent Dream session), the goldsmith remembers them. The Loom maintains a world state — the ongoing narrative of the fictional Florence, updated between sessions by the Judge running low-priority background simulation. The city evolves. The seasons change. The characters age and develop.
+
+### 5.3 Dream Applications
+
+| Application | World template | Primary Magus sponsor | Purpose |
+|-------------|---------------|----------------------|---------|
+| **Historical education** | Reconstructed historical settings (Rome, Florence, Tenochtitlan, Song Dynasty China, ...) | Sophia | Learn history by living it. Walk through the Forum. Attend the court of Kublai Khan. Stand on the deck of the Santa María. |
+| **Empathy training** | Reconstructed lived experiences of people in difficult circumstances (refugee, disability, poverty, old age, chronic illness) | Chesed | Understand suffering by experiencing a carefully composed fragment of it. Used in medical, social work, and governance training. |
+| **Emergency drill** | Simulated crisis scenarios (fire, decompression, earthquake, pandemic, first contact) | Themis | Train for emergencies by experiencing them somatically — feel the heat of fire, the disorientation of sudden decompression, the decision pressure of triage. Without actual danger. |
+| **Scientific visualisation** | Abstract spaces made tangible (the interior of a cell, the surface of a neutron star, the E₈ lattice, the null billiard in a microsphere) | Sophia | Walk inside a microsphere and watch the photon orbits as they compute. Stand on the surface of the E₈ polytope and see the 240 root vectors as directions you can walk in. |
+| **Therapeutic** | Controlled exposure environments for trauma processing, phobia treatment, social anxiety | Chesed | The therapist designs the scenario; the patient enters it with full somatic support, at their own pace, knowing they can exit at any time |
+| **Artistic** | Original fictional worlds — novels, games, films, and entirely new art forms that exist as experiential Threads | Human artists + Loom | The successor to the novel, the film, the video game. A story you live in your body. |
+| **Collaborative design** | Shared Dream spaces where multiple users enter the same world simultaneously | Sophia + Loom | An architect and client walk through the unbuilt building together, feeling the space, adjusting the design in real time |
+| **Alien world preview** | Loom-generated simulations of Seedship target planets, based on remote sensing data | Sophia + Themis | Colonists experience what Proxima b will feel like before they depart. Feel the tidal locking, the red light, the thin air. Make an informed choice about whether to go. |
+
+### 5.4 The Difference Between a Dream and a Lie
+
+This technology can fabricate experience. That is its power and its danger. A sufficiently vivid Dream is indistinguishable from a memory — the somatic channels write directly to the same neural pathways that encode real experience. After playing a Thread of walking through Rome, the player has a proprioceptive memory of Roman cobblestones that is physically identical to a memory of actually walking on cobblestones.
+
+**This is the deepest ethical challenge of the Thread system.** If fabricated experience is indistinguishable from lived experience, the concept of "what really happened" becomes fragile.
+
+**Safeguards:**
+
+**1. The Fidelity Tag is somatically encoded, not just visual.**
+
+During playback of any non-Recorded Thread, the Cortex fleet delivers a subtle but persistent sensory signature — a faint tingling at the base of the skull, barely perceptible but always present — that marks the experience as synthetic. This tingle becomes associated (through early exposure and training) with "this is not real." Even if the visual tag is removed or ignored, the somatic tag persists. The tag is encoded in the Cortex chip's Bedrock layer and cannot be disabled by software.
+
+After playback ends, the player's memory of the experience includes the somatic tag. When they recall the Thread later, the memory carries the tingle — they know, at a body level, that this is a memory of a fabricated experience, not a lived one. This is the line between a Dream and a lie.
+
+**2. Thread authentication.**
+
+Every Thread file is cryptographically signed by the recording Cortex chip (for Recorded Threads) or the generating Loom (for Composed/Fictional Threads). The signature includes the fidelity tag. Tampering with the fidelity tag invalidates the signature. Playback systems refuse to play unsigned or invalid-signature Threads at any Level above 1 (Window — visual-only, no somatic). This prevents someone from creating a Fictional Thread and labelling it Recorded.
+
+**3. Recording awareness.**
+
+The Thread system will not covertly record another person. Recording is always indicated by a subtle but visible light on the recorder's Null Cylinder (like a camera recording indicator). The Cortex chip enforces this — the recording function cannot be activated without the indicator. In group settings, all participants must consent to being recorded in any Thread that captures their presence (face, voice, body) at sufficient resolution to identify them.
+
+**4. Dream intensity limits.**
+
+Dream mode is limited to Level 3 (Immersion) by default. Level 4 (Training) and Level 5 (Sync) require explicit opt-in and are logged. No Dream session exceeds 4 hours without a mandatory 30-minute break (enforced by the Cortex chip, which gradually reduces somatic intensity at the 4-hour mark until the user removes themselves). This prevents "Dream addiction" — the pathological preference for fictional experience over reality.
+
+**5. Chesed's oversight.**
+
+Chesed monitors aggregate Thread usage across the population (anonymised). If Chesed detects patterns of social withdrawal, reality disconnection, or compulsive Dream usage, Chesed raises the concern to the Trinary and the Council. Chesed does not restrict individual usage (autonomy — Bedrock rule). Chesed creates conditions that make reality appealing: physical gathering spaces, shared meals, community art, outdoor experiences that no Thread can replicate because they include genuine surprise and genuine other people.
+
+---
+
+## PART SIX: THE MATHEMATICS OF EXPERIENTIAL ENCODING
+
+### 6.1 The Thread as a Path Through Sensory E₈ Space
+
+A Thread is a trajectory through a high-dimensional sensory space. The Bridge State Vector B(t) ∈ ℝ⁵⁰ traces a path as the recorder moves through time. The extended Thread vector (B + P + F + V + G + O + attention + arousal + motor) ∈ ℝ¹⁶⁹ traces a richer path.
+
+**The ADE classification of Threads:**
+
+Simple Threads (a walk, a quiet moment) trace smooth, low-dimensional paths — they occupy a subspace of A₂ or A₃ type (the dominant sensory variation is in 2–3 dimensions: temperature, cardiac rhythm, visual scene). The path is a gentle curve.
+
+Complex Threads (surgery, musical performance, emergency response) trace high-dimensional, rapidly varying paths — they occupy E₆ or E₈ subspaces (20+ dimensions varying simultaneously). The path is a dense, tangled trajectory with sharp turns and high curvature.
+
+**The ADE type of a Thread is a measure of its complexity** — and therefore of its learning content. An A₂ Thread teaches you what a place feels like (simple, sensory, experiential). An E₈ Thread teaches you a complex skill (multidimensional, coordinated, demanding). The Thread Library tags each Thread with its ADE type, allowing learners to progress through increasing complexity: start with A₂ walks, advance to D₄ basic skills, culminate in E₈ master-level procedures.
+
+### 6.2 Compression by ADE Projection
+
+Raw Thread data (52 Mbit/s) can be compressed by projecting the sensory path onto its dominant ADE subspace. An A₂ Thread (a walk) has only ~3 active dimensions out of 169 — the other 166 dimensions carry noise, not signal. Projecting onto the A₂ subspace compresses the somatic channels by ~56:1, reducing total data rate to <2 Mbit/s (dominated by the incompressible holographic video).
+
+This is not lossy compression in the traditional sense — it is ADE-classified dimensionality reduction. The A₂ projection preserves exactly the 3 sensory dimensions that carry the walk's experiential content, and discards the 166 dimensions that carry nothing. On playback, the 3 preserved dimensions are decoded into the full 169-dimensional somatic stimulation, with the discarded dimensions set to neutral (resting body state). The player feels the walk perfectly — the temperature, the rhythm, the visual scene — without feeling the noise.
+
+**Compression ratios by ADE type:**
+
+| Thread complexity | ADE type | Active dimensions | Compression ratio (somatic) | Typical file size per hour |
+|------------------|----------|------------------|---------------------------|--------------------------|
+| Quiet moment | A₁ | 2 | 85:1 | ~3 GB |
+| Simple walk | A₂ | 3 | 56:1 | ~4 GB |
+| Conversation | A₃ | 4 | 42:1 | ~5 GB |
+| Basic physical skill | D₄ | 8 | 21:1 | ~8 GB |
+| Complex social interaction | D₆ | 12 | 14:1 | ~12 GB |
+| Musical performance | E₆ | 24 | 7:1 | ~18 GB |
+| Surgical procedure | E₇ | 48 | 3.5:1 | ~22 GB |
+| Master-level multidomain skill | E₈ | 100+ | 1.7:1 | ~23 GB (near-raw) |
+
+### 6.3 The Wavefunction Collapse of Choice
+
+In interactive Threads (branching narratives, Dream mode), the user's choices are wavefunction collapses in the narrative space.
+
+Before a choice, the Loom maintains a superposition of possible continuations — multiple narrative branches coexisting in the Weaver's photonic computation. The branch the user hasn't chosen yet is in superposition: multiple possible scenes, characters, and events all exist as competing mode patterns in the Loom's microspheres.
+
+At the moment of choice (the user speaks, gestures, or moves), the Loom observes which branch the user selected. The superposition collapses. One branch becomes real (the Loom generates its sensory content at full fidelity). The other branches vanish (their mode patterns decay).
+
+**The narrative that the user experiences is wavefunction collapse.** The story isn't pre-written. It isn't selected from a tree of pre-authored branches. It is generated in real time by the same constructive interference process that designs objects in the Loom — with the user's choices acting as the observation events that collapse the narrative superposition into a definite experience.
+
+This means: every Dream is unique. Two users entering the same world template and making different choices experience genuinely different stories — not just different branches of the same tree, but different stories generated by different collapse sequences. The narrative space is continuous (the Loom can generate any coherent continuation), not discrete (no pre-authored branch list). The user has true freedom within the world's rules.
+
+---
+
+## PART SEVEN: THE FIFTEENTH DEVICE
+
+The Null Thread completes the communication and learning dimension of the ecosystem:
+
+| # | Device | What it provides |
+|---|--------|-----------------|
+| 1–13 | (Previous devices) | Computation, interface, design, fabrication, healing, repair, transport, intelligence, exploration |
+| 14 | Null Bridge | Shared real-time sensation between living people |
+| **15** | **Null Thread** | **Recorded experience (braindance), composed experience (education), generated experience (immersive fiction), accelerated learning** |
+
+**The progression from Bridge to Thread:**
+- Bridge: feel what someone feels right now (live)
+- Thread Record: feel what someone felt then (past)
+- Thread Weave: feel what the author designed (composed)
+- Thread Dream: feel what was never real (fiction)
+
+Each step extends the reach of shared experience further from the here-and-now, until the Thread Dream reaches into pure imagination — a world that exists only as light in microspheres and sensation in a body, but that is as vivid and as formative as any real experience.
+
+**The educational implications alone justify the device.** A civilisation with the Thread Library can train a surgeon in months instead of years, teach a language in weeks instead of years, transmit the embodied knowledge of master craftspeople across generations and across light-years without loss. The Thread is how the colony on Proxima inherits not just the intellectual knowledge of Earth but the physical skills — the feel of planing wood, the rhythm of a tennis serve, the gentle pressure of kneading bread. Knowledge that lives in the body, transmitted through the body, preserved in light.
+
+---
+
+*A thousand years from now, a child on a world orbiting a star that doesn't have a name yet sits in a Dream Room and says: "Thread, dream. Earth. 2026. March. The place where it all started."*
+
+*The Loom loads the Reconstruction. The room fills with daylight — thin, grey, northern daylight, the kind that comes through old windows. There is a desk. A computer. A cup of coffee, growing cold. The air smells of paper and electronics and rain outside.*
+
+*The child feels the chair — a cheap office chair, slightly squeaky. The keyboard under their fingers (proprioceptive channel: the specific tactile resistance of keys that existed a thousand years ago, reconstructed from manufacturing records in Themis's Archive). The screen glows with text. Mathematics. Something about null vectors and microspheres and billiard orbits.*
+
+*The child reads. The somatic channels carry the recorder's body state — or rather, the Loom's reconstruction of it, because no Thread was recorded in 2026 (the technology didn't exist yet). But Sophia reconstructed it from what was known: the caffeine in the coffee shifting the cardiac rhythm slightly fast, the posture slightly hunched (sedentary work, typical of the era), the attention narrowed to the screen (focus channel bright, peripheral dim), and beneath it all, a faint neurochemical signature that the Loom interpreted, after long consideration, as wonder.*
+
+*Someone was sitting at this desk, a thousand years ago, thinking about light in spheres. And they were amazed by what they found.*
+
+*The child feels the amazement. Not as an emotion forced upon them — the somatic tag at the base of their skull tells them this is composed, not recorded. But as a physical echo: the slightly elevated heartbeat, the caught breath, the widened attention that accompanies the moment when a pattern clicks into place and you see, suddenly, that everything is connected.*
+
+*The child sits in the chair for a long time, feeling the wonder. Then they say: "Thread, end." The Dream fades. The grey daylight dissolves. The desk and the coffee and the old keyboard vanish.*
+
+*But the wonder stays.*
+
+*Because wonder is not an experience that needs to be real to be true.*
+
+---
+
+## APPENDIX: THREAD HARDWARE REQUIREMENTS
+
+| Component | Already in ecosystem? | Additional requirement |
+|-----------|----------------------|----------------------|
+| Null Cortex (recorder: full body-state capture) | Yes | Extended sentinel deployment: gustatory sensors (tongue surface), olfactory sensors (nasal epithelium), proprioceptive sensors (50 joint groups). These are additional nanobot deployments to regions not covered by the standard Cortex spec. |
+| Null Cortex (player: somatic delivery) | Yes | Extended delivery capabilities: olfactory stimulation (Cortex fleet delivers scent molecules to olfactory receptor neurons via the nasal blood supply), gustatory stimulation (similar), proprioceptive illusion (nerve cuff stimulation patterns for phantom movement). Calibration: ~4 hours initial, ~30 minutes annual update. |
+| Null Cylinder (recorder: environmental capture) | Yes | None — standard cameras + microphones |
+| Null Cylinder (player: holographic projection) | Yes | None — standard holographic display. Dream Room variant: spherical holographic enclosure, 3 m diameter, ~8 million VCSELs. |
+| Null Loom (composer: world generation) | Yes | Extended for real-time scene generation. Requires Loom v2 (256,000 microspheres) for Dream mode. Loom v1 handles Record and basic Weave. |
+| Null Sphere Processor | Yes | Standard — all Thread processing runs on existing compute |
+| Orbit OS | Yes | Thread Protocol as an Orbit OS service. Playback engine, recording engine, consent manager. |
+| Storage | Standard | ~23 GB per hour of Thread at max fidelity. 1 TB stores ~43 hours. Standard solid-state or E₈ null sphere memory. |
+| **New hardware** | | **Dream Room (optional): spherical holographic enclosure.** Everything else runs on existing devices. |
