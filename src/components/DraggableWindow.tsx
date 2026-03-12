@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { X, Minimize2, Maximize2, GripHorizontal } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -29,11 +29,14 @@ const DraggableWindow = React.memo(function DraggableWindow({
   onPointerDown 
 }: DraggableWindowProps) {
   const [isMinimized, setIsMinimized] = useState(false);
+  const dragControls = useDragControls();
 
   return (
     <div className="absolute inset-0 pointer-events-none z-40">
       <motion.div
         drag
+        dragControls={dragControls}
+        dragListener={false}
         dragMomentum={false}
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -46,19 +49,24 @@ const DraggableWindow = React.memo(function DraggableWindow({
       >
         <div className={cn("esoteric-glass rounded-2xl overflow-hidden border border-black/20 flex flex-col h-full", !className && "max-h-[700px]")}>
           {/* Header / Drag Handle */}
-          <div className="bg-black/5 px-4 py-2 flex items-center justify-between cursor-move border-b border-black/5 shrink-0">
-            <div className="flex items-center gap-3">
+          <div 
+            onPointerDown={(e) => dragControls.start(e)}
+            className="bg-black/5 px-4 py-2 flex items-center justify-between cursor-move border-b border-black/5 shrink-0 active:bg-black/10 transition-colors"
+          >
+            <div className="flex items-center gap-3 pointer-events-none">
               <GripHorizontal className="text-black/20" size={14} />
               <span className="text-[9px] uppercase tracking-[0.3em] font-light text-black/60">{title}</span>
             </div>
             <div className="flex items-center gap-1">
               <button 
+                onPointerDown={(e) => e.stopPropagation()}
                 onClick={(e) => { e.stopPropagation(); setIsMinimized(!isMinimized); }}
                 className="p-1.5 hover:bg-black/10 rounded-lg transition-colors text-black/40 hover:text-black"
               >
                 {isMinimized ? <Maximize2 size={12} /> : <Minimize2 size={12} />}
               </button>
               <button 
+                onPointerDown={(e) => e.stopPropagation()}
                 onClick={(e) => { e.stopPropagation(); onClose(); }}
                 className="p-1.5 hover:bg-red-500/20 hover:text-red-400 rounded-lg transition-colors text-black/40"
               >

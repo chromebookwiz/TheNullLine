@@ -63,7 +63,21 @@ const GeometricBackgroundComponent = () => {
       drawStarPolygon(centerX, centerY, baseRadius * 0.3, 3, 1, speed, 1.5);     
       drawStarPolygon(centerX, centerY, baseRadius * 0.6, 5, 2, -speed * 0.8, 1.0);    
       drawStarPolygon(centerX, centerY, baseRadius * 0.9, 8, 3, speed * 0.6, 0.5);           
-      drawStarPolygon(centerX, centerY, baseRadius * 1.2, 13, 5, -speed * 0.4, 0.3);   
+      drawStarPolygon(centerX, centerY, baseRadius * 1.2, 13, 5, -speed * 0.4, 0.3);
+
+      // CENTRAL ENCASEMENT: Mini-core with uniform radii
+      const innerRadius = baseRadius * 0.1;
+      ctx.beginPath();
+      ctx.strokeStyle = "rgba(0, 0, 0, 1.0)";
+      ctx.lineWidth = 2.0;
+      ctx.arc(centerX, centerY, innerRadius + 10, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Mini shapes all same size
+      drawStarPolygon(centerX, centerY, innerRadius, 3, 1, speed * 2, 1.0);
+      drawStarPolygon(centerX, centerY, innerRadius, 5, 2, -speed * 1.5, 1.0);
+      drawStarPolygon(centerX, centerY, innerRadius, 8, 3, speed * 1.2, 0.5);
+      drawStarPolygon(centerX, centerY, innerRadius, 13, 5, -speed * 0.8, 0.3);
 
       animationFrameId = requestAnimationFrame(animate);
     };
