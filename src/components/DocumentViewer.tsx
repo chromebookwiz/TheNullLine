@@ -11,10 +11,11 @@ interface ViewerProps {
     type: 'txt' | 'docx' | 'pdf' | 'app';
     path: string;
   };
-  onClose: () => void;
+  onClose?: () => void;
+  embedded?: boolean;
 }
 
-export default function DocumentViewer({ file, onClose }: ViewerProps) {
+export default function DocumentViewer({ file, onClose, embedded }: ViewerProps) {
   const [content, setContent] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -52,6 +53,40 @@ export default function DocumentViewer({ file, onClose }: ViewerProps) {
       setLoading(false);
     }
   }, [file]);
+
+  const innerContent = (
+    <div className="flex-1 overflow-y-auto p-6 md:p-12 custom-scrollbar bg-black/5 min-h-0 h-full">
+      {loading ? (
+        <div className="h-full flex items-center justify-center">
+          <Loader2 className="animate-spin text-black/20" size={32} />
+        </div>
+      ) : error ? (
+        <div className="h-full flex flex-col items-center justify-center text-red-600 gap-4">
+          <X size={48} />
+          <p>{error}</p>
+        </div>
+      ) : file.type === 'pdf' ? (
+        <embed 
+          src={`${file.path}#toolbar=0&navpanes=0&scrollbar=0`}
+          type="application/pdf"
+          className="w-full h-full rounded-lg border-none bg-white/5 min-h-[500px]"
+        />
+      ) : file.type === 'docx' ? (
+        <div 
+          className="prose max-w-none docx-content text-black/90 leading-relaxed"
+          dangerouslySetInnerHTML={{ __html: content || '' }} 
+        />
+      ) : (
+        <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-black/80">
+          {content}
+        </pre>
+      )}
+    </div>
+  );
+
+  if (embedded) {
+    return innerContent;
+  }
 
   return (
     <motion.div
@@ -102,35 +137,7 @@ export default function DocumentViewer({ file, onClose }: ViewerProps) {
             </button>
           </div>
         </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-12 custom-scrollbar bg-black/5">
-          {loading ? (
-            <div className="h-full flex items-center justify-center">
-              <Loader2 className="animate-spin text-black/20" size={32} />
-            </div>
-          ) : error ? (
-            <div className="h-full flex flex-col items-center justify-center text-red-600 gap-4">
-              <X size={48} />
-              <p>{error}</p>
-            </div>
-          ) : file.type === 'pdf' ? (
-            <iframe 
-              src={file.path} 
-              className="w-full h-full rounded-lg border-none bg-white/5"
-              title={file.name}
-            />
-          ) : file.type === 'docx' ? (
-            <div 
-              className="prose max-w-none docx-content text-black/90 leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: content || '' }} 
-            />
-          ) : (
-            <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-black/80">
-              {content}
-            </pre>
-          )}
-        </div>
+        {innerContent}
       </motion.div>
     </motion.div>
   );

@@ -16,9 +16,13 @@ interface DraggableWindowProps {
   onClose: () => void;
   children: React.ReactNode;
   className?: string;
+  style?: React.CSSProperties;
+  onPointerDown?: () => void;
 }
 
-export default function DraggableWindow({ title, isOpen, onClose, children, className }: DraggableWindowProps) {
+export default function DraggableWindow({ 
+  title, isOpen, onClose, children, className, style, onPointerDown 
+}: DraggableWindowProps) {
   const [isMinimized, setIsMinimized] = useState(false);
 
   return (
@@ -30,7 +34,8 @@ export default function DraggableWindow({ title, isOpen, onClose, children, clas
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.98 }}
-          style={{ position: 'fixed', zIndex: 100 }}
+          style={{ position: 'fixed', ...style }}
+          onPointerDown={onPointerDown}
           className={cn("bottom-24 right-8 shadow-2xl transition-all duration-300", className || "w-80 md:w-96")}
         >
           <div className={cn("esoteric-glass rounded-2xl overflow-hidden border border-black/20 flex flex-col", !className && "max-h-[700px]")}>

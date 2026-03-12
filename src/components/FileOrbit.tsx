@@ -132,13 +132,13 @@ export default function FileOrbit({
                <LayoutGrid size={28} />
              </motion.button>
              
-             <div className="mt-6 absolute top-24 flex flex-col items-center">
+             <div className="mt-6 absolute top-24 flex flex-col items-center z-30">
                 <div className="w-px h-10 bg-black/10" />
                 <motion.div
                   key={activeIndex}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-xs tracking-[0.5em] font-bold text-black uppercase mt-3 whitespace-nowrap"
+                  className="text-xs tracking-[0.5em] font-bold text-black uppercase mt-3 whitespace-nowrap bg-[#FAF9F6]/90 backdrop-blur-md px-5 py-2 rounded-full border border-black/5 shadow-sm"
                 >
                   ◊.{FILES[activeIndex].name.toUpperCase().replace(/\s/g, '_')}
                 </motion.div>
