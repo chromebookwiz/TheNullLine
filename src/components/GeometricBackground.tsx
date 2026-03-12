@@ -39,12 +39,12 @@ export default function GeometricBackground() {
       if (drawCircle) {
         ctx.beginPath();
         ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
         ctx.stroke();
       }
 
       ctx.beginPath();
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
       for (let i = 0; i <= q; i++) {
         const angle = (i * p * 2 * Math.PI) / q + rotation;
         const x = centerX + radius * Math.cos(angle);
@@ -61,13 +61,15 @@ export default function GeometricBackground() {
 
       const centerX = width / 2;
       const centerY = height / 2;
-      const baseRadius = Math.min(width, height) * 0.4;
+      const baseRadius = Math.min(width, height) * 0.35; // Slightly smaller
 
-      // Counter-rotating star polygons with boundary circles
-      drawStarPolygon(centerX, centerY, baseRadius, 8, 3, time * 0.0001);
-      drawStarPolygon(centerX, centerY, baseRadius * 0.7, 5, 2, -time * 0.00015);
-      drawStarPolygon(centerX, centerY, baseRadius * 1.3, 13, 5, time * 0.00008);
-      drawStarPolygon(centerX, centerY, baseRadius * 0.4, 3, 1, -time * 0.0002);
+      const speed = time * 0.0001; // Uniform speed
+
+      // Stark counter-rotating orbits with uniform speed
+      drawStarPolygon(centerX, centerY, baseRadius, 8, 3, speed);
+      drawStarPolygon(centerX, centerY, baseRadius * 0.6, 5, 2, -speed);
+      drawStarPolygon(centerX, centerY, baseRadius * 1.2, 13, 5, speed);
+      drawStarPolygon(centerX, centerY, baseRadius * 0.3, 3, 1, -speed);
 
       animationFrameId = requestAnimationFrame(animate);
     };
@@ -83,7 +85,7 @@ export default function GeometricBackground() {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 pointer-events-none z-[-2] opacity-50"
+      className="fixed inset-0 pointer-events-none z-[-2] opacity-80"
     />
   );
 }

@@ -58,13 +58,13 @@ export default function DocumentViewer({ file, onClose }: ViewerProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 bg-black/80 backdrop-blur-xl"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 bg-black/95 backdrop-blur-2xl"
     >
       <motion.div
-        initial={{ scale: 0.95, opacity: 0 }}
+        initial={{ scale: 0.98, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.95, opacity: 0 }}
-        className="w-full max-w-5xl h-[85vh] esoteric-glass rounded-3xl overflow-hidden flex flex-col relative"
+        exit={{ scale: 0.98, opacity: 0 }}
+        className="w-full max-w-5xl h-[85vh] esoteric-glass rounded-3xl overflow-hidden flex flex-col relative border border-white/20"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
-import { FileText, File as FileIcon, ChevronRight, X, Info, Cpu } from 'lucide-react';
+import { FileText, File as FileIcon, ChevronRight, X, Info, Cpu, LayoutGrid } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -45,23 +45,26 @@ const FILES: NullFile[] = [
   { name: "The Null Line Project", type: "txt", path: "/docs/TheNullLineProject.txt" },
 ].filter(f => f !== null) as NullFile[];
 
-export default function FileOrbit({ onFileSelect }: { onFileSelect: (file: NullFile) => void }) {
+export default function FileOrbit({ 
+  onFileSelect, 
+  onActivate 
+}: { 
+  onFileSelect: (file: NullFile) => void,
+  onActivate: () => void
+}) {
   const [hovered, setHovered] = useState<number | null>(null);
   const [rotation, setRotation] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      setRotation(prev => prev + e.deltaY * 0.1);
+      // Small sensitive step
+      setRotation(prev => prev + e.deltaY * 0.05);
     };
 
-    const container = containerRef.current;
-    if (container) {
-      container.addEventListener('wheel', handleWheel, { passive: false });
-    }
+    window.addEventListener('wheel', handleWheel, { passive: true });
     return () => {
-      if (container) container.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('wheel', handleWheel);
     };
   }, []);
 
@@ -75,11 +78,18 @@ export default function FileOrbit({ onFileSelect }: { onFileSelect: (file: NullF
         <div className="w-full h-full relative flex items-center justify-center">
           <div className="absolute inset-0 rounded-full border border-white/10 [box-shadow:0_0_60px_rgba(255,255,255,0.05)]" />
           
-          <div className="z-20 text-center pointer-events-none">
-            <div className="text-white font-light text-2xl tracking-[0.3em] opacity-80">k·k=0</div>
-            <div className="mt-4 flex justify-center gap-2 opacity-20">
-              <div className="w-1 h-1 rounded-full bg-white transition-opacity" />
-            </div>
+          <div className="z-20 text-center flex items-center justify-center pointer-events-auto">
+             <motion.button
+               whileHover={{ scale: 1.1 }}
+               whileTap={{ scale: 0.9 }}
+               onClick={(e) => {
+                 e.stopPropagation();
+                 onActivate();
+               }}
+               className="w-12 h-12 esoteric-glass rounded-full flex items-center justify-center text-white/60 hover:text-white transition-all shadow-[0_0_40px_rgba(255,255,255,0.15)] border border-white/40"
+             >
+               <LayoutGrid size={24} />
+             </motion.button>
           </div>
         </div>
       </div>

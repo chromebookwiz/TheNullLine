@@ -9,10 +9,10 @@
   --background: #000000;
   --foreground: #ffffff;
   --accent: #ffffff;
-  --accent-secondary: #888888;
-  --glass: rgba(255, 255, 255, 0.03);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --photon-glow: 0 0 15px rgba(255, 255, 255, 0.2);
+  --accent-secondary: #ffffff;
+  --glass: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --photon-glow: 0 0 15px rgba(255, 255, 255, 0.1);
 }
 
 .dark {
@@ -35,9 +35,9 @@ body {
 }
 
 .esoteric-glass {
-  background: rgba(0, 0, 0, 0.9);
+  background: rgba(0, 0, 0, 1);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .mono-glow {

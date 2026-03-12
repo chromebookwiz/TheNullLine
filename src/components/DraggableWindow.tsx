@@ -20,13 +20,13 @@ export default function DraggableWindow({ title, isOpen, onClose, children }: Dr
         <motion.div
           drag
           dragMomentum={false}
-          initial={{ opacity: 0, scale: 0.9 }}
+          initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.9 }}
+          exit={{ opacity: 0, scale: 0.98 }}
           style={{ position: 'fixed', zIndex: 100 }}
           className="bottom-24 right-8 w-80 md:w-96 shadow-2xl"
         >
-          <div className="esoteric-glass rounded-2xl overflow-hidden border border-white/10 flex flex-col max-h-[500px]">
+          <div className="esoteric-glass rounded-2xl overflow-hidden border border-white/20 flex flex-col max-h-[700px]">
             {/* Header / Drag Handle */}
             <div className="bg-white/5 px-4 py-2 flex items-center justify-between cursor-move border-b border-white/5">
               <div className="flex items-center gap-3">
