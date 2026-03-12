@@ -55,6 +55,10 @@ const FILES: NullFile[] = [
   ] },
   { name: "Clicker", type: "app", path: "app://clicker" },
   { name: "Simulation", type: "app", path: "app://simulation" },
+  { name: "NullForge", type: "app", path: "app://forge" },
+  { name: "NullDeck", type: "app", path: "app://deck" },
+  { name: "NullHover", type: "app", path: "app://hover" },
+  { name: "Showcase", type: "app", path: "app://promo" },
 ];
 
 

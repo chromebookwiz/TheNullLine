@@ -24,6 +24,26 @@ const FilesApp = dynamic(() => import('@/components/FilesApp'), {
   loading: () => <div className="w-full h-full bg-white flex items-center justify-center text-black/20 text-[10px] uppercase tracking-widest">Opening Files...</div>
 });
 
+const NullForgeApp = dynamic(() => import('@/components/NullForgeApp'), {
+  ssr: false,
+  loading: () => <div className="w-full h-full bg-white flex items-center justify-center text-black/20 text-[10px] uppercase tracking-widest">Loading Forge...</div>
+});
+
+const NullDeckApp = dynamic(() => import('@/components/NullDeckApp'), {
+  ssr: false,
+  loading: () => <div className="w-full h-full bg-[#070b12] flex items-center justify-center text-white/20 text-[10px] uppercase tracking-widest">Initializing Projection...</div>
+});
+
+const NullHoverApp = dynamic(() => import('@/components/NullHoverApp'), {
+  ssr: false,
+  loading: () => <div className="w-full h-full bg-white flex items-center justify-center text-black/20 text-[10px] uppercase tracking-widest">Engaging Coils...</div>
+});
+
+const NullPromoApp = dynamic(() => import('@/components/NullPromoApp'), {
+  ssr: false,
+  loading: () => <div className="w-full h-full bg-black flex items-center justify-center text-white/20 text-[10px] uppercase tracking-widest">Loading Showcase...</div>
+});
+
 
 type FileType = 'txt' | 'docx' | 'pdf' | 'app' | 'folder';
 
@@ -35,7 +55,7 @@ interface NullFile {
 }
 
 
-type AppWindowType = 'document' | 'photonic' | 'info' | 'evolve' | 'clicker' | 'simulation' | 'files';
+type AppWindowType = 'document' | 'photonic' | 'info' | 'evolve' | 'clicker' | 'simulation' | 'files' | 'forge' | 'deck' | 'hover' | 'promo';
 interface WindowInstance {
   id: string;
   type: AppWindowType;
@@ -77,6 +97,14 @@ export default function Home() {
         openWindow('clicker');
       } else if (file.name.toLowerCase().includes('simulation')) {
         openWindow('simulation');
+      } else if (file.name.toLowerCase().includes('forge')) {
+        openWindow('forge');
+      } else if (file.name.toLowerCase().includes('deck') || file.name.toLowerCase().includes('cylinder')) {
+        openWindow('deck');
+      } else if (file.name.toLowerCase().includes('hover')) {
+        openWindow('hover');
+      } else if (file.name.toLowerCase().includes('promo') || file.name.toLowerCase().includes('showcase')) {
+        openWindow('promo');
       } else if (file.name.toLowerCase().includes('files')) {
         openWindow('files', file);
       } else {
@@ -150,6 +178,50 @@ export default function Home() {
                 <div className="w-full h-[75vh] md:h-[750px] dark-context rounded-xl overflow-hidden shadow-2xl relative">
                   <PhotonicChip />
                 </div>
+              </DraggableWindow>
+            ) : win.type === 'forge' ? (
+              <DraggableWindow
+                title="◊.NULL_FORGE"
+                isOpen={true}
+                onClose={() => closeWindow(win.id)}
+                className="w-[98vw] md:w-[900px] h-[90vh] md:h-[700px]"
+                style={{ zIndex: win.zIndex }}
+                onPointerDown={() => bringToFront(win.id)}
+              >
+                <NullForgeApp />
+              </DraggableWindow>
+            ) : win.type === 'deck' ? (
+              <DraggableWindow
+                title="◊.NULL_CYLINDER"
+                isOpen={true}
+                onClose={() => closeWindow(win.id)}
+                className="w-[98vw] md:w-[980px] h-[90vh] md:h-[680px]"
+                style={{ zIndex: win.zIndex }}
+                onPointerDown={() => bringToFront(win.id)}
+              >
+                <NullDeckApp />
+              </DraggableWindow>
+            ) : win.type === 'hover' ? (
+              <DraggableWindow
+                title="◊.NULL_HOVER"
+                isOpen={true}
+                onClose={() => closeWindow(win.id)}
+                className="w-[98vw] md:w-[900px] h-[90vh] md:h-[680px]"
+                style={{ zIndex: win.zIndex }}
+                onPointerDown={() => bringToFront(win.id)}
+              >
+                <NullHoverApp />
+              </DraggableWindow>
+            ) : win.type === 'promo' ? (
+              <DraggableWindow
+                title="◊.NULL_LINE_SHOWCASE"
+                isOpen={true}
+                onClose={() => closeWindow(win.id)}
+                className="w-[98vw] md:w-[1000px] h-[92vh] md:h-[720px]"
+                style={{ zIndex: win.zIndex }}
+                onPointerDown={() => bringToFront(win.id)}
+              >
+                <NullPromoApp />
               </DraggableWindow>
             ) : win.type === 'files' ? (
               <DraggableWindow

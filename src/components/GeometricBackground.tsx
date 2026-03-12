@@ -82,12 +82,12 @@ const GeometricBackgroundComponent = () => {
       // Rotations matched to outer counterparts so triangles/stars align in angle
       // Order: Magenta, Cyan, Yellow, Blue, Green, Red (reverse, so Red is out front)
       const miniShapes = [
-        { q: 7, p: 2, rot: -speed * 0.4, color: 'rgba(255,0,255,0.5)' }, // Magenta (R+B) — near q=13 speed
-        { q: 6, p: 1, rot: speed * 0.6, color: 'rgba(0,255,255,0.5)' },  // Cyan (G+B) — near q=8 speed
-        { q: 4, p: 1, rot: -speed * 0.8, color: 'rgba(255,255,0,0.5)' }, // Yellow (R+G) — near q=5 speed
-        { q: 8, p: 3, rot: speed * 0.6, color: 'rgba(0,0,255,0.5)' },    // Blue — matches outer q=8
-        { q: 5, p: 2, rot: -speed * 0.8, color: 'rgba(0,255,0,0.5)' },   // Green — matches outer q=5
-        { q: 3, p: 1, rot: speed, color: 'rgba(255,0,0,0.5)' },          // Red — matches outer q=3 (triangle)
+        { q: 7, p: 2, rot: -speed * 0.4, color: 'rgba(255,0,255,0.17)' }, // Magenta (R+B) — near q=13 speed
+        { q: 6, p: 1, rot: speed * 0.6, color: 'rgba(0,255,255,0.17)' },  // Cyan (G+B) — near q=8 speed
+        { q: 4, p: 1, rot: -speed * 0.8, color: 'rgba(255,255,0,0.17)' }, // Yellow (R+G) — near q=5 speed
+        { q: 8, p: 3, rot: speed * 0.6, color: 'rgba(0,0,255,0.17)' },    // Blue — matches outer q=8
+        { q: 5, p: 2, rot: -speed * 0.8, color: 'rgba(0,255,0,0.17)' },   // Green — matches outer q=5
+        { q: 3, p: 1, rot: speed, color: 'rgba(255,0,0,0.17)' },          // Red — matches outer q=3 (triangle)
       ];
       miniShapes.forEach((shape) => {
         drawStarPolygon(centerX, centerY, miniRadius, shape.q, shape.p, shape.rot, 2.2, shape.color);
