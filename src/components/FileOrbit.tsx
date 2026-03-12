@@ -73,6 +73,45 @@ const FileOrbitComponent = ({
   // Motion Values for the rotation
   const rotationRaw = useMotionValue(90); // 90 is the bottom
   const rotationSmooth = useSpring(rotationRaw, { stiffness: 40, damping: 12, mass: 0.8 });
+
+  // Gyroscope/DeviceOrientation real-time support
+  useEffect(() => {
+    let lastGyro = 90;
+    let gyroActive = false;
+    function handleOrientation(event: DeviceOrientationEvent) {
+      // Use gamma (left-right tilt) or alpha (compass heading)
+      // We'll use gamma for left-right, fallback to alpha if not available
+      let angle = 90;
+      if (typeof event.gamma === 'number') {
+        // gamma is -90 (left) to 90 (right)
+        angle = 90 - event.gamma;
+      } else if (typeof event.alpha === 'number') {
+        // alpha is 0-360 compass
+        angle = 90 - (event.alpha % 360);
+      }
+      lastGyro = angle;
+      rotationRaw.set(angle);
+    }
+    // Try to enable gyroscope if available
+    if (window.DeviceOrientationEvent && typeof window.DeviceOrientationEvent.requestPermission === 'function') {
+      // iOS 13+
+      window.DeviceOrientationEvent.requestPermission().then((response) => {
+        if (response === 'granted') {
+          window.addEventListener('deviceorientation', handleOrientation, true);
+          gyroActive = true;
+        }
+      }).catch(() => {});
+    } else if (window.DeviceOrientationEvent) {
+      // Most browsers
+      window.addEventListener('deviceorientation', handleOrientation, true);
+      gyroActive = true;
+    }
+    return () => {
+      if (gyroActive) {
+        window.removeEventListener('deviceorientation', handleOrientation, true);
+      }
+    };
+  }, [rotationRaw]);
   
   // The active index is targetIndex normalized
   const activeIndex = ((targetIndex % total) + total) % total;
