@@ -125,22 +125,39 @@ export default function FileOrbit({
             whileTap={{ scale: 0.95 }}
             onClick={(e) => {
               e.stopPropagation();
-              onActivate();
+              onFileSelect(FILES[activeIndex]);
             }}
-            className="w-20 h-20 bg-[#FAF9F6]/90 backdrop-blur-xl rounded-full flex items-center justify-center text-black/60 hover:text-black transition-all shadow-[0_0_50px_rgba(0,0,0,0.05)] border border-black/10 pointer-events-auto"
+            className="w-24 h-24 bg-[#FAF9F6]/90 backdrop-blur-xl rounded-full flex items-center justify-center text-black/60 hover:text-black transition-all shadow-[0_0_50px_rgba(0,0,0,0.1)] border border-black/10 pointer-events-auto group"
           >
-            <LayoutGrid size={32} strokeWidth={1.5} />
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={FILES[activeIndex].type}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.2 }}
+              >
+                {FILES[activeIndex].type === 'app' ? (
+                  <LayoutGrid size={36} strokeWidth={1} className="group-hover:rotate-90 transition-transform duration-500" />
+                ) : FILES[activeIndex].type === 'pdf' ? (
+                  <FileIcon size={36} strokeWidth={1} />
+                ) : (
+                  <FileText size={36} strokeWidth={1} />
+                )}
+              </motion.div>
+            </AnimatePresence>
           </motion.button>
           
-          <div className="absolute top-[100px] flex flex-col items-center">
-            <div className="w-px h-12 bg-black/10" />
+          <div className="absolute top-[120px] flex flex-col items-center w-[400px]">
+            <div className="w-px h-16 bg-gradient-to-b from-black/20 to-transparent" />
             <motion.div
               key={activeIndex}
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-4 px-6 py-2 bg-[#FAF9F6]/95 backdrop-blur-md rounded-full border border-black/5 shadow-sm"
+              initial={{ opacity: 0, y: 10, filter: 'blur(10px)' }}
+              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className="mt-6 px-8 py-3 bg-[#FAF9F6]/95 backdrop-blur-md rounded-full border border-black/5 shadow-xl"
             >
-              <span className="text-[13px] font-bold tracking-[0.4em] uppercase text-black">
+              <span className="text-[14px] font-bold tracking-[0.5em] uppercase text-black">
                 ◊.{FILES[activeIndex].name.toUpperCase().replace(/\s/g, '_')}
               </span>
             </motion.div>
@@ -208,21 +225,21 @@ function OrbitItem({
         onSelect();
       }}
       className={cn(
-        "w-12 h-12 rounded-full esoteric-glass flex items-center justify-center pointer-events-auto transition-all duration-300",
-        isSelected ? "border-black/60 text-black shadow-[0_0_20px_rgba(0,0,0,0.1)] scale-110" : 
-        isHovered ? "border-black/30 text-black scale-110 shadow-lg" : 
-        "text-black/20 border-black/5"
+        "w-14 h-14 rounded-full esoteric-glass flex items-center justify-center pointer-events-auto transition-all duration-300",
+        isSelected ? "border-black/60 text-black shadow-[0_0_30px_rgba(0,0,0,0.15)] scale-125 z-50 bg-[#FAF9F6]" : 
+        isHovered ? "border-black/30 text-black scale-115 shadow-xl z-40 bg-[#FAF9F6]/50" : 
+        "text-black/10 border-black/5"
       )}
     >
-      {file.type === 'pdf' ? <FileIcon size={20} /> : file.type === 'app' ? <Cpu size={20} className="animate-pulse" /> : <FileText size={20} />}
+      {file.type === 'pdf' ? <FileIcon size={24} strokeWidth={1.5} /> : file.type === 'app' ? <Cpu size={24} strokeWidth={1.5} className="animate-pulse" /> : <FileText size={24} strokeWidth={1.5} />}
       
       <AnimatePresence>
         {(isHovered || isSelected) && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            className="absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap bg-black text-white px-3 py-1 rounded text-[8px] font-mono tracking-widest uppercase z-[100]"
+            initial={{ opacity: 0, scale: 0.8, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 10 }}
+            className="absolute -top-12 left-1/2 -translate-x-1/2 whitespace-nowrap bg-black text-white px-4 py-1.5 rounded-full text-[9px] font-bold tracking-[0.3em] uppercase z-[110] shadow-2xl pointer-events-none"
           >
             {file.name}
           </motion.div>
