@@ -54,9 +54,11 @@ const GeometricBackgroundComponent = () => {
     const animate = (time: number) => {
       ctx.clearRect(0, 0, width, height);
 
-      // Anchor the shapes to the central bottom-left quadrant on all screen sizes
-      const centerX = width * 0.25;
-      const centerY = height * 0.75;
+      // 32.5° below horizontal from screen centre, x at centre of right quadrant
+      const _angle  = 32.5 * (Math.PI / 180);
+      const dx      = width * 0.25;
+      const centerX = width  * 0.5 + dx;          // centre of right half = width * 0.75
+      const centerY = height * 0.5 + dx * Math.tan(_angle);
       const baseRadius = Math.min(width, height) * 0.22;
       const speed = time * 0.0001;
 
