@@ -13,16 +13,21 @@ const GeometricBackgroundComponent = () => {
     if (!ctx) return;
 
     let animationFrameId: number;
-    let width = window.innerWidth;
+    let width  = window.innerWidth;
     let height = window.innerHeight;
 
     const resize = () => {
-      width = window.innerWidth;
+      width  = window.innerWidth;
       height = window.innerHeight;
       const dpr = window.devicePixelRatio || 1;
-      canvas.width = width * dpr;
+      canvas.width  = width  * dpr;
       canvas.height = height * dpr;
-      ctx.scale(dpr, dpr);
+      // Explicit CSS size so the canvas always fills the viewport on every device
+      canvas.style.width  = `${width}px`;
+      canvas.style.height = `${height}px`;
+      // setTransform resets the matrix then applies the DPR scale in one call —
+      // safe to call multiple times without accumulation
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
 
     window.addEventListener('resize', resize);
@@ -39,7 +44,7 @@ const GeometricBackgroundComponent = () => {
       color?: string
     ) => {
       ctx.beginPath();
-      ctx.strokeStyle = color || `rgba(0, 0, 0, 1.0)`;
+      ctx.strokeStyle = color || 'rgba(0,0,0,1.0)';
       ctx.lineWidth = lineWidth;
       for (let i = 0; i <= q; i++) {
         const angle = (i * p * 2 * Math.PI) / q + rotation;
@@ -54,52 +59,49 @@ const GeometricBackgroundComponent = () => {
     const animate = (time: number) => {
       ctx.clearRect(0, 0, width, height);
 
-      // 32.5° below horizontal from screen centre, x at centre of right quadrant
-      const _angle  = 32.5 * (Math.PI / 180);
+      // Geometric position: 32.5° below horizontal from screen centre,
+      // x-coordinate fixed at the centre of the right quadrant (width × 0.75).
+      // tan(32.5°) ≈ 0.6371; clamp y so the outer ring never leaves the viewport.
+      const bearingAngle = 32.5 * (Math.PI / 180);
       const dx      = width * 0.25;
-      const centerX = width  * 0.5 + dx;          // centre of right half = width * 0.75
-      const centerY = height * 0.5 + dx * Math.tan(_angle);
+      const centerX = width  * 0.75;
+      const rawY    = height * 0.5 + dx * Math.tan(bearingAngle);
       const baseRadius = Math.min(width, height) * 0.22;
+      const centerY = Math.min(rawY, height - baseRadius * 1.3);
+
       const speed = time * 0.0001;
 
-      // Draw nested SOLID black polygons with varying weights
-      drawStarPolygon(centerX, centerY, baseRadius * 0.3, 3, 1, speed, 1.5);
-      drawStarPolygon(centerX, centerY, baseRadius * 0.6, 5, 2, -speed * 0.8, 1.0);
-      drawStarPolygon(centerX, centerY, baseRadius * 0.9, 8, 3, speed * 0.6, 0.5);
-      drawStarPolygon(centerX, centerY, baseRadius * 1.2, 13, 5, -speed * 0.4, 0.3);
+      // Nested rotating star polygons (Fibonacci / ADE sequence)
+      drawStarPolygon(centerX, centerY, baseRadius * 0.3,  3,  1,  speed,         1.5);
+      drawStarPolygon(centerX, centerY, baseRadius * 0.6,  5,  2, -speed * 0.8,   1.0);
+      drawStarPolygon(centerX, centerY, baseRadius * 0.9,  8,  3,  speed * 0.6,   0.5);
+      drawStarPolygon(centerX, centerY, baseRadius * 1.2, 13,  5, -speed * 0.4,   0.3);
 
-      // CENTRAL ENCASEMENT: Mini-core with uniform radii
-      // Make the mini shape animation exactly inscribed in the triangle
-      const triangleRadius = baseRadius * 0.3;
-      // The inradius of an equilateral triangle of circumradius R is R * cos(pi/3) = R * 0.5
-      // But for a regular polygon, the inradius is R * cos(pi/q). For q=3, inradius = R * 0.5
-      // We want the mini circle's inner edge to touch the triangle's inner edge, so:
-      const miniRadius = triangleRadius * 0.5; // inradius of triangle
+      // Mini-core inscribed inside the triangle's inradius
+      const miniRadius = baseRadius * 0.3 * 0.5;
       ctx.beginPath();
-      ctx.strokeStyle = "rgba(0, 0, 0, 1.0)";
+      ctx.strokeStyle = 'rgba(0,0,0,1.0)';
       ctx.lineWidth = 0.7;
       ctx.arc(centerX, centerY, miniRadius, 0, Math.PI * 2);
       ctx.stroke();
 
-      // Mini shapes all touch the circle, now with pure RGB and 50/50 mixes, 50% transparent
-      // Rotations matched to outer counterparts so triangles/stars align in angle
-      // Order: Magenta, Cyan, Yellow, Blue, Green, Red (reverse, so Red is out front)
       const miniShapes = [
-        { q: 7, p: 2, rot: -speed * 0.4, color: 'rgba(255,0,255,0.17)' }, // Magenta (R+B) — near q=13 speed
-        { q: 6, p: 1, rot: speed * 0.6, color: 'rgba(0,255,255,0.17)' },  // Cyan (G+B) — near q=8 speed
-        { q: 4, p: 1, rot: -speed * 0.8, color: 'rgba(255,255,0,0.17)' }, // Yellow (R+G) — near q=5 speed
-        { q: 8, p: 3, rot: speed * 0.6, color: 'rgba(0,0,255,0.17)' },    // Blue — matches outer q=8
-        { q: 5, p: 2, rot: -speed * 0.8, color: 'rgba(0,255,0,0.17)' },   // Green — matches outer q=5
-        { q: 3, p: 1, rot: speed, color: 'rgba(255,0,0,0.17)' },          // Red — matches outer q=3 (triangle)
+        { q: 7, p: 2, rot: -speed * 0.4, color: 'rgba(255,0,255,0.17)' },
+        { q: 6, p: 1, rot:  speed * 0.6, color: 'rgba(0,255,255,0.17)' },
+        { q: 4, p: 1, rot: -speed * 0.8, color: 'rgba(255,255,0,0.17)' },
+        { q: 8, p: 3, rot:  speed * 0.6, color: 'rgba(0,0,255,0.17)'   },
+        { q: 5, p: 2, rot: -speed * 0.8, color: 'rgba(0,255,0,0.17)'   },
+        { q: 3, p: 1, rot:  speed,       color: 'rgba(255,0,0,0.17)'   },
       ];
-      miniShapes.forEach((shape) => {
-        drawStarPolygon(centerX, centerY, miniRadius, shape.q, shape.p, shape.rot, 2.2, shape.color);
-      });
+      miniShapes.forEach(s =>
+        drawStarPolygon(centerX, centerY, miniRadius, s.q, s.p, s.rot, 2.2, s.color)
+      );
 
       animationFrameId = requestAnimationFrame(animate);
     };
 
-    animate(0);
+    // Use rAF for the first frame too so it always gets a real timestamp
+    animationFrameId = requestAnimationFrame(animate);
 
     return () => {
       window.removeEventListener('resize', resize);
@@ -110,7 +112,9 @@ const GeometricBackgroundComponent = () => {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 pointer-events-none z-[-2] opacity-80"
+      // z-[2] sits above the body background (which can cover z-0 on some browsers)
+      // but well below all UI layers which start at z-10+
+      className="fixed inset-0 pointer-events-none z-[2] opacity-80"
     />
   );
 };

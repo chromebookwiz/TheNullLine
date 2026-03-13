@@ -1,12 +1,11 @@
 "use client";
 
 import React, { useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import GeometricBackground from '@/components/GeometricBackground';
 import FileOrbit from '@/components/FileOrbit';
 import DocumentViewer from '@/components/DocumentViewer';
 import DraggableWindow from '@/components/DraggableWindow';
-import { LayoutGrid } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
 const PhotonicChip = dynamic(() => import('@/components/three/PhotonicChip'), { 
@@ -126,14 +125,10 @@ export default function Home() {
   return (
     <main className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden">
       <GeometricBackground />
-      
-      <FileOrbit 
-        onFileSelect={handleFileSelect} 
-        onActivate={() => {
-          openWindow('photonic');
-          openWindow('info');
-        }} 
-      />
+
+      <div className="relative z-10 w-full flex items-center justify-center">
+        <FileOrbit onFileSelect={handleFileSelect} />
+      </div>
 
       <AnimatePresence mode="popLayout">
         {openWindows.map((win) => (

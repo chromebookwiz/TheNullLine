@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'framer-motion';
-import { FileText, File as FileIcon, ChevronRight, X, Info, Cpu, LayoutGrid } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence, useMotionValue, useSpring, useTransform, type MotionValue } from 'framer-motion';
+import { FileText, File as FileIcon, ChevronRight, Cpu, LayoutGrid } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { NOLLTECH_WRITINGS } from './nolltechWritings';
@@ -20,35 +20,6 @@ export interface NullFile {
   children?: NullFile[];
 }
 
-const DOCUMENTS: NullFile[] = [
-  { name: "Magi v1", type: "txt", path: "/docs/Magi v1.txt" },
-  { name: "NullAegis v1", type: "txt", path: "/docs/NullAegis v1.txt" },
-  { name: "NullArk v1", type: "txt", path: "/docs/NullArk v1.txt" },
-  { name: "NullBilliards v1", type: "txt", path: "/docs/NullBilliards v1.txt" },
-  { name: "NullBot Blueprint", type: "pdf", path: "/docs/NullBot_Blueprint_v1.pdf" },
-  { name: "NullBridge v1", type: "txt", path: "/docs/NullBridge v1.txt" },
-  { name: "NullChronicle v1", type: "txt", path: "/docs/NullChronicle v1.txt" },
-  { name: "NullCortex v1", type: "txt", path: "/docs/NullCortex v1.txt" },
-  { name: "NullDeck v1", type: "txt", path: "/docs/NullDeck v1.txt" },
-  { name: "NullDisk v1", type: "txt", path: "/docs/NullDisk v1.txt" },
-  { name: "NullEmber v1", type: "txt", path: "/docs/NullEmber v1.txt" },
-  { name: "NullForge v1", type: "txt", path: "/docs/NullForge v1.txt" },
-  { name: "NullHorizon v1", type: "docx", path: "/docs/NullHorizon_v1.docx" },
-  { name: "NullHover v1", type: "txt", path: "/docs/NullHover v1.txt" },
-  { name: "NullLoom v1", type: "txt", path: "/docs/NullLoom v1.txt" },
-  { name: "NullMind v1", type: "txt", path: "/docs/NullMind v1.txt" },
-  { name: "NullRoot v1", type: "txt", path: "/docs/NullRoot v1.txt" },
-  { name: "NullShell v1", type: "txt", path: "/docs/NullShell v1.txt" },
-  { name: "NullStuture v1", type: "txt", path: "/docs/NullStuture v1.txt" },
-  { name: "NullThread v1", type: "txt", path: "/docs/NullThread v1.txt" },
-  { name: "NullWellspring v1", type: "txt", path: "/docs/NullWellspring v1.txt" },
-  { name: "Null Billiards 2", type: "pdf", path: "/docs/Null_Billiards-2.pdf" },
-  { name: "Nullware v1", type: "txt", path: "/docs/Nullware v1.txt" },
-  { name: "OrbitOS v1", type: "txt", path: "/docs/OrbitOS v1.txt" },
-  { name: "The Null Line Project", type: "txt", path: "/docs/TheNullLineProject.txt" },
-];
-
-
 const FILES: NullFile[] = [
   { name: "Files", type: "app", path: "app://files", children: [
     { name: "NollTech", type: "folder", path: "/nolltech", children: NOLLTECH_WRITINGS },
@@ -65,10 +36,8 @@ const FILES: NullFile[] = [
 
 const FileOrbitComponent = ({ 
   onFileSelect, 
-  onActivate 
 }: { 
   onFileSelect: (file: NullFile) => void,
-  onActivate: () => void
 }) => {
   const [hovered, setHovered] = useState<number | null>(null);
   const [targetIndex, setTargetIndex] = useState(0);
@@ -84,48 +53,6 @@ const FileOrbitComponent = ({
   // Very stiff spring = near-instant gyroscope response, slight smoothing for scroll/touch
   const rotationSmooth = useSpring(rotationRaw, { stiffness: 800, damping: 40, mass: 0.5 });
 
-  // Gyroscope/DeviceOrientation real-time support
-  useEffect(() => {
-    let lastGyro = 90;
-    let gyroActive = false;
-    function handleOrientation(event: DeviceOrientationEvent) {
-      // Use gamma (left-right tilt) or alpha (compass heading)
-      // We'll use gamma for left-right, fallback to alpha if not available
-      let angle = 90;
-      if (typeof event.gamma === 'number') {
-        // gamma is -90 (left) to 90 (right)
-        angle = 90 - event.gamma;
-      } else if (typeof event.alpha === 'number') {
-        // alpha is 0-360 compass
-        angle = 90 - (event.alpha % 360);
-      }
-      lastGyro = angle;
-      rotationRaw.set(angle);
-    }
-    // Try to enable gyroscope if available
-    const DOE = window.DeviceOrientationEvent as typeof window.DeviceOrientationEvent & {
-      requestPermission?: () => Promise<string>;
-    };
-    if (DOE && typeof DOE.requestPermission === 'function') {
-      // iOS 13+
-      DOE.requestPermission().then((response) => {
-        if (response === 'granted') {
-          window.addEventListener('deviceorientation', handleOrientation, true);
-          gyroActive = true;
-        }
-      }).catch(() => {});
-    } else if (window.DeviceOrientationEvent) {
-      // Most browsers
-      window.addEventListener('deviceorientation', handleOrientation, true);
-      gyroActive = true;
-    }
-    return () => {
-      if (gyroActive) {
-        window.removeEventListener('deviceorientation', handleOrientation, true);
-      }
-    };
-  }, [rotationRaw]);
-  
   // The active index is targetIndex normalized
   const activeIndex = ((targetIndex % total) + total) % total;
 
@@ -293,7 +220,7 @@ function OrbitItem({
   file, isSelected, isHovered, onSelect, onHoverChange, parentRotation 
 }: { 
   file: NullFile, isSelected: boolean, isHovered: boolean, onSelect: () => void, 
-  onHoverChange: (h: boolean) => void, parentRotation: any 
+  onHoverChange: (h: boolean) => void, parentRotation: MotionValue<number> 
 }) {
   const counterRotate = useTransform(parentRotation, (r: number) => -r);
 

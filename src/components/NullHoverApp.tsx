@@ -99,6 +99,10 @@ const HORIZ_DRAG  = 0.42;   // horizontal drag exponent base (fraction remaining
 // ── HUD data type ─────────────────────────────────────────────────────────────
 interface HUDData { alt: number; speed: number; heading: number; gap: number; onGround: boolean; rollMode: boolean; }
 
+function clamp(value: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, value));
+}
+
 // ── Inner Three.js scene ──────────────────────────────────────────────────────
 function HoverScene({
   keysRef,
@@ -123,6 +127,8 @@ function HoverScene({
     pos:         new THREE.Vector3(0, 35, 0),
     vel:         new THREE.Vector3(),
     yaw:         0,
+    pitch:       0,
+    bank:        0,
     rollX:       0,
     rollZ:       0,
     angVX:       0,
@@ -255,10 +261,15 @@ function HoverScene({
     // ── Impact flash decay ───────────────────────────────────────────
     s.impactFlash = Math.max(0, s.impactFlash - dts * 4);
 
+    const targetPitch = clamp((-vel.dot(fwd) * 0.004) + slopeZ * 0.028, -0.34, 0.34);
+    const targetBank = clamp((vel.dot(rgt) * 0.0035) - slopeX * 0.028, -0.42, 0.42);
+    s.pitch += (targetPitch - s.pitch) * Math.min(1, dts * 3.2);
+    s.bank += (targetBank - s.bank) * Math.min(1, dts * 3.8);
+
     // ── Update meshes imperatively ───────────────────────────────────
     if (craftRef.current) {
       craftRef.current.position.copy(pos);
-      craftRef.current.rotation.y = yaw;
+      craftRef.current.rotation.set(s.pitch, yaw, s.bank);
     }
     if (rollGroupRef.current) {
       rollGroupRef.current.rotation.x = s.rollX;
@@ -375,6 +386,7 @@ export default function NullHoverApp() {
   const [started, setStarted]     = useState(false);
   const [locked, setLocked]       = useState(false);
   const [isFS, setIsFS]           = useState(false);
+  const [activeKeys, setActiveKeys] = useState<string[]>([]);
   const [hud, setHud]             = useState<HUDData>({ alt: 35, speed: 0, heading: 0, gap: EDS_TARGET, onGround: false, rollMode: false });
   const keysRef                   = useRef(new Set<string>());
   const containerRef              = useRef<HTMLDivElement>(null);
@@ -385,9 +397,11 @@ export default function NullHoverApp() {
       // Prevent browser shortcuts (Ctrl+W, etc.) from interfering during Roll Mode
       if (['w','a','s','d',' ','c','control'].includes(k)) e.preventDefault();
       keysRef.current.add(k);
+      setActiveKeys(Array.from(keysRef.current));
     };
     const up = (e: KeyboardEvent) => {
       keysRef.current.delete(e.key === ' ' ? ' ' : e.key.toLowerCase());
+      setActiveKeys(Array.from(keysRef.current));
     };
     window.addEventListener('keydown', down);
     window.addEventListener('keyup', up);
@@ -427,7 +441,7 @@ export default function NullHoverApp() {
           <div className="w-[360px] border border-white/10 p-8">
             <div className="text-[9px] tracking-[0.5em] text-white/30 uppercase mb-1">◊.NULL_HOVER · v2</div>
             <h1 className="text-2xl font-bold text-white leading-tight mb-1">Spherical EDS<br/>Levitation Craft</h1>
-            <p className="text-[10px] text-white/30 mb-3 italic">"It doesn't fly. It falls — upward."</p>
+            <p className="text-[10px] text-white/30 mb-3 italic">It doesn&apos;t fly. It falls upward.</p>
             <div className="text-[8px] text-white/20 mb-5 leading-relaxed border-l border-white/10 pl-3">
               Gyroscopic core · Impact-resistant shell (e=0.36) · EDS over any terrain<br/>
               F_lev = 3μ₀m²/(128πh⁴) · PD-controlled at 10 kHz
@@ -507,7 +521,7 @@ export default function NullHoverApp() {
             <div className="absolute bottom-14 left-5 pointer-events-none">
               {(['w','a','s','d'] as const).map(k => {
                 const [cx, cy] = k === 'w' ? [1,0] : k === 'a' ? [0,1] : k === 's' ? [1,1] : [2,1];
-                const active = keysRef.current.has(k);
+                const active = activeKeys.includes(k);
                 return (
                   <div
                     key={k}

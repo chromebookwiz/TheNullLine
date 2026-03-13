@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Zap, TrendingUp, Cpu, Atom } from 'lucide-react';
 
@@ -99,8 +99,7 @@ function drawHypercube(
 function drawMetalattice(
   ctx: CanvasRenderingContext2D,
   W: number, H: number,
-  nodes: boolean[],
-  _time: number
+  nodes: boolean[]
 ) {
   const cx = W / 2, cy = H / 2;
   const cellSize = Math.min(W, H) * 0.082;
@@ -217,12 +216,6 @@ function drawRingTick(
   drawStarPolygon(ctx, cx, cy, R * 0.5, 8, 3, time * 0.00005, 0.4, 'rgba(0,0,0,0.04)');
 }
 
-// Next perfect-square milestone ≥ 4 after a given number of rings
-function nextMilestone(ringsComplete: number): number {
-  const n = Math.max(4, Math.ceil(Math.sqrt(ringsComplete + 1)));
-  return n * n;
-}
-
 function drawCirclesSquare(
   ctx: CanvasRenderingContext2D,
   W: number, H: number,
@@ -296,12 +289,15 @@ export default function ShapeClicker() {
   // Refs so canvas loop always sees fresh state without restarting
   const levelRef         = useRef(level);
   const bouncesRef       = useRef(bounces);
-  levelRef.current   = level;
-  bouncesRef.current = bounces;
-  phaseRef.current   = phase;
 
   const current = MANIFOLD_SEQUENCE[Math.min(level, MANIFOLD_SEQUENCE.length - 1)];
   const next    = MANIFOLD_SEQUENCE[Math.min(level + 1, MANIFOLD_SEQUENCE.length - 1)];
+
+  useEffect(() => {
+    levelRef.current = level;
+    bouncesRef.current = bounces;
+    phaseRef.current = phase;
+  }, [level, bounces, phase]);
 
   // Reset metalattice nodes for a fresh cycle
   const resetMeta = () => {
@@ -311,7 +307,7 @@ export default function ShapeClicker() {
   };
 
   // --- Advance logic ---
-  const advance = (count: number) => {
+  const advance = useCallback((count: number) => {
     setEnergy(e => e + count);
 
     if (phaseRef.current === 'manifold') {
@@ -391,11 +387,14 @@ export default function ShapeClicker() {
       phaseRef.current = 'metalattice';
       setBounces(0);
     }
-  };
+  }, []);
 
   // Auto-bounce via interval — uses ref to avoid stale closure
   const advanceRef = useRef(advance);
-  advanceRef.current = advance;
+
+  useEffect(() => {
+    advanceRef.current = advance;
+  }, [advance]);
 
   useEffect(() => {
     if (autoBounceRate <= 0) return;
@@ -427,7 +426,7 @@ export default function ShapeClicker() {
         ctx.stroke();
 
       } else if (ph === 'metalattice') {
-        drawMetalattice(ctx, width, height, metaNodesRef.current, time);
+        drawMetalattice(ctx, width, height, metaNodesRef.current);
         const r = Math.min(width, height) * 0.47;
         const cx = width / 2, cy = height / 2;
         ctx.beginPath();

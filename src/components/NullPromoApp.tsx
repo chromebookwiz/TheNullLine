@@ -59,10 +59,10 @@ const PRODUCTS: Product[] = [
     isPreorder: true,
     docSlug: 'NullHover v1.txt',
     ctaLabel: '◆ Pre-order',
-    description: 'A 4-metre lenticular disc that levitates against its own superconducting magnetic field. No rails. No air cushion. No props. Over dry soil, seawater, concrete, or metal — the null sphere avionics adapt the AC frequency and field geometry 10,000 times per second. It simply hovers.',
+    description: 'A spherical electrodynamic craft wrapped around a gyroscopic core and superconducting coil set. No rails. No air cushion. No props. Over dry soil, seawater, concrete, or metal, the null sphere avionics retune field geometry in real time to keep the hull levitating and terrain-locked.',
     bullets: [
-      'YBCO superconducting coil — 53,400 A·m² magnetic moment',
-      '16 independent EDS rim coils — propulsion + stability',
+      'YBCO superconducting coil pack with gyroscopic stabilization core',
+      'Terrain-following EDS envelope for lift, translation, and stability',
       'Works over: soil, pavement, seawater, ice, metal',
       'Quad E₈ null sphere avionics — <100ns control latency',
       '60 kWh Li-Si battery pack · 8hr LN₂ cryo endurance',
@@ -298,7 +298,7 @@ export default function NullPromoApp() {
               ◊.THE_NULL_LINE · {product.badge.toUpperCase()}
             </div>
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight leading-none mb-2">{product.name}</h1>
-            <p className="text-sm text-white/50 max-w-lg leading-relaxed italic mb-5">"{product.tagline}"</p>
+            <p className="text-sm text-white/50 max-w-lg leading-relaxed italic mb-5">&ldquo;{product.tagline}&rdquo;</p>
             <div className="flex flex-wrap gap-3 items-center">
               <span className="text-2xl font-bold">{product.price}</span>
               <span className="text-[9px] text-white/30 uppercase tracking-widest border border-white/10 px-2 py-1">{product.availability}</span>

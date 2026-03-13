@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import React, { useRef, useMemo, useState, useContext } from 'react';
+import React, { useRef, useMemo, useState, useContext, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { PerspectiveCamera, OrbitControls, PointMaterial } from '@react-three/drei';
 import * as THREE from 'three';
@@ -104,6 +104,10 @@ const EightSphereScene = React.memo(function EightSphereScene({
   const flashTimers = useRef<number[]>(new Array(8).fill(0));
   const sphereGlows  = useRef<(THREE.Mesh | null)[]>(new Array(8).fill(null));
   const sphereLights = useRef<(THREE.PointLight | null)[]>(new Array(8).fill(null));
+  const photonsRef = useRef<Photon[]>([]);
+  const orbitGeoRef = useRef<THREE.BufferGeometry | null>(null);
+  const photonGeoRef = useRef<THREE.BufferGeometry | null>(null);
+  const orbitMatRef = useRef<THREE.LineBasicMaterial | null>(null);
 
   const orbitPath = useMemo(() => buildOrbitPath(q, p), [q, p]);
 
@@ -117,23 +121,25 @@ const EightSphereScene = React.memo(function EightSphereScene({
     color: '#60c8ff', transparent: true, opacity: 0.06,
   }), []);
   const orbitSegs = useMemo(() => new THREE.LineSegments(orbitGeo, orbitMat), [orbitGeo, orbitMat]);
+  const photonCount = isSolving ? Math.min(24, Math.max(12, q * 2)) : Math.min(10, Math.max(6, Math.ceil(q / 2)));
 
   // Photon particles — staggered along the orbit
   const photons = useMemo<Photon[]>(() => {
-    const count = Math.min(16, q);
+    const count = photonCount;
     return Array.from({ length: count }, (_, i) => {
       const step = i % orbitPath.length;
       const fromIdx = orbitPath[step];
       const toIdx   = orbitPath[(step + 1) % orbitPath.length];
+      const speedOffset = photonCount > 1 ? (i / (photonCount - 1)) : 0;
       return {
         pos: SPHERE_POS[fromIdx].clone(),
         fromIdx, toIdx,
         progress: i / count,
-        speed: 0.38 + Math.random() * 0.14,
+        speed: (isSolving ? 0.58 : 0.32) + speedOffset * (isSolving ? 0.16 : 0.08),
         step,
       };
     });
-  }, [q, p, orbitPath]);
+  }, [isSolving, orbitPath, photonCount]);
 
   const photonGeo = useMemo(() => {
     const geo = new THREE.BufferGeometry();
@@ -155,20 +161,36 @@ const EightSphereScene = React.memo(function EightSphereScene({
     return geo;
   }, []);
 
+  useEffect(() => {
+    photonsRef.current = photons.map((ph) => ({ ...ph, pos: ph.pos.clone() }));
+    orbitGeoRef.current = orbitGeo;
+    photonGeoRef.current = photonGeo;
+    orbitMatRef.current = orbitMat;
+  }, [orbitGeo, orbitMat, photonGeo, photons]);
+
   useFrame((state, dt) => {
     const dts = Math.min(dt, 0.05);
     const t   = state.clock.getElapsedTime();
+    const photonGeoCurrent = photonGeoRef.current;
+    const orbitGeoCurrent = orbitGeoRef.current;
+    const orbitMatCurrent = orbitMatRef.current;
+    const photonsCurrent = photonsRef.current;
+    if (!photonGeoCurrent || !orbitGeoCurrent || !orbitMatCurrent || photonsCurrent.length === 0) {
+      return;
+    }
+
     if (groupRef.current) {
-      groupRef.current.rotation.y += dts * (isSolving ? 0.20 : 0.065);
+      groupRef.current.rotation.y += dts * (isSolving ? 0.22 : 0.05);
       groupRef.current.rotation.x  = Math.sin(t * 0.11) * 0.18;
+      groupRef.current.rotation.z  = Math.cos(t * 0.08) * 0.07;
     }
     // Decay flash
     for (let s = 0; s < 8; s++) flashTimers.current[s] = Math.max(0, flashTimers.current[s] - dts * 3);
 
     // Update photons
-    const pos = photonGeo.attributes.position.array as Float32Array;
-    for (let i = 0; i < photons.length; i++) {
-      const ph = photons[i];
+    const pos = photonGeoCurrent.attributes.position.array as Float32Array;
+    for (let i = 0; i < photonsCurrent.length; i++) {
+      const ph = photonsCurrent[i];
       ph.progress += dts * ph.speed;
       if (ph.progress >= 1) {
         flashTimers.current[ph.toIdx] = 1.0;
@@ -188,10 +210,10 @@ const EightSphereScene = React.memo(function EightSphereScene({
       pos[i * 3 + 1] = ph.pos.y;
       pos[i * 3 + 2] = ph.pos.z;
     }
-    photonGeo.attributes.position.needsUpdate = true;
+    photonGeoCurrent.attributes.position.needsUpdate = true;
 
     // Update orbit path lines
-    const opos = orbitGeo.attributes.position.array as Float32Array;
+    const opos = orbitGeoCurrent.attributes.position.array as Float32Array;
     for (let i = 0; i < q; i++) {
       const from = SPHERE_POS[orbitPath[i]];
       const to   = SPHERE_POS[orbitPath[(i + 1) % q]];
@@ -199,10 +221,10 @@ const EightSphereScene = React.memo(function EightSphereScene({
       opos[bi]     = from.x; opos[bi + 1] = from.y; opos[bi + 2] = from.z;
       opos[bi + 3] = to.x;   opos[bi + 4] = to.y;   opos[bi + 5] = to.z;
     }
-    orbitGeo.setDrawRange(0, q * 2);
-    orbitGeo.attributes.position.needsUpdate = true;
+    orbitGeoCurrent.setDrawRange(0, q * 2);
+    orbitGeoCurrent.attributes.position.needsUpdate = true;
     const targetOp = isSolving ? 0.82 : 0.05;
-    orbitMat.opacity += (targetOp - orbitMat.opacity) * 0.06;
+    orbitMatCurrent.opacity += (targetOp - orbitMatCurrent.opacity) * 0.06;
 
     // Update sphere glow opacity
     for (let s = 0; s < 8; s++) {
@@ -272,14 +294,15 @@ export default function NullPhotonSphereComputer() {
   const handleSolve = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input || isSolving) return;
+    const num = safeCalc(input);
+    if (isNaN(num)) return;
+    const nextOrbit = getOrbit(num);
     setIsSolving(true);
     setTimeout(() => {
-      try {
-        const num = safeCalc(input);
-        if (!isNaN(num)) { setResult(num); setOrbit(getOrbit(num)); }
-      } catch { /* ignore */ }
+      setResult(num);
+      setOrbit(nextOrbit);
       setIsSolving(false);
-    }, 3000);
+    }, Math.min(2200, 700 + nextOrbit.q * 55));
   };
 
   const handleClear = () => { setInput(""); setResult(null); setOrbit({ q: 8, p: 3 }); };
@@ -291,15 +314,16 @@ export default function NullPhotonSphereComputer() {
       <div className="flex-1 w-full relative">
         <Canvas
           gl={{ antialias: false, powerPreference: "high-performance" }}
-          dpr={[1, 1.5]}
+          dpr={[1, 1.25]}
           frameloop={isSuspended ? 'never' : 'always'}
         >
           <PerspectiveCamera makeDefault position={[0, 0, 9]} fov={32} />
           <OrbitControls
-            enablePan={false} autoRotate={!isSolving} autoRotateSpeed={0.3}
+            enablePan={false} autoRotate={!isSolving} autoRotateSpeed={0.24}
             minDistance={4} maxDistance={16} enableDamping dampingFactor={0.06}
           />
-          <ambientLight intensity={0.3} />
+          <ambientLight intensity={0.26} />
+          <hemisphereLight args={["#b8d8ff", "#02060f", 0.36]} />
           <EightSphereScene q={orbit.q} p={orbit.p} isSolving={isSolving || isFree} />
         </Canvas>
       </div>
@@ -378,7 +402,7 @@ export default function NullPhotonSphereComputer() {
                 </section>
                 <section className="pt-4 border-t border-black/5">
                   <p className="text-[8px] text-black/30 italic">
-                    Paper: "NullBilliards: Periodic Orbits, Emergent Mass, and the E₈ Null Sphere Computer" — Nathan Noll, 2026
+                    Paper: &ldquo;NullBilliards: Periodic Orbits, Emergent Mass, and the E₈ Null Sphere Computer&rdquo; — Nathan Noll, 2026
                   </p>
                 </section>
               </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback, useContext } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useContext, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { WindowSuspendedContext } from './DraggableWindow';
 
@@ -74,6 +74,11 @@ interface FlyingAtom {
 const SHELL_N = 120;
 const MAX_FLYING = 3;
 
+interface ShellLayout {
+  sites3d: Array<{ x: number; y: number; z: number }>;
+  bonds: Array<[number, number]>;
+}
+
 function drawADEOrbit(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number, q: number, p: number, rot: number, color: string) {
   ctx.beginPath();
   ctx.strokeStyle = color;
@@ -106,6 +111,34 @@ function dedupeAndSample(pts: { x: number; y: number; z: number }[], n: number) 
     });
   }
   return deduped.slice(0, n);
+}
+
+function buildBondPairs(sites: Array<{ x: number; y: number; z: number }>, neighbors: number) {
+  const bonds = new Set<string>();
+  for (let i = 0; i < sites.length; i++) {
+    const distances = sites
+      .map((site, idx) => ({
+        idx,
+        d2: idx === i
+          ? Number.POSITIVE_INFINITY
+          : (sites[i].x - site.x) ** 2 + (sites[i].y - site.y) ** 2 + (sites[i].z - site.z) ** 2,
+      }))
+      .sort((a, b) => a.d2 - b.d2);
+
+    const cutoff = distances[Math.max(0, neighbors - 1)]?.d2 ?? Number.POSITIVE_INFINITY;
+    for (const entry of distances.slice(0, neighbors + 1)) {
+      if (entry.d2 > cutoff * 1.2) {
+        continue;
+      }
+      const pair = i < entry.idx ? `${i}:${entry.idx}` : `${entry.idx}:${i}`;
+      bonds.add(pair);
+    }
+  }
+
+  return Array.from(bonds, (pair) => {
+    const [a, b] = pair.split(':').map(Number);
+    return [a, b] as [number, number];
+  });
 }
 
 // Crystal-structure-specific sphere point distributions
@@ -204,6 +237,15 @@ function getShellPoints(gridType: string, n: number): Array<{ x: number; y: numb
   }
 }
 
+function getShellLayout(gridType: string, n: number): ShellLayout {
+  const sites3d = getShellPoints(gridType, n);
+  const neighborCount = gridType === 'graph' ? 3 : gridType === 'dia' ? 4 : 5;
+  return {
+    sites3d,
+    bonds: buildBondPairs(sites3d, neighborCount),
+  };
+}
+
 export default function NullForgeApp() {
   const isSuspended = useContext(WindowSuspendedContext);
   const [modeIdx, setModeIdx] = useState(0);
@@ -211,11 +253,13 @@ export default function NullForgeApp() {
   const [running, setRunning] = useState(false);
   const [speed, setSpeed] = useState(3);
   const [placedCount, setPlacedCount] = useState(0);
+  const shellLayout = useMemo(() => getShellLayout(CRYSTAL_MODES[modeIdx].gridType, SHELL_N), [modeIdx]);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<{
     placed: boolean[];
     sites3d: { x: number; y: number; z: number }[];
+    bonds: Array<[number, number]>;
     beamPhase: number;
     rotAngle: number;
     placedCount: number;
@@ -223,7 +267,8 @@ export default function NullForgeApp() {
     nextId: number;
   }>({
     placed: new Array(SHELL_N).fill(false),
-    sites3d: fibSpherePoints(SHELL_N),
+    sites3d: shellLayout.sites3d,
+    bonds: shellLayout.bonds,
     beamPhase: 0,
     rotAngle: 0,
     placedCount: 0,
@@ -234,18 +279,21 @@ export default function NullForgeApp() {
   const mode = CRYSTAL_MODES[modeIdx];
   const elem = ELEMENTS[elemIdx];
 
-  const rebuildLattice = useCallback(() => {
+  const resetBuildState = useCallback((nextShellLayout: ShellLayout) => {
     const s = stateRef.current;
-    s.sites3d = getShellPoints(CRYSTAL_MODES[modeIdx].gridType, SHELL_N);
+    s.sites3d = nextShellLayout.sites3d;
+    s.bonds = nextShellLayout.bonds;
     s.placed = new Array(SHELL_N).fill(false);
     s.placedCount = 0;
     s.flying = [];
     s.rotAngle = 0;
     setPlacedCount(0);
     setRunning(false);
-  }, [modeIdx]);
+  }, []);
 
-  useEffect(() => { rebuildLattice(); }, [rebuildLattice]);
+  const rebuildLattice = useCallback(() => {
+    resetBuildState(shellLayout);
+  }, [resetBuildState, shellLayout]);
 
   // Main canvas animation loop
   useEffect(() => {
@@ -418,22 +466,17 @@ export default function NullForgeApp() {
         ctx.fillText(elem.symbol, ax, ay);
       }
 
-      // Bonds between close placed front atoms
+      // Bonds between physically adjacent placed sites
       ctx.lineWidth = 0.5;
       ctx.strokeStyle = elem.color + '35';
-      for (let i = 0; i < SHELL_N; i++) {
-        if (!s.placed[i] || projected[i].depth < 0) continue;
-        for (let j = i + 1; j < SHELL_N; j++) {
-          if (!s.placed[j] || projected[j].depth < 0) continue;
-          const dx = projected[i].x - projected[j].x;
-          const dy = projected[i].y - projected[j].y;
-          if (dx * dx + dy * dy < 32 * 32) {
-            ctx.beginPath();
-            ctx.moveTo(projected[i].x, projected[i].y);
-            ctx.lineTo(projected[j].x, projected[j].y);
-            ctx.stroke();
-          }
+      for (const [i, j] of s.bonds) {
+        if (!s.placed[i] || !s.placed[j] || projected[i].depth < 0 || projected[j].depth < 0) {
+          continue;
         }
+        ctx.beginPath();
+        ctx.moveTo(projected[i].x, projected[i].y);
+        ctx.lineTo(projected[j].x, projected[j].y);
+        ctx.stroke();
       }
 
       // Front-hemisphere placed atoms
@@ -463,7 +506,8 @@ export default function NullForgeApp() {
       }
 
       // Spawn new flying atoms
-      if (running && s.flying.length < MAX_FLYING) {
+      const maxFlying = Math.min(9, MAX_FLYING + Math.floor(speed / 3));
+      if (running && s.flying.length < maxFlying) {
         const active = new Set(s.flying.map(f => f.siteIdx));
         const nextIdx = s.placed.findIndex((placed, i) => !placed && !active.has(i));
         if (nextIdx !== -1) {
@@ -566,7 +610,10 @@ export default function NullForgeApp() {
             {CRYSTAL_MODES.map((m, i) => (
               <button
                 key={m.id}
-                onClick={() => { setModeIdx(i); }}
+                onClick={() => {
+                  setModeIdx(i);
+                  resetBuildState(getShellLayout(CRYSTAL_MODES[i].gridType, SHELL_N));
+                }}
                 className={`px-2 py-2 text-left border transition-all ${modeIdx === i ? 'border-black bg-black text-white' : 'border-black/10 hover:border-black/30'}`}
               >
                 <div className="text-[9px] font-bold uppercase tracking-wide truncate">{m.name}</div>

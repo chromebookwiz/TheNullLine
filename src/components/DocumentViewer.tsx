@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import mammoth from 'mammoth';
 import { X, FileText, Loader2, Copy, Check } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -18,7 +18,7 @@ interface ViewerProps {
     name: string;
     type: 'txt' | 'docx' | 'pdf' | 'app' | 'folder';
     path: string;
-    children?: any;
+    children?: Array<unknown>;
   };
   onClose?: () => void;
   embedded?: boolean;
@@ -26,7 +26,7 @@ interface ViewerProps {
 
 const DocumentViewerComponent = ({ file, onClose, embedded }: ViewerProps) => {
   const [content, setContent] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(file.type !== 'pdf');
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -40,10 +40,6 @@ const DocumentViewerComponent = ({ file, onClose, embedded }: ViewerProps) => {
   };
 
   useEffect(() => {
-    setLoading(true);
-    setError(null);
-    setContent(null);
-
     if (file.type === 'txt') {
       fetch(file.path)
         .then(res => res.text())
@@ -51,7 +47,7 @@ const DocumentViewerComponent = ({ file, onClose, embedded }: ViewerProps) => {
           setContent(text);
           setLoading(false);
         })
-        .catch(err => {
+        .catch(() => {
           setError("◊.ERR_Σ");
           setLoading(false);
         });
@@ -63,13 +59,10 @@ const DocumentViewerComponent = ({ file, onClose, embedded }: ViewerProps) => {
           setContent(result.value);
           setLoading(false);
         })
-        .catch(err => {
-          console.error(err);
+        .catch(() => {
           setError("◊.ERR_Δ");
           setLoading(false);
         });
-    } else {
-      setLoading(false);
     }
   }, [file]);
 

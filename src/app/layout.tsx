@@ -6,7 +6,10 @@ import path from 'path';
 
 const outfit = Outfit({
   subsets: ["latin"],
+  weight: ["300", "400", "700"],   // only the weights actually used in the UI
   variable: "--font-outfit",
+  display: "swap",
+  fallback: ["system-ui", "sans-serif"],
 });
 
 export const metadata: Metadata = {
@@ -28,10 +31,6 @@ export default function RootLayout({
 
   return (
     <html lang="en">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-      </head>
       <body
         className={`${outfit.variable} antialiased selection:bg-black/10`}
       >

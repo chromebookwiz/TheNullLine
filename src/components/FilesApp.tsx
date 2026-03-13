@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, Folder, FolderOpen, ChevronRight, ArrowLeft } from 'lucide-react';
+import { FileText, FolderOpen, ChevronRight, ArrowLeft } from 'lucide-react';
 import type { NullFile } from './FileOrbit';
 import { NOLLTECH_WRITINGS } from './nolltechWritings';
 

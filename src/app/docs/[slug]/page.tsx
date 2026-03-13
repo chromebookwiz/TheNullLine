@@ -32,9 +32,8 @@ export default async function DocPage({ params }: Props) {
   const filePath = path.join(docsDir, decodedSlug);
   
   let content = "";
-  let isTxt = decodedSlug.endsWith('.txt');
-  let isDocx = decodedSlug.endsWith('.docx');
-  let isPdf = decodedSlug.endsWith('.pdf');
+  const isTxt = decodedSlug.endsWith('.txt');
+  const isDocx = decodedSlug.endsWith('.docx');
 
   if (isTxt && fs.existsSync(filePath)) {
     content = fs.readFileSync(filePath, 'utf-8');
