@@ -3,6 +3,9 @@ import { getDonations, saveDonations, getUsers, Donation } from '@/lib/store';
 import { verifyToken } from '@/lib/auth';
 import crypto from 'crypto';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function POST(req: NextRequest) {
   try {
     // Auth: Bearer token in Authorization header

@@ -87,6 +87,123 @@ function drawADEOrbit(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: 
   ctx.stroke();
 }
 
+// Deduplicate and sample a point list to exactly n points
+function dedupeAndSample(pts: { x: number; y: number; z: number }[], n: number) {
+  const seen = new Set<string>();
+  const deduped = pts.filter(p => {
+    const k = `${Math.round(p.x * 9)},${Math.round(p.y * 9)},${Math.round(p.z * 9)}`;
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+  // Pad if too few
+  while (deduped.length < n) {
+    const base = deduped[Math.floor(Math.random() * deduped.length)];
+    deduped.push({
+      x: base.x + (Math.random() - 0.5) * 0.06,
+      y: base.y + (Math.random() - 0.5) * 0.06,
+      z: base.z + (Math.random() - 0.5) * 0.06,
+    });
+  }
+  return deduped.slice(0, n);
+}
+
+// Crystal-structure-specific sphere point distributions
+function getShellPoints(gridType: string, n: number): Array<{ x: number; y: number; z: number }> {
+  switch (gridType) {
+    case 'fcc':
+      return fibSpherePoints(n);
+
+    case 'bcc': {
+      const pts: { x: number; y: number; z: number }[] = [];
+      for (let ix = -3; ix <= 3; ix++)
+        for (let iy = -3; iy <= 3; iy++)
+          for (let iz = -3; iz <= 3; iz++) {
+            const r2 = ix*ix + iy*iy + iz*iz;
+            if (r2 <= 13) pts.push({ x: ix / 3.6, y: iy / 3.6, z: iz / 3.6 });
+            const bx = ix + 0.5, by = iy + 0.5, bz = iz + 0.5;
+            if (bx*bx + by*by + bz*bz <= 13) pts.push({ x: bx / 3.6, y: by / 3.6, z: bz / 3.6 });
+          }
+      return dedupeAndSample(pts, n);
+    }
+
+    case 'hex': {
+      const pts: { x: number; y: number; z: number }[] = [];
+      const h = Math.sqrt(3) / 2;
+      for (let iy = -4; iy <= 4; iy++)
+        for (let ix = -5; ix <= 5; ix++)
+          for (let iz = -5; iz <= 5; iz++) {
+            const xoff = iy % 2 === 0 ? 0 : 0.5;
+            const px = (ix + xoff) / 3.8;
+            const py = iy * h * 0.816 / 3.8;
+            const pz = iz / 3.8;
+            if (px*px + py*py + pz*pz <= 1.0) pts.push({ x: px, y: py, z: pz });
+          }
+      return dedupeAndSample(pts, n);
+    }
+
+    case 'dia': {
+      // Two interpenetrating FCC sublattices offset by (0.25, 0.25, 0.25)
+      const half = Math.ceil(n / 2);
+      const a = fibSpherePoints(half);
+      const offset = 0.15;
+      const b = fibSpherePoints(n - half).map(p => ({
+        x: p.x * 0.88 + offset,
+        y: p.y * 0.88 + offset,
+        z: p.z * 0.88 + offset,
+      }));
+      return [...a, ...b];
+    }
+
+    case 'graph': {
+      // Graphene: flat hexagonal sheet
+      const pts: { x: number; y: number; z: number }[] = [];
+      const h = Math.sqrt(3) / 2;
+      for (let ix = -8; ix <= 8; ix++)
+        for (let iz = -8; iz <= 8; iz++) {
+          const xoff = iz % 2 === 0 ? 0 : 0.5;
+          const px = (ix + xoff) / 5.5;
+          const py = (Math.random() - 0.5) * 0.015;
+          const pz = iz * h / 5.5;
+          if (px*px + pz*pz <= 0.98) {
+            pts.push({ x: px, y: py, z: pz });
+            const px2 = px + 0.165, pz2 = pz + 0.095;
+            if (px2*px2 + pz2*pz2 <= 0.98) pts.push({ x: px2, y: py, z: pz2 });
+          }
+        }
+      return dedupeAndSample(pts, n);
+    }
+
+    case 'quasi': {
+      // Icosahedral quasicrystal shells (Penrose / E₈-inspired)
+      const phi = (1 + Math.sqrt(5)) / 2;
+      const r = 1 / Math.sqrt(1 + phi * phi);
+      const ico = [
+        [0, r, r*phi], [0, -r, r*phi], [0, r, -r*phi], [0, -r, -r*phi],
+        [r, r*phi, 0], [-r, r*phi, 0], [r, -r*phi, 0], [-r, -r*phi, 0],
+        [r*phi, 0, r], [-r*phi, 0, r], [r*phi, 0, -r], [-r*phi, 0, -r],
+      ];
+      const pts: { x: number; y: number; z: number }[] = [];
+      for (let shell = 1; shell <= 5; shell++) {
+        const scale = shell * 0.22;
+        for (const [x, y, z] of ico) {
+          pts.push({ x: x * scale, y: y * scale, z: z * scale });
+          pts.push({ x: x * scale * 0.62, y: y * scale * phi * 0.38, z: z * scale * 0.62 });
+        }
+      }
+      while (pts.length < n + 5) {
+        const v = ico[Math.floor(Math.random() * ico.length)];
+        const s = 0.1 + Math.random() * 0.9;
+        pts.push({ x: v[0]*s, y: v[1]*s, z: v[2]*s });
+      }
+      return pts.slice(0, n);
+    }
+
+    default:
+      return fibSpherePoints(n);
+  }
+}
+
 export default function NullForgeApp() {
   const isSuspended = useContext(WindowSuspendedContext);
   const [modeIdx, setModeIdx] = useState(0);
@@ -119,14 +236,14 @@ export default function NullForgeApp() {
 
   const rebuildLattice = useCallback(() => {
     const s = stateRef.current;
-    s.sites3d = fibSpherePoints(SHELL_N);
+    s.sites3d = getShellPoints(CRYSTAL_MODES[modeIdx].gridType, SHELL_N);
     s.placed = new Array(SHELL_N).fill(false);
     s.placedCount = 0;
     s.flying = [];
     s.rotAngle = 0;
     setPlacedCount(0);
     setRunning(false);
-  }, []);
+  }, [modeIdx]);
 
   useEffect(() => { rebuildLattice(); }, [rebuildLattice]);
 
@@ -391,7 +508,10 @@ export default function NullForgeApp() {
 
   const buildComplete = placedCount >= SHELL_N;
   const progress = placedCount / SHELL_N;
-  const buildTimeSec = (SHELL_N / 1e6).toFixed(3);
+  // 10⁶ atoms/s — 120 sites → 120 μs
+  const buildTimeStr = SHELL_N < 1000
+    ? `${SHELL_N} μs`
+    : `${(SHELL_N / 1000).toFixed(1)} ms`;
 
   return (
     <div className="w-full h-full flex flex-col md:flex-row bg-white font-mono select-none overflow-hidden">
@@ -511,7 +631,7 @@ export default function NullForgeApp() {
             <div>ODT convergent beams × 6 @ 1064 nm</div>
             <div>Sort photon verifies atomic species</div>
             <div>α = pπ/q → {mode.q}-fold orbital symmetry</div>
-            <div>Est. build time: ~{buildTimeSec}s @ 10⁶ atoms/s</div>
+            <div>Est. build time: ~{buildTimeStr} @ 10⁶ atoms/s</div>
             <div>Lattice: {mode.symbol}</div>
           </div>
         </div>

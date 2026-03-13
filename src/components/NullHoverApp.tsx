@@ -8,25 +8,24 @@ import { WindowSuspendedContext } from './DraggableWindow';
 // ── Terrain height function (sum-of-sinusoids, cheap Perlin substitute) ───────
 function terrainH(x: number, z: number): number {
   return (
-    14 * Math.sin(x * 0.035) * Math.cos(z * 0.042) +
-     8 * Math.sin(x * 0.080 + 1.2) * Math.cos(z * 0.070 + 0.9) +
-     4 * Math.sin(x * 0.160 + 2.4) * Math.sin(z * 0.140 + 1.5) +
-     2 * Math.sin(x * 0.350 + 0.7) * Math.cos(z * 0.300 + 0.4) +
-     1 * Math.sin(x * 0.700 + 1.1) * Math.cos(z * 0.650 + 0.2)
+    34 * Math.sin(x * 0.016) * Math.cos(z * 0.018) +
+    18 * Math.sin(x * 0.034 + 1.2) * Math.cos(z * 0.028 + 0.9) +
+     6 * Math.sin(x * 0.062 + 2.4) * Math.sin(z * 0.054 + 1.5) +
+     2 * Math.sin(x * 0.125 + 0.7) * Math.cos(z * 0.110 + 0.4)
   );
 }
 
 function terrainColor(h: number): [number, number, number] {
-  if (h < -5) return [0.18, 0.38, 0.63]; // water
-  if (h <  0) return [0.62, 0.52, 0.37]; // sand/shore
-  if (h <  8) return [0.33, 0.47, 0.28]; // grass
-  if (h < 16) return [0.27, 0.40, 0.20]; // forest
-  if (h < 22) return [0.52, 0.52, 0.47]; // rocky
+  if (h < -8)  return [0.18, 0.38, 0.63]; // water
+  if (h <  0)  return [0.62, 0.52, 0.37]; // sand/shore
+  if (h < 16)  return [0.33, 0.47, 0.28]; // grass
+  if (h < 30)  return [0.27, 0.40, 0.20]; // forest
+  if (h < 46)  return [0.52, 0.52, 0.47]; // rocky
   return [0.92, 0.92, 0.96];              // snow
 }
 
 // ── Chunk geometry builder ────────────────────────────────────────────────────
-const CHUNK_SIZE = 240;
+const CHUNK_SIZE = 360;
 const CHUNK_SEGS = 44;
 
 function buildChunk(cx: number, cz: number): THREE.BufferGeometry {
@@ -95,10 +94,10 @@ const EDS_KP      = 42.0;   // PD proportional gain
 const EDS_KD      = 8.5;    // PD derivative gain
 const RESTITUTION = 0.36;   // shell impact energy retention (absorbs 64%)
 const GYRO_RPM    = 12000;  // gyroscopic core spin speed (RPM)
-const HORIZ_DRAG  = 0.072;  // horizontal drag exponent base
+const HORIZ_DRAG  = 0.42;   // horizontal drag exponent base (fraction remaining per second)
 
 // ── HUD data type ─────────────────────────────────────────────────────────────
-interface HUDData { alt: number; speed: number; heading: number; gap: number; onGround: boolean; }
+interface HUDData { alt: number; speed: number; heading: number; gap: number; onGround: boolean; rollMode: boolean; }
 
 // ── Inner Three.js scene ──────────────────────────────────────────────────────
 function HoverScene({
@@ -133,6 +132,7 @@ function HoverScene({
     impactFlash: 0,
     edsStrength: 0,
     onGround:    false,
+    rollMode:    false,
   });
 
   const chunkCRef  = useRef({ x: 0, z: 0 });
@@ -171,15 +171,17 @@ function HoverScene({
     const rgt = new THREE.Vector3( cy, 0, -sy);
 
     // ── Player horizontal thrust ─────────────────────────────────────
-    if (keys.has('w')) vel.addScaledVector(fwd,  30 * dts);
-    if (keys.has('s')) vel.addScaledVector(fwd, -30 * dts);
-    if (keys.has('a')) vel.addScaledVector(rgt, -30 * dts);
-    if (keys.has('d')) vel.addScaledVector(rgt,  30 * dts);
+    if (keys.has('w')) vel.addScaledVector(fwd,  60 * dts);
+    if (keys.has('s')) vel.addScaledVector(fwd, -60 * dts);
+    if (keys.has('a')) vel.addScaledVector(rgt, -60 * dts);
+    if (keys.has('d')) vel.addScaledVector(rgt,  60 * dts);
 
     // ── Gravity ──────────────────────────────────────────────────────
     vel.y -= GRAVITY * dts;
 
     // ── Terrain / EDS ───────────────────────────────────────────────
+    const rollMode = keys.has('control');
+    s.rollMode = rollMode;
     const gh  = terrainH(pos.x, pos.z);
     const gap = pos.y - gh - SPHERE_R; // sphere-bottom → terrain clearance
     s.onGround = false;
@@ -201,8 +203,12 @@ function HoverScene({
       s.angVZ = -vel.x / SPHERE_R;
     } else if (gap < EDS_MAX_GAP) {
       // EDS levitation — PD controller models F_lev = 3μ₀m²/(128πh⁴)
-      const err  = EDS_TARGET - gap;
-      vel.y += (EDS_KP * err - EDS_KD * vel.y) * dts;
+      // CTRL = Roll Mode: EDS hugs terrain tightly (target gap ≈ 0.8 m)
+      const edsTgt = rollMode ? 0.8 : EDS_TARGET;
+      const edsKp  = rollMode ? 180 : EDS_KP;
+      const edsKd  = rollMode ? 16  : EDS_KD;
+      const err  = edsTgt - gap;
+      vel.y += (edsKp * err - edsKd * vel.y) * dts;
       s.edsStrength = Math.max(0, Math.min(1, 1 - gap / EDS_MAX_GAP));
     } else {
       s.edsStrength = 0;
@@ -213,13 +219,14 @@ function HoverScene({
     const hD = terrainH(pos.x, pos.z - 0.5), hU = terrainH(pos.x, pos.z + 0.5);
     const slopeX = (hR - hL);
     const slopeZ = (hU - hD);
-    const slopeFactor = Math.max(0, 1 - gap / 28);
+    const slopeFactor = rollMode ? 1.0 : Math.max(0, 1 - gap / 28);
     vel.x -= slopeX * GRAVITY * 0.38 * slopeFactor * dts;
     vel.z -= slopeZ * GRAVITY * 0.38 * slopeFactor * dts;
 
     // ── Vertical overrides ───────────────────────────────────────────
-    if (keys.has(' '))                        vel.y += 68 * dts;  // ascend
-    if (keys.has('c') || keys.has('control')) vel.y -= 46 * dts;  // Ctrl/C = descend
+    if (keys.has(' '))  vel.y += 100 * dts;  // ascend
+    if (keys.has('c'))  vel.y -= 46  * dts;  // C = manual descend
+    // CTRL = Roll Mode (handled in EDS section above)
 
     // ── Drag ─────────────────────────────────────────────────────────
     vel.x *= Math.pow(HORIZ_DRAG, dts);
@@ -285,7 +292,7 @@ function HoverScene({
       const hSpeed  = Math.sqrt(vel.x * vel.x + vel.z * vel.z);
       const speed   = hSpeed * 3.6;
       const heading = ((-yaw * 180 / Math.PI) % 360 + 360) % 360;
-      onHUD({ alt: pos.y, speed, heading, gap: Math.max(0, gap), onGround: s.onGround });
+      onHUD({ alt: pos.y, speed, heading, gap: Math.max(0, gap), onGround: s.onGround, rollMode: s.rollMode });
     }
   });
 
@@ -368,14 +375,15 @@ export default function NullHoverApp() {
   const [started, setStarted]     = useState(false);
   const [locked, setLocked]       = useState(false);
   const [isFS, setIsFS]           = useState(false);
-  const [hud, setHud]             = useState<HUDData>({ alt: 35, speed: 0, heading: 0, gap: EDS_TARGET, onGround: false });
+  const [hud, setHud]             = useState<HUDData>({ alt: 35, speed: 0, heading: 0, gap: EDS_TARGET, onGround: false, rollMode: false });
   const keysRef                   = useRef(new Set<string>());
   const containerRef              = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       const k = e.key === ' ' ? ' ' : e.key.toLowerCase();
-      if (['w','a','s','d',' ','c'].includes(k)) e.preventDefault();
+      // Prevent browser shortcuts (Ctrl+W, etc.) from interfering during Roll Mode
+      if (['w','a','s','d',' ','c','control'].includes(k)) e.preventDefault();
       keysRef.current.add(k);
     };
     const up = (e: KeyboardEvent) => {
@@ -431,7 +439,8 @@ export default function NullHoverApp() {
                 ['W / S',      'Forward / Back'],
                 ['A / D',      'Strafe Left / Right'],
                 ['SPACE',      'Ascend (EDS boost)'],
-                ['C / CTRL',   'Descend'],
+                ['C',          'Manual Descend'],
+                ['CTRL',       'Roll Mode (hug terrain)'],
                 ['MOUSE',      'Steer · Click to lock'],
                 ['ESC',        'Release mouse'],
               ].map(([key, desc]) => (
@@ -462,11 +471,11 @@ export default function NullHoverApp() {
               ['SPD',     `${hud.speed.toFixed(0)} km/h`],
               ['HDG',     `${dir} ${hud.heading.toFixed(0)}°`],
               ['GYRO',    `${GYRO_RPM.toLocaleString()} rpm`],
-              ['STATUS',  hud.onGround ? 'ROLLING' : `EDS ${hud.gap.toFixed(1)}m`],
+              ['STATUS',  hud.rollMode ? '⊙ ROLL' : hud.onGround ? 'GROUNDED' : `EDS ${hud.gap.toFixed(1)}m`],
             ].map(([lbl, val]) => (
               <div key={lbl} className="text-center min-w-[48px]">
                 <div className="text-[7px] text-white/35 uppercase tracking-widest">{lbl}</div>
-                <div className={`text-[11px] font-bold ${hud.onGround && lbl === 'STATUS' ? 'text-amber-400' : 'text-white'}`}>
+                <div className={`text-[11px] font-bold ${hud.rollMode && lbl === 'STATUS' ? 'text-green-300' : hud.onGround && lbl === 'STATUS' ? 'text-amber-400' : 'text-white'}`}>
                   {val}
                 </div>
               </div>

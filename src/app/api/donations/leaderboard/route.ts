@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getDonations } from '@/lib/store';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 // Aggregate donations by user and return top 20
 export async function GET() {
   const donations = getDonations();

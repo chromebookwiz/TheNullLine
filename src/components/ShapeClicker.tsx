@@ -45,6 +45,109 @@ function drawStarPolygon(
   ctx.stroke();
 }
 
+// ── Phase-specific canvas renderers ──────────────────────────────────────────
+type GamePhase = 'manifold' | 'hypercube' | 'metalattice';
+
+function drawHypercube(
+  ctx: CanvasRenderingContext2D,
+  W: number, H: number,
+  nodes: boolean[],
+  time: number
+) {
+  const cx = W / 2, cy = H / 2;
+  const scale = Math.min(W, H) * 0.088;
+  const rot = time * 0.00007;
+
+  const pts2d: { x: number; y: number; depth: number; filled: boolean }[] = [];
+  let idx = 0;
+  for (let iy = 0; iy < 4; iy++) {
+    for (let ix = 0; ix < 5; ix++) {
+      for (let iz = 0; iz < 5; iz++) {
+        const x = (ix - 2) / 2.6;
+        const y = (iy - 1.5) / 2.0;
+        const z = (iz - 2) / 2.6;
+        const rx = x * Math.cos(rot) + z * Math.sin(rot);
+        const rz = -x * Math.sin(rot) + z * Math.cos(rot);
+        const iso = Math.PI / 6;
+        const px = cx + (rx - rz) * Math.cos(iso) * scale;
+        const py = cy + ((rx + rz) * Math.sin(iso) - y) * scale;
+        pts2d.push({ x: px, y: py, depth: rz, filled: nodes[idx] });
+        idx++;
+      }
+    }
+  }
+  pts2d.sort((a, b) => a.depth - b.depth);
+
+  for (const pt of pts2d) {
+    if (pt.filled) {
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, 5, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,0,0,0.82)';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, 1.8, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.fill();
+    } else {
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, 1.8, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,0,0,0.10)';
+      ctx.fill();
+    }
+  }
+}
+
+function drawMetalattice(
+  ctx: CanvasRenderingContext2D,
+  W: number, H: number,
+  nodes: boolean[],
+  _time: number
+) {
+  const cx = W / 2, cy = H / 2;
+  const cellSize = Math.min(W, H) * 0.082;
+  const s = cellSize * 0.28;
+  const startX = cx - 4.5 * cellSize;
+  const startY = cy - 4.5 * cellSize;
+
+  let idx = 0;
+  for (let gy = 0; gy < 10; gy++) {
+    for (let gx = 0; gx < 10; gx++) {
+      const px = startX + gx * cellSize + cellSize / 2;
+      const py = startY + gy * cellSize + cellSize / 2;
+      const filled = nodes[idx];
+
+      if (filled) {
+        // Front face
+        ctx.fillStyle = 'rgba(0,0,0,0.88)';
+        ctx.fillRect(px - s, py - s * 0.6, s * 2, s * 1.2);
+        // Top face
+        ctx.fillStyle = 'rgba(0,0,0,0.55)';
+        ctx.beginPath();
+        ctx.moveTo(px - s, py - s * 0.6);
+        ctx.lineTo(px,     py - s * 0.6 - s * 0.55);
+        ctx.lineTo(px + s, py - s * 0.6);
+        ctx.lineTo(px,     py - s * 0.6 + s * 0.3);
+        ctx.closePath();
+        ctx.fill();
+        // Right face
+        ctx.fillStyle = 'rgba(0,0,0,0.28)';
+        ctx.beginPath();
+        ctx.moveTo(px + s, py - s * 0.6);
+        ctx.lineTo(px + s, py + s * 0.6);
+        ctx.lineTo(px,     py + s * 0.6 + s * 0.3);
+        ctx.lineTo(px,     py - s * 0.6 + s * 0.3);
+        ctx.closePath();
+        ctx.fill();
+      } else {
+        ctx.strokeStyle = 'rgba(0,0,0,0.12)';
+        ctx.lineWidth = 0.8;
+        ctx.strokeRect(px - s, py - s * 0.6, s * 2, s * 1.2);
+      }
+      idx++;
+    }
+  }
+}
+
 export default function ShapeClicker() {
   const [level, setLevel]               = useState(0);
   const [bounces, setBounces]           = useState(0);
@@ -53,29 +156,67 @@ export default function ShapeClicker() {
   const [autoBounceRate, setAutoBounceRate]   = useState(0);
   const [purchased, setPurchased]       = useState<Record<string, number>>({});
   const [pulse, setPulse]               = useState(false);
+  const [phase, setPhase]               = useState<GamePhase>('manifold');
+  const [cubeCount, setCubeCount]       = useState(0);
+  const [metaCount, setMetaCount]       = useState(0);
 
   const canvasRef    = useRef<HTMLCanvasElement>(null);
   const miniRef      = useRef<HTMLCanvasElement>(null);
+  const phaseRef     = useRef<GamePhase>('manifold');
+  const cubeNodesRef = useRef<boolean[]>(new Array(100).fill(false));
+  const cubeCountRef = useRef(0);
+  const metaNodesRef = useRef<boolean[]>(new Array(100).fill(false));
+  const metaCountRef = useRef(0);
 
   // Refs so canvas loop always sees fresh state without restarting
   const levelRef         = useRef(level);
   const bouncesRef       = useRef(bounces);
   levelRef.current   = level;
   bouncesRef.current = bounces;
+  phaseRef.current   = phase;
 
   const current = MANIFOLD_SEQUENCE[Math.min(level, MANIFOLD_SEQUENCE.length - 1)];
   const next    = MANIFOLD_SEQUENCE[Math.min(level + 1, MANIFOLD_SEQUENCE.length - 1)];
 
   // --- Advance logic (works for both click and auto) ---
   const advance = (count: number) => {
-    const needed = MANIFOLD_SEQUENCE[Math.min(levelRef.current, MANIFOLD_SEQUENCE.length - 1)].q;
-    const newB   = bouncesRef.current + count;
     setEnergy(e => e + count);
-    if (newB >= needed && levelRef.current < MANIFOLD_SEQUENCE.length - 1) {
-      setLevel(l => l + 1);
-      setBounces(newB - needed);
+    if (phaseRef.current === 'manifold') {
+      const needed = MANIFOLD_SEQUENCE[Math.min(levelRef.current, MANIFOLD_SEQUENCE.length - 1)].q;
+      const newB   = bouncesRef.current + count;
+      if (newB >= needed && levelRef.current < MANIFOLD_SEQUENCE.length - 1) {
+        setLevel(l => l + 1);
+        setBounces(newB - needed);
+      } else if (newB >= needed) {
+        // All manifolds complete — enter hypercube phase
+        setPhase('hypercube');
+        setBounces(0);
+      } else {
+        setBounces(newB);
+      }
+    } else if (phaseRef.current === 'hypercube') {
+      const newB = bouncesRef.current + count;
+      const fillCount = Math.floor(newB / 5);
+      const rem = newB % 5;
+      if (fillCount > 0 && cubeCountRef.current < 100) {
+        const end = Math.min(100, cubeCountRef.current + fillCount);
+        for (let i = cubeCountRef.current; i < end; i++) cubeNodesRef.current[i] = true;
+        cubeCountRef.current = end;
+        setCubeCount(end);
+        if (end >= 100) setPhase('metalattice');
+      }
+      setBounces(rem);
     } else {
-      setBounces(newB);
+      const newB = bouncesRef.current + count;
+      const fillCount = Math.floor(newB / 12);
+      const rem = newB % 12;
+      if (fillCount > 0 && metaCountRef.current < 100) {
+        const end = Math.min(100, metaCountRef.current + fillCount);
+        for (let i = metaCountRef.current; i < end; i++) metaNodesRef.current[i] = true;
+        metaCountRef.current = end;
+        setMetaCount(end);
+      }
+      setBounces(rem);
     }
   };
 
@@ -100,36 +241,53 @@ export default function ShapeClicker() {
     const loop = (time: number) => {
       const { width, height } = canvas;
       ctx.clearRect(0, 0, width, height);
-      const cx = width / 2, cy = height / 2;
-      const r  = Math.min(width, height) * 0.35;
-      const { q, p, speedMult, dir } = MANIFOLD_SEQUENCE[Math.min(levelRef.current, MANIFOLD_SEQUENCE.length - 1)];
-      const nextM = MANIFOLD_SEQUENCE[Math.min(levelRef.current + 1, MANIFOLD_SEQUENCE.length - 1)];
-      const speed = time * 0.0001; // same as GeometricBackground
-      const rot   = speed * speedMult * dir;
+      const ph = phaseRef.current;
 
-      // Outer ring
-      ctx.beginPath();
-      ctx.strokeStyle = 'rgba(0,0,0,0.06)';
-      ctx.lineWidth = 1;
-      ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.stroke();
+      if (ph === 'hypercube') {
+        drawHypercube(ctx, width, height, cubeNodesRef.current, time);
+        const r = Math.min(width, height) * 0.45;
+        const cx = width / 2, cy = height / 2;
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(0,0,0,0.14)';
+        ctx.lineWidth = 2.5;
+        ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + (cubeCountRef.current / 100) * Math.PI * 2);
+        ctx.stroke();
+      } else if (ph === 'metalattice') {
+        drawMetalattice(ctx, width, height, metaNodesRef.current, time);
+        const r = Math.min(width, height) * 0.47;
+        const cx = width / 2, cy = height / 2;
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(0,0,0,0.14)';
+        ctx.lineWidth = 2.5;
+        ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + (metaCountRef.current / 100) * Math.PI * 2);
+        ctx.stroke();
+      } else {
+        const cx = width / 2, cy = height / 2;
+        const r  = Math.min(width, height) * 0.35;
+        const { q, p, speedMult, dir } = MANIFOLD_SEQUENCE[Math.min(levelRef.current, MANIFOLD_SEQUENCE.length - 1)];
+        const nextM = MANIFOLD_SEQUENCE[Math.min(levelRef.current + 1, MANIFOLD_SEQUENCE.length - 1)];
+        const speed = time * 0.0001;
+        const rot   = speed * speedMult * dir;
 
-      // Ghost of next manifold
-      if (levelRef.current < MANIFOLD_SEQUENCE.length - 1) {
-        drawStarPolygon(ctx, cx, cy, r, nextM.q, nextM.p, -rot * 0.6, 0.5, 'rgba(0,0,0,0.07)');
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(0,0,0,0.06)';
+        ctx.lineWidth = 1;
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.stroke();
+
+        if (levelRef.current < MANIFOLD_SEQUENCE.length - 1) {
+          drawStarPolygon(ctx, cx, cy, r, nextM.q, nextM.p, -rot * 0.6, 0.5, 'rgba(0,0,0,0.07)');
+        }
+        drawStarPolygon(ctx, cx, cy, r, q, p, rot, 1.8, 'rgba(0,0,0,0.9)');
+
+        const needed   = MANIFOLD_SEQUENCE[Math.min(levelRef.current, MANIFOLD_SEQUENCE.length - 1)].q;
+        const progress = bouncesRef.current / needed;
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(0,0,0,0.20)';
+        ctx.lineWidth = 2.5;
+        ctx.arc(cx, cy, r + 10, -Math.PI / 2, -Math.PI / 2 + progress * 2 * Math.PI);
+        ctx.stroke();
       }
-
-      // Current manifold — exact sim math
-      drawStarPolygon(ctx, cx, cy, r, q, p, rot, 1.8, 'rgba(0,0,0,0.9)');
-
-      // Progress arc
-      const needed   = MANIFOLD_SEQUENCE[Math.min(levelRef.current, MANIFOLD_SEQUENCE.length - 1)].q;
-      const progress = bouncesRef.current / needed;
-      ctx.beginPath();
-      ctx.strokeStyle = 'rgba(0,0,0,0.20)';
-      ctx.lineWidth = 2.5;
-      ctx.arc(cx, cy, r + 10, -Math.PI / 2, -Math.PI / 2 + progress * 2 * Math.PI);
-      ctx.stroke();
 
       raf = requestAnimationFrame(loop);
     };
@@ -176,9 +334,27 @@ export default function ShapeClicker() {
         </div>
 
         <div className="absolute top-8 left-8 space-y-0.5">
-          <div className="text-[10px] tracking-[0.4em] text-black/30 font-bold uppercase">Manifold_State</div>
-          <div className="text-2xl font-bold tracking-tighter text-black">q={current.q} p={current.p}</div>
-          <div className="text-[9px] text-black/30 uppercase tracking-widest">{current.name}</div>
+          {phase === 'manifold' && (
+            <>
+              <div className="text-[10px] tracking-[0.4em] text-black/30 font-bold uppercase">Manifold_State</div>
+              <div className="text-2xl font-bold tracking-tighter text-black">q={current.q} p={current.p}</div>
+              <div className="text-[9px] text-black/30 uppercase tracking-widest">{current.name}</div>
+            </>
+          )}
+          {phase === 'hypercube' && (
+            <>
+              <div className="text-[10px] tracking-[0.4em] text-black/30 font-bold uppercase">Hypercube_State</div>
+              <div className="text-2xl font-bold tracking-tighter text-black">5×4×5 = 100</div>
+              <div className="text-[9px] text-black/30 uppercase tracking-widest">Null Node Lattice</div>
+            </>
+          )}
+          {phase === 'metalattice' && (
+            <>
+              <div className="text-[10px] tracking-[0.4em] text-black/30 font-bold uppercase">Metalattice_State</div>
+              <div className="text-2xl font-bold tracking-tighter text-black">10×10 = 100</div>
+              <div className="text-[9px] text-black/30 uppercase tracking-widest">Connected Cube Network</div>
+            </>
+          )}
         </div>
 
         <div className="absolute top-8 right-8 text-right space-y-0.5">
@@ -205,12 +381,36 @@ export default function ShapeClicker() {
         </motion.div>
 
         <div className="absolute bottom-16 w-[200px] space-y-1">
-          <div className="flex justify-between text-[8px] text-black/30 uppercase tracking-widest">
-            <span>Bounces</span><span>{bounces}/{needed}</span>
-          </div>
-          <div className="h-[2px] bg-black/5 rounded-full overflow-hidden">
-            <div className="h-full bg-black/60 transition-all duration-100" style={{ width: `${Math.min((bounces / needed) * 100, 100)}%` }} />
-          </div>
+          {phase === 'manifold' && (
+            <>
+              <div className="flex justify-between text-[8px] text-black/30 uppercase tracking-widest">
+                <span>Bounces</span><span>{bounces}/{needed}</span>
+              </div>
+              <div className="h-[2px] bg-black/5 rounded-full overflow-hidden">
+                <div className="h-full bg-black/60 transition-all duration-100" style={{ width: `${Math.min((bounces / needed) * 100, 100)}%` }} />
+              </div>
+            </>
+          )}
+          {phase === 'hypercube' && (
+            <>
+              <div className="flex justify-between text-[8px] text-black/30 uppercase tracking-widest">
+                <span>Nodes filled</span><span>{cubeCount}/100</span>
+              </div>
+              <div className="h-[2px] bg-black/5 rounded-full overflow-hidden">
+                <div className="h-full bg-black/60 transition-all duration-100" style={{ width: `${cubeCount}%` }} />
+              </div>
+            </>
+          )}
+          {phase === 'metalattice' && (
+            <>
+              <div className="flex justify-between text-[8px] text-black/30 uppercase tracking-widest">
+                <span>Cubes linked</span><span>{metaCount}/100</span>
+              </div>
+              <div className="h-[2px] bg-black/5 rounded-full overflow-hidden">
+                <div className="h-full bg-black/60 transition-all duration-100" style={{ width: `${metaCount}%` }} />
+              </div>
+            </>
+          )}
         </div>
 
         <div className="absolute bottom-6 text-center">
@@ -223,7 +423,9 @@ export default function ShapeClicker() {
       <div className="w-full md:w-[350px] flex flex-col border-t md:border-t-0 border-black/10">
         <div className="p-6 border-b border-black/5 bg-black text-white flex items-center justify-between">
           <span className="text-[10px] tracking-[0.3em] font-bold uppercase">◊.UPGRADE_PATH</span>
-          <div className="text-[9px] opacity-40 uppercase tracking-widest">→ {next.name}</div>
+          <div className="text-[9px] opacity-40 uppercase tracking-widest">
+            {phase === 'manifold' ? `→ ${next.name}` : phase === 'hypercube' ? '→ Metalattice' : '✓ Complete'}
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
@@ -258,7 +460,9 @@ export default function ShapeClicker() {
 
         <div className="p-6 bg-black/[0.02] border-t border-black/5">
           <div className="text-[9px] text-black/30 leading-relaxed uppercase">
-            α = pπ/q — a photon closes after q reflections. Each click fires one bounce. Reach q bounces to evolve the manifold to the next Fibonacci state.
+            {phase === 'manifold' && 'α = pπ/q — a photon closes after q reflections. Reach q bounces to evolve the manifold to the next Fibonacci state.'}
+            {phase === 'hypercube' && '5×4×5 null node lattice. Each node needs 5 photon bounces to crystallise. Fill all 100 nodes to form the metalattice.'}
+            {phase === 'metalattice' && '10×10 meta-crystal. Each cube node needs 12 bounces to link. Complete the network to close the E₈ orbit.'}
           </div>
         </div>
       </div>

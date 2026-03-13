@@ -38,6 +38,39 @@ function gcd(a: number, b: number): number {
   return b === 0 ? a : gcd(b, a % b);
 }
 
+// Safe arithmetic evaluator — replaces eval() for security
+function safeCalc(raw: string): number {
+  const s = raw.replace(/[^0-9.+\-*/()]/g, '');
+  let pos = 0;
+
+  const expr = (): number => {
+    let v = term();
+    while (pos < s.length && (s[pos] === '+' || s[pos] === '-')) {
+      v = s[pos++] === '+' ? v + term() : v - term();
+    }
+    return v;
+  };
+  const term = (): number => {
+    let v = factor();
+    while (pos < s.length && (s[pos] === '*' || s[pos] === '/')) {
+      const op = s[pos++];
+      const r = factor();
+      v = op === '*' ? v * r : r !== 0 ? v / r : NaN;
+    }
+    return v;
+  };
+  const factor = (): number => {
+    if (s[pos] === '-') { pos++; return -factor(); }
+    if (s[pos] === '(') { pos++; const v = expr(); if (s[pos] === ')') pos++; return v; }
+    const start = pos;
+    while (pos < s.length && /[0-9.]/.test(s[pos])) pos++;
+    return start === pos ? NaN : parseFloat(s.slice(start, pos));
+  };
+
+  const result = expr();
+  return isFinite(result) ? result : NaN;
+}
+
 function getOrbit(value: number) {
   const q = Math.max(3, Math.min(Math.round(value), 64));
   let p = 1;
@@ -67,13 +100,23 @@ const NULL_SPHERE_R = 0.27;
 const EightSphereScene = React.memo(function EightSphereScene({
   q, p, isSolving,
 }: { q: number; p: number; isSolving: boolean }) {
-  const groupRef     = useRef<THREE.Group>(null);
-  const photonGeoRef = useRef<THREE.BufferGeometry>(null);
-  const flashTimers  = useRef<number[]>(new Array(8).fill(0));
+  const groupRef    = useRef<THREE.Group>(null);
+  const flashTimers = useRef<number[]>(new Array(8).fill(0));
   const sphereGlows  = useRef<(THREE.Mesh | null)[]>(new Array(8).fill(null));
   const sphereLights = useRef<(THREE.PointLight | null)[]>(new Array(8).fill(null));
 
   const orbitPath = useMemo(() => buildOrbitPath(q, p), [q, p]);
+
+  // Orbit path line geometry — shows the {q/p} star polygon connecting spheres
+  const orbitGeo = useMemo(() => {
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(64 * 6), 3));
+    return geo;
+  }, []);
+  const orbitMat = useMemo(() => new THREE.LineBasicMaterial({
+    color: '#60c8ff', transparent: true, opacity: 0.06,
+  }), []);
+  const orbitSegs = useMemo(() => new THREE.LineSegments(orbitGeo, orbitMat), [orbitGeo, orbitMat]);
 
   // Photon particles — staggered along the orbit
   const photons = useMemo<Photon[]>(() => {
@@ -147,6 +190,20 @@ const EightSphereScene = React.memo(function EightSphereScene({
     }
     photonGeo.attributes.position.needsUpdate = true;
 
+    // Update orbit path lines
+    const opos = orbitGeo.attributes.position.array as Float32Array;
+    for (let i = 0; i < q; i++) {
+      const from = SPHERE_POS[orbitPath[i]];
+      const to   = SPHERE_POS[orbitPath[(i + 1) % q]];
+      const bi   = i * 6;
+      opos[bi]     = from.x; opos[bi + 1] = from.y; opos[bi + 2] = from.z;
+      opos[bi + 3] = to.x;   opos[bi + 4] = to.y;   opos[bi + 5] = to.z;
+    }
+    orbitGeo.setDrawRange(0, q * 2);
+    orbitGeo.attributes.position.needsUpdate = true;
+    const targetOp = isSolving ? 0.82 : 0.05;
+    orbitMat.opacity += (targetOp - orbitMat.opacity) * 0.06;
+
     // Update sphere glow opacity
     for (let s = 0; s < 8; s++) {
       const mesh = sphereGlows.current[s];
@@ -165,6 +222,9 @@ const EightSphereScene = React.memo(function EightSphereScene({
       <lineSegments geometry={edgeGeo}>
         <lineBasicMaterial color="white" transparent opacity={0.07} />
       </lineSegments>
+
+      {/* Orbit path — {q/p} star polygon showing active calculation */}
+      <primitive object={orbitSegs} />
 
       {/* 8 microspheres */}
       {SPHERE_POS.map((pos, i) => (
@@ -201,9 +261,6 @@ const EightSphereScene = React.memo(function EightSphereScene({
   );
 });
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _photonGeoRef = null; // suppress unused ref warning
-
 export default function NullPhotonSphereComputer() {
   const isSuspended = useContext(WindowSuspendedContext);
   const [input, setInput] = useState("");
@@ -218,10 +275,7 @@ export default function NullPhotonSphereComputer() {
     setIsSolving(true);
     setTimeout(() => {
       try {
-        const sanitized = input.replace(/[^-+*/().0-9]/g, '');
-        // eslint-disable-next-line no-eval
-        const val = eval(sanitized);
-        const num = parseFloat(val);
+        const num = safeCalc(input);
         if (!isNaN(num)) { setResult(num); setOrbit(getOrbit(num)); }
       } catch { /* ignore */ }
       setIsSolving(false);

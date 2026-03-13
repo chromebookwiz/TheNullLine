@@ -31,10 +31,10 @@ export interface Donation {
 }
 
 function readJson<T>(file: string): T[] {
-  ensureDir();
-  const p = path.join(DATA_DIR, file);
-  if (!fs.existsSync(p)) return [];
   try {
+    ensureDir();
+    const p = path.join(DATA_DIR, file);
+    if (!fs.existsSync(p)) return [];
     return JSON.parse(fs.readFileSync(p, 'utf-8')) as T[];
   } catch {
     return [];
@@ -42,8 +42,12 @@ function readJson<T>(file: string): T[] {
 }
 
 function writeJson<T>(file: string, data: T[]): void {
-  ensureDir();
-  fs.writeFileSync(path.join(DATA_DIR, file), JSON.stringify(data, null, 2), 'utf-8');
+  try {
+    ensureDir();
+    fs.writeFileSync(path.join(DATA_DIR, file), JSON.stringify(data, null, 2), 'utf-8');
+  } catch {
+    // Filesystem unavailable (e.g. read-only deployment) — log silently
+  }
 }
 
 export const getUsers = (): User[] => readJson<User>('users.json');

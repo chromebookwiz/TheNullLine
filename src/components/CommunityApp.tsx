@@ -3,8 +3,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 
-// ── Replace this with your actual Monero donation address ──────────────────────
-const XMR_ADDRESS = '44AFFq5kSiGBoZ4NMDwYtN18obc8AemS33DBLWs3H7otXft3XjrpDtQGv7SqSsaBYBb98uNbr2VBBEt7f2wfn3RVGQBEP3A';
+// ── Monero donation address ─────────────────────────────────────────────────────
+const XMR_ADDRESS = '84gBstaxggXCmHQxWZNod8U3iQTyfkRNp78Thp2qgAbTbAzasbT2nyD2jcRwrJMHstUYz8Kcj7G1S9LV9ztSKJoGTwQ23wG';
 // ────────────────────────────────────────────────────────────────────────────────
 
 type Tab = 'leaderboard' | 'register' | 'login' | 'donate';
@@ -43,13 +43,19 @@ export default function CommunityApp() {
   const [donNote, setDonNote] = useState('');
   const [donMsg, setDonMsg] = useState('');
   const [donLoading, setDonLoading] = useState(false);
+  // Blockchain verification state
+  const [donVerified, setDonVerified] = useState(false);
+  const [donConfirmations, setDonConfirmations] = useState(0);
+  const [verifyLoading, setVerifyLoading] = useState(false);
 
   const fetchLeaderboard = useCallback(async () => {
     setLbLoading(true);
     setLbError('');
     try {
       const res = await fetch('/api/donations/leaderboard');
-      const data = await res.json();
+      const text = await res.text();
+      let data: { leaderboard?: LeaderEntry[]; error?: string };
+      try { data = JSON.parse(text); } catch { throw new Error('Server returned an invalid response.'); }
       if (!res.ok) throw new Error(data.error ?? 'Failed to load.');
       setLeaderboard((data.leaderboard ?? []).map((e: LeaderEntry, i: number) => ({ ...e, rank: i + 1 })));
     } catch (e: unknown) {
@@ -104,6 +110,35 @@ export default function CommunityApp() {
       setLoginMsg(e instanceof Error ? e.message : 'Network error.');
     } finally {
       setLoginLoading(false);
+    }
+  }
+
+  async function handleVerifyTx() {
+    if (!donTxId || donTxId.length !== 64) {
+      setDonMsg('Transaction ID must be a 64-character hex string.');
+      return;
+    }
+    setVerifyLoading(true);
+    setDonMsg('');
+    try {
+      const res = await fetch('/api/donations/verify-tx', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ txId: donTxId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? 'Verification failed.');
+      if (data.valid) {
+        setDonVerified(true);
+        setDonConfirmations(data.confirmations);
+        setDonMsg(`✓ Transaction confirmed on blockchain (${data.confirmations} confirmation${data.confirmations !== 1 ? 's' : ''}).`);
+      } else {
+        setDonMsg(`Transaction found but not yet confirmed (${data.confirmations} confirmations). Please wait.`);
+      }
+    } catch (e: unknown) {
+      setDonMsg(e instanceof Error ? e.message : 'Network error.');
+    } finally {
+      setVerifyLoading(false);
     }
   }
 
@@ -263,10 +298,32 @@ export default function CommunityApp() {
             ) : (
               <form onSubmit={handleDonate} className="space-y-4">
                 <div className="text-[9px] tracking-[0.3em] text-black/30 uppercase font-bold">Record Donation ({loggedInAs})</div>
-                <Field label="Transaction ID" value={donTxId} onChange={setDonTxId} placeholder="Monero tx hash" maxLength={200} />
+                <Field label="Transaction ID" value={donTxId} onChange={v => { setDonTxId(v); setDonVerified(false); setDonConfirmations(0); }} placeholder="64-char Monero tx hash" maxLength={64} />
+                {/* Step 1: Verify on blockchain */}
+                {!donVerified ? (
+                  <button
+                    type="button"
+                    onClick={handleVerifyTx}
+                    disabled={verifyLoading || donTxId.length < 10}
+                    className="w-full py-2.5 border border-black/20 text-black/60 font-bold text-[9px] tracking-[0.3em] uppercase hover:border-black hover:text-black disabled:opacity-30 transition-all"
+                  >
+                    {verifyLoading ? 'QUERYING BLOCKCHAIN…' : '◎ VERIFY ON BLOCKCHAIN'}
+                  </button>
+                ) : (
+                  <div className="py-2 px-3 border border-green-600/30 bg-green-50 text-green-700 text-[9px] tracking-wide uppercase font-bold">
+                    ✓ Verified · {donConfirmations} confirmation{donConfirmations !== 1 ? 's' : ''}
+                  </div>
+                )}
+                {/* Step 2: Submit to leaderboard — only enabled after verification */}
                 <Field label="Amount (XMR)" type="number" value={donAmount} onChange={setDonAmount} placeholder="e.g. 0.5" />
-                <Field label="Note (optional)" value={donNote} onChange={setDonNote} placeholder="keep building" maxLength={280} />
-                <SubmitButton loading={donLoading} label="RECORD DONATION" />
+                <Field label="Note (optional)" value={donNote} onChange={setDonNote} placeholder="keep building" maxLength={280} required={false} />
+                <button
+                  type="submit"
+                  disabled={donLoading || !donVerified}
+                  className="w-full py-3 border border-black bg-black text-white font-bold text-[10px] tracking-[0.3em] uppercase hover:bg-white hover:text-black disabled:opacity-30 transition-all"
+                >
+                  {donLoading ? '...' : !donVerified ? 'VERIFY TRANSACTION FIRST' : 'RECORD DONATION'}
+                </button>
                 {donMsg && (
                   <div className={`text-[9px] uppercase tracking-wide ${donMsg.startsWith('✓') ? 'text-black/60' : 'text-red-400'}`}>
                     {donMsg}
@@ -284,7 +341,7 @@ export default function CommunityApp() {
 // ── Internal helpers ──────────────────────────────────────────────────────────
 
 function Field({
-  label, value, onChange, type = 'text', placeholder = '', maxLength,
+  label, value, onChange, type = 'text', placeholder = '', maxLength, required = true,
 }: {
   label: string;
   value: string;
@@ -292,6 +349,7 @@ function Field({
   type?: string;
   placeholder?: string;
   maxLength?: number;
+  required?: boolean;
 }) {
   return (
     <div>
@@ -301,7 +359,7 @@ function Field({
         value={value}
         placeholder={placeholder}
         maxLength={maxLength}
-        required
+        required={required}
         onChange={e => onChange(e.target.value)}
         className="w-full border border-black/10 px-3 py-2 text-[10px] font-mono bg-white focus:border-black outline-none transition-all"
       />

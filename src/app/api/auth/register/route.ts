@@ -3,6 +3,9 @@ import { getUsers, saveUsers, User } from '@/lib/store';
 import { hashPassword } from '@/lib/auth';
 import crypto from 'crypto';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
