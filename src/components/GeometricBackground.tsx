@@ -54,9 +54,10 @@ const GeometricBackgroundComponent = () => {
     const animate = (time: number) => {
       ctx.clearRect(0, 0, width, height);
 
-      const centerX = width / 2;
-      const centerY = height / 2;
-      const baseRadius = Math.min(width, height) * 0.35;
+      // Anchor the shapes to the central bottom-left quadrant on all screen sizes
+      const centerX = width * 0.25;
+      const centerY = height * 0.75;
+      const baseRadius = Math.min(width, height) * 0.22;
       const speed = time * 0.0001;
 
       // Draw nested SOLID black polygons with varying weights

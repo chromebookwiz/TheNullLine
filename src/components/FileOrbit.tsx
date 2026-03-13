@@ -54,7 +54,7 @@ const FILES: NullFile[] = [
     { name: "NollTech", type: "folder", path: "/nolltech", children: NOLLTECH_WRITINGS },
   ] },
   { name: "Clicker", type: "app", path: "app://clicker" },
-  { name: "Simulation", type: "app", path: "app://simulation" },
+  { name: "Null Billiard Computer", type: "app", path: "app://simulation" },
   { name: "NullForge", type: "app", path: "app://forge" },
   { name: "NullDeck", type: "app", path: "app://deck" },
   { name: "NullHover", type: "app", path: "app://hover" },

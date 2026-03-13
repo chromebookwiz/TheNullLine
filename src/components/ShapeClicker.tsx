@@ -6,7 +6,6 @@ import { Zap, TrendingUp, Cpu, Atom } from 'lucide-react';
 
 // NullBilliards manifold sequence: (q, p) pairs from Fibonacci
 // α = pπ/q — photon closes after q reflections when p/q is rational
-// speedMult and dir match the outer shapes in GeometricBackground exactly
 const MANIFOLD_SEQUENCE = [
   { q: 3,  p: 1,  name: "Triangle",            speedMult: 1.0,  dir:  1 },
   { q: 5,  p: 2,  name: "Pentagram",           speedMult: 0.8,  dir: -1 },
@@ -46,7 +45,7 @@ function drawStarPolygon(
 }
 
 // ── Phase-specific canvas renderers ──────────────────────────────────────────
-type GamePhase = 'manifold' | 'hypercube' | 'metalattice';
+type GamePhase = 'manifold' | 'hypercube' | 'metalattice' | 'ring_tick' | 'circles_square';
 
 function drawHypercube(
   ctx: CanvasRenderingContext2D,
@@ -117,10 +116,8 @@ function drawMetalattice(
       const filled = nodes[idx];
 
       if (filled) {
-        // Front face
         ctx.fillStyle = 'rgba(0,0,0,0.88)';
         ctx.fillRect(px - s, py - s * 0.6, s * 2, s * 1.2);
-        // Top face
         ctx.fillStyle = 'rgba(0,0,0,0.55)';
         ctx.beginPath();
         ctx.moveTo(px - s, py - s * 0.6);
@@ -129,7 +126,6 @@ function drawMetalattice(
         ctx.lineTo(px,     py - s * 0.6 + s * 0.3);
         ctx.closePath();
         ctx.fill();
-        // Right face
         ctx.fillStyle = 'rgba(0,0,0,0.28)';
         ctx.beginPath();
         ctx.moveTo(px + s, py - s * 0.6);
@@ -148,6 +144,131 @@ function drawMetalattice(
   }
 }
 
+function drawRingTick(
+  ctx: CanvasRenderingContext2D,
+  W: number, H: number,
+  ticks: number,       // 0..365
+  ringsComplete: number,
+  time: number
+) {
+  const cx = W / 2, cy = H / 2;
+  const R = Math.min(W, H) * 0.36;
+  const dotR = 3.5;
+  const N = 100; // cubes rearranged as circle
+
+  // Background ring track
+  ctx.beginPath();
+  ctx.strokeStyle = 'rgba(0,0,0,0.06)';
+  ctx.lineWidth = 1;
+  ctx.arc(cx, cy, R, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Draw 100 cube-dots arranged on the circle
+  for (let i = 0; i < N; i++) {
+    const angle = (i / N) * Math.PI * 2 - Math.PI / 2;
+    const x = cx + R * Math.cos(angle);
+    const y = cy + R * Math.sin(angle);
+    ctx.beginPath();
+    ctx.arc(x, y, dotR, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.fill();
+  }
+
+  // Tick arc progress (365 ticks = full circle)
+  const tickFrac = ticks / 365;
+  if (tickFrac > 0) {
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+    ctx.lineWidth = 3;
+    ctx.arc(cx, cy, R + 12, -Math.PI / 2, -Math.PI / 2 + tickFrac * Math.PI * 2);
+    ctx.stroke();
+
+    // Tick marks every ~30 ticks (like a clock face)
+    for (let t = 0; t < 365; t += 30) {
+      const a = (t / 365) * Math.PI * 2 - Math.PI / 2;
+      const inner = R + 8, outer = R + 16;
+      ctx.beginPath();
+      ctx.strokeStyle = t <= ticks ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.08)';
+      ctx.lineWidth = 1;
+      ctx.moveTo(cx + inner * Math.cos(a), cy + inner * Math.sin(a));
+      ctx.lineTo(cx + outer * Math.cos(a), cy + outer * Math.sin(a));
+      ctx.stroke();
+    }
+  }
+
+  // Center label: tick count
+  ctx.font = `bold ${Math.min(W, H) * 0.065}px monospace`;
+  ctx.fillStyle = 'rgba(0,0,0,0.8)';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(`${ticks}`, cx, cy - 10);
+  ctx.font = `${Math.min(W, H) * 0.025}px monospace`;
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  ctx.fillText('/ 365 TICKS', cx, cy + 22);
+
+  // Completed rings count (lower center)
+  if (ringsComplete > 0) {
+    ctx.font = `bold ${Math.min(W, H) * 0.022}px monospace`;
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.fillText(`◎ × ${ringsComplete}`, cx, cy + 55);
+  }
+
+  // Slow-rotating ADE overlay
+  drawStarPolygon(ctx, cx, cy, R * 0.5, 8, 3, time * 0.00005, 0.4, 'rgba(0,0,0,0.04)');
+}
+
+// Next perfect-square milestone ≥ 4 after a given number of rings
+function nextMilestone(ringsComplete: number): number {
+  const n = Math.max(4, Math.ceil(Math.sqrt(ringsComplete + 1)));
+  return n * n;
+}
+
+function drawCirclesSquare(
+  ctx: CanvasRenderingContext2D,
+  W: number, H: number,
+  ringsComplete: number
+) {
+  const n = Math.floor(Math.sqrt(ringsComplete));
+  if (n < 2) return;
+  const cx = W / 2, cy = H / 2;
+  const spacing = Math.min(W, H) / (n + 2);
+  const circR = spacing * 0.35;
+
+  ctx.font = `bold ${Math.min(W, H) * 0.028}px monospace`;
+  ctx.fillStyle = 'rgba(0,0,0,0.15)';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(`${n}×${n} CIRCLE SQUARE`, cx, cy - (n / 2) * spacing - spacing * 0.7);
+
+  for (let gy = 0; gy < n; gy++) {
+    for (let gx = 0; gx < n; gx++) {
+      const px = cx + (gx - (n - 1) / 2) * spacing;
+      const py = cy + (gy - (n - 1) / 2) * spacing;
+      // Outer ring
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(0,0,0,0.7)';
+      ctx.lineWidth = 1.5;
+      ctx.arc(px, py, circR, 0, Math.PI * 2);
+      ctx.stroke();
+      // Inner dot
+      ctx.beginPath();
+      ctx.fillStyle = 'rgba(0,0,0,0.85)';
+      ctx.arc(px, py, circR * 0.28, 0, Math.PI * 2);
+      ctx.fill();
+      // Tick arc (fully completed)
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+      ctx.lineWidth = 2.5;
+      ctx.arc(px, py, circR + 4, -Math.PI / 2, 3 * Math.PI / 2);
+      ctx.stroke();
+    }
+  }
+
+  ctx.font = `${Math.min(W, H) * 0.022}px monospace`;
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  ctx.fillText('CLICK TO CONTINUE', cx, cy + (n / 2) * spacing + spacing * 0.65);
+}
+
 export default function ShapeClicker() {
   const [level, setLevel]               = useState(0);
   const [bounces, setBounces]           = useState(0);
@@ -159,6 +280,8 @@ export default function ShapeClicker() {
   const [phase, setPhase]               = useState<GamePhase>('manifold');
   const [cubeCount, setCubeCount]       = useState(0);
   const [metaCount, setMetaCount]       = useState(0);
+  const [ringTicks, setRingTicks]       = useState(0);
+  const [ringsComplete, setRingsComplete] = useState(0);
 
   const canvasRef    = useRef<HTMLCanvasElement>(null);
   const miniRef      = useRef<HTMLCanvasElement>(null);
@@ -167,6 +290,8 @@ export default function ShapeClicker() {
   const cubeCountRef = useRef(0);
   const metaNodesRef = useRef<boolean[]>(new Array(100).fill(false));
   const metaCountRef = useRef(0);
+  const ringTicksRef    = useRef(0);
+  const ringsCompleteRef = useRef(0);
 
   // Refs so canvas loop always sees fresh state without restarting
   const levelRef         = useRef(level);
@@ -178,9 +303,17 @@ export default function ShapeClicker() {
   const current = MANIFOLD_SEQUENCE[Math.min(level, MANIFOLD_SEQUENCE.length - 1)];
   const next    = MANIFOLD_SEQUENCE[Math.min(level + 1, MANIFOLD_SEQUENCE.length - 1)];
 
-  // --- Advance logic (works for both click and auto) ---
+  // Reset metalattice nodes for a fresh cycle
+  const resetMeta = () => {
+    metaNodesRef.current = new Array(100).fill(false);
+    metaCountRef.current = 0;
+    setMetaCount(0);
+  };
+
+  // --- Advance logic ---
   const advance = (count: number) => {
     setEnergy(e => e + count);
+
     if (phaseRef.current === 'manifold') {
       const needed = MANIFOLD_SEQUENCE[Math.min(levelRef.current, MANIFOLD_SEQUENCE.length - 1)].q;
       const newB   = bouncesRef.current + count;
@@ -188,12 +321,13 @@ export default function ShapeClicker() {
         setLevel(l => l + 1);
         setBounces(newB - needed);
       } else if (newB >= needed) {
-        // All manifolds complete — enter hypercube phase
         setPhase('hypercube');
+        phaseRef.current = 'hypercube';
         setBounces(0);
       } else {
         setBounces(newB);
       }
+
     } else if (phaseRef.current === 'hypercube') {
       const newB = bouncesRef.current + count;
       const fillCount = Math.floor(newB / 5);
@@ -203,10 +337,14 @@ export default function ShapeClicker() {
         for (let i = cubeCountRef.current; i < end; i++) cubeNodesRef.current[i] = true;
         cubeCountRef.current = end;
         setCubeCount(end);
-        if (end >= 100) setPhase('metalattice');
+        if (end >= 100) {
+          setPhase('metalattice');
+          phaseRef.current = 'metalattice';
+        }
       }
       setBounces(rem);
-    } else {
+
+    } else if (phaseRef.current === 'metalattice') {
       const newB = bouncesRef.current + count;
       const fillCount = Math.floor(newB / 12);
       const rem = newB % 12;
@@ -215,8 +353,43 @@ export default function ShapeClicker() {
         for (let i = metaCountRef.current; i < end; i++) metaNodesRef.current[i] = true;
         metaCountRef.current = end;
         setMetaCount(end);
+        if (end >= 100) {
+          // Cubes form a circle — enter ring_tick phase
+          setPhase('ring_tick');
+          phaseRef.current = 'ring_tick';
+          resetMeta();
+        }
       }
       setBounces(rem);
+
+    } else if (phaseRef.current === 'ring_tick') {
+      const newTicks = ringTicksRef.current + count;
+      if (newTicks >= 365) {
+        const completed = ringsCompleteRef.current + 1;
+        ringsCompleteRef.current = completed;
+        setRingsComplete(completed);
+        ringTicksRef.current = newTicks - 365;
+        setRingTicks(newTicks - 365);
+        // Check if we've hit a perfect-square milestone (n² rings where n≥2)
+        const sqrtC = Math.sqrt(completed);
+        if (Number.isInteger(sqrtC) && sqrtC >= 2) {
+          setPhase('circles_square');
+          phaseRef.current = 'circles_square';
+        } else {
+          // Start filling metalattice again
+          setPhase('metalattice');
+          phaseRef.current = 'metalattice';
+        }
+      } else {
+        ringTicksRef.current = newTicks;
+        setRingTicks(newTicks);
+      }
+
+    } else if (phaseRef.current === 'circles_square') {
+      // Any click/auto-bounce transitions to next metalattice cycle
+      setPhase('metalattice');
+      phaseRef.current = 'metalattice';
+      setBounces(0);
     }
   };
 
@@ -230,7 +403,7 @@ export default function ShapeClicker() {
     return () => clearInterval(id);
   }, [autoBounceRate]);
 
-  // --- Main canvas: same math as GeometricBackground ---
+  // --- Main canvas ---
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -252,6 +425,7 @@ export default function ShapeClicker() {
         ctx.lineWidth = 2.5;
         ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + (cubeCountRef.current / 100) * Math.PI * 2);
         ctx.stroke();
+
       } else if (ph === 'metalattice') {
         drawMetalattice(ctx, width, height, metaNodesRef.current, time);
         const r = Math.min(width, height) * 0.47;
@@ -261,7 +435,15 @@ export default function ShapeClicker() {
         ctx.lineWidth = 2.5;
         ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + (metaCountRef.current / 100) * Math.PI * 2);
         ctx.stroke();
+
+      } else if (ph === 'ring_tick') {
+        drawRingTick(ctx, width, height, ringTicksRef.current, ringsCompleteRef.current, time);
+
+      } else if (ph === 'circles_square') {
+        drawCirclesSquare(ctx, width, height, ringsCompleteRef.current);
+
       } else {
+        // manifold
         const cx = width / 2, cy = height / 2;
         const r  = Math.min(width, height) * 0.35;
         const { q, p, speedMult, dir } = MANIFOLD_SEQUENCE[Math.min(levelRef.current, MANIFOLD_SEQUENCE.length - 1)];
@@ -325,6 +507,15 @@ export default function ShapeClicker() {
 
   const needed = current.q;
 
+  const phaseLabel = () => {
+    if (phase === 'manifold') return `→ ${next.name}`;
+    if (phase === 'hypercube') return '→ Metalattice';
+    if (phase === 'metalattice') return '→ Ring';
+    if (phase === 'ring_tick') return `◎ × ${ringsComplete}`;
+    if (phase === 'circles_square') return '✓ Square Complete';
+    return '';
+  };
+
   return (
     <div className="w-full h-full flex flex-col md:flex-row bg-white font-mono select-none overflow-hidden">
       {/* Left Panel */}
@@ -352,7 +543,21 @@ export default function ShapeClicker() {
             <>
               <div className="text-[10px] tracking-[0.4em] text-black/30 font-bold uppercase">Metalattice_State</div>
               <div className="text-2xl font-bold tracking-tighter text-black">10×10 = 100</div>
-              <div className="text-[9px] text-black/30 uppercase tracking-widest">Connected Cube Network</div>
+              <div className="text-[9px] text-black/30 uppercase tracking-widest">Cube Node Network</div>
+            </>
+          )}
+          {phase === 'ring_tick' && (
+            <>
+              <div className="text-[10px] tracking-[0.4em] text-black/30 font-bold uppercase">Ring_State</div>
+              <div className="text-2xl font-bold tracking-tighter text-black">◎ Circle</div>
+              <div className="text-[9px] text-black/30 uppercase tracking-widest">100 Cubes → Ring</div>
+            </>
+          )}
+          {phase === 'circles_square' && (
+            <>
+              <div className="text-[10px] tracking-[0.4em] text-black/30 font-bold uppercase">Square_Complete</div>
+              <div className="text-2xl font-bold tracking-tighter text-black">{Math.floor(Math.sqrt(ringsComplete))}²</div>
+              <div className="text-[9px] text-black/30 uppercase tracking-widest">Circle Square Formed</div>
             </>
           )}
         </div>
@@ -367,7 +572,7 @@ export default function ShapeClicker() {
           animate={pulse ? { scale: 1.04 } : { scale: 1 }}
           whileTap={{ scale: 0.96 }}
           transition={{ duration: 0.1 }}
-          className="relative cursor-pointer group"
+          className="relative cursor-pointer"
         >
           <canvas
             ref={canvasRef}
@@ -375,9 +580,6 @@ export default function ShapeClicker() {
             height={500}
             className="w-[300px] h-[300px] md:w-[450px] md:h-[450px]"
           />
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-            <div className="px-4 py-2 bg-black text-white text-[10px] tracking-[0.3em] font-bold uppercase">◊.FIRE_PHOTON</div>
-          </div>
         </motion.div>
 
         <div className="absolute bottom-16 w-[200px] space-y-1">
@@ -411,6 +613,24 @@ export default function ShapeClicker() {
               </div>
             </>
           )}
+          {phase === 'ring_tick' && (
+            <>
+              <div className="flex justify-between text-[8px] text-black/30 uppercase tracking-widest">
+                <span>Ticks</span><span>{ringTicks}/365</span>
+              </div>
+              <div className="h-[2px] bg-black/5 rounded-full overflow-hidden">
+                <div className="h-full bg-black/60 transition-all duration-100" style={{ width: `${(ringTicks / 365) * 100}%` }} />
+              </div>
+            </>
+          )}
+          {phase === 'circles_square' && (
+            <>
+              <div className="flex justify-between text-[8px] text-black/30 uppercase tracking-widest">
+                <span>Circles</span><span>{ringsComplete} / {Math.floor(Math.sqrt(ringsComplete))}²</span>
+              </div>
+              <div className="h-[2px] bg-black/60 rounded-full overflow-hidden" />
+            </>
+          )}
         </div>
 
         <div className="absolute bottom-6 text-center">
@@ -423,9 +643,7 @@ export default function ShapeClicker() {
       <div className="w-full md:w-[350px] flex flex-col border-t md:border-t-0 border-black/10">
         <div className="p-6 border-b border-black/5 bg-black text-white flex items-center justify-between">
           <span className="text-[10px] tracking-[0.3em] font-bold uppercase">◊.UPGRADE_PATH</span>
-          <div className="text-[9px] opacity-40 uppercase tracking-widest">
-            {phase === 'manifold' ? `→ ${next.name}` : phase === 'hypercube' ? '→ Metalattice' : '✓ Complete'}
-          </div>
+          <div className="text-[9px] opacity-40 uppercase tracking-widest">{phaseLabel()}</div>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
@@ -462,11 +680,12 @@ export default function ShapeClicker() {
           <div className="text-[9px] text-black/30 leading-relaxed uppercase">
             {phase === 'manifold' && 'α = pπ/q — a photon closes after q reflections. Reach q bounces to evolve the manifold to the next Fibonacci state.'}
             {phase === 'hypercube' && '5×4×5 null node lattice. Each node needs 5 photon bounces to crystallise. Fill all 100 nodes to form the metalattice.'}
-            {phase === 'metalattice' && '10×10 meta-crystal. Each cube node needs 12 bounces to link. Complete the network to close the E₈ orbit.'}
+            {phase === 'metalattice' && '10×10 meta-crystal. Each cube needs 12 bounces to link. 100 linked cubes fold into a perfect circle.'}
+            {phase === 'ring_tick' && '100 cubes arranged as a circle. Accumulate 365 ticks — one full orbital cycle — to complete the ring. Collect enough rings to form a square.'}
+            {phase === 'circles_square' && `${Math.floor(Math.sqrt(ringsComplete))}² circles complete. A perfect square of orbital rings has formed. Click to begin the next cycle.`}
           </div>
         </div>
       </div>
     </div>
   );
 }
-

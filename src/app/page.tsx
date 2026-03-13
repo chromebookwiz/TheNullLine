@@ -100,7 +100,7 @@ export default function Home() {
     if (file.type === 'app') {
       if (file.name.toLowerCase().includes('clicker')) {
         openWindow('clicker');
-      } else if (file.name.toLowerCase().includes('simulation')) {
+      } else if (file.path === 'app://simulation' || file.name.toLowerCase().includes('billiard')) {
         openWindow('simulation');
       } else if (file.name.toLowerCase().includes('forge')) {
         openWindow('forge');
@@ -186,7 +186,7 @@ export default function Home() {
               </DraggableWindow>
             ) : win.type === 'simulation' ? (
               <DraggableWindow
-                title="◊.SIMULATION"
+                title="◊.NULL_BILLIARD_COMPUTER"
                 isOpen={true}
                 onClose={() => closeWindow(win.id)}
                 className="w-[98vw] md:w-[1100px] h-[90vh] md:h-[850px]"

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import mammoth from 'mammoth';
-import { X, ExternalLink, FileText, Download, Loader2 } from 'lucide-react';
+import { X, FileText, Loader2, Copy, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -28,6 +28,16 @@ const DocumentViewerComponent = ({ file, onClose, embedded }: ViewerProps) => {
   const [content, setContent] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    if (!content) return;
+    const text = content.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    });
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -154,15 +164,16 @@ const DocumentViewerComponent = ({ file, onClose, embedded }: ViewerProps) => {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <a 
-              href={`/docs/${encodeURIComponent(file.path.split('/').pop() || '')}`} 
-              target="_blank"
-              className="p-2 hover:bg-black/5 rounded-full transition-colors opacity-60 hover:opacity-100"
-              title="Direct Link (SEO)"
-            >
-              <ExternalLink size={20} />
-            </a>
-            <button 
+            {(file.type === 'txt' || file.type === 'docx') && content && (
+              <button
+                onClick={handleCopy}
+                className="p-2 hover:bg-black/5 rounded-full transition-colors opacity-60 hover:opacity-100"
+                title="Copy text"
+              >
+                {copied ? <Check size={20} className="text-green-600" /> : <Copy size={20} />}
+              </button>
+            )}
+            <button
               onClick={onClose}
               className="p-2 hover:bg-black/10 rounded-full text-black/40 hover:text-black transition-colors"
             >
