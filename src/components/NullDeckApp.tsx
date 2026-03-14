@@ -286,8 +286,11 @@ export default function NullDeckApp() {
           }
 
         } else if (mode.id === 'music') {
-          const omega0 = 0.00016, A0 = 162, waveR = 88;
-          // Waveform ring (drawn once on back pass)
+          const omega0 = 0.00016;
+          const A0 = 162;
+          const waveR = 88;
+          const harmonics = 12;
+
           if (!front) {
             ctx.beginPath();
             for (let k = 0; k <= 240; k++) {
@@ -298,19 +301,47 @@ export default function NullDeckApp() {
               if (k === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
             }
             ctx.strokeStyle = 'rgba(100,225,180,0.28)'; ctx.lineWidth = 1.0; ctx.stroke();
+
+            for (let n = 1; n <= 6; n++) {
+              const spectrumX = cx - 210 + n * 20;
+              const barHeight = 18 + (A0 / n) * 0.42 * (0.55 + 0.45 * Math.sin(time * omega0 * (n + 2)));
+              ctx.fillStyle = `hsla(${(n * 34) % 360}, 75%, 65%, 0.28)`;
+              ctx.fillRect(spectrumX, cy + 116 - barHeight, 10, barHeight);
+            }
           }
-          for (let n = 1; n <= 12; n++) {
+
+          for (let n = 1; n <= harmonics; n++) {
             const ang = n * omega0 * time;
             const R   = waveR + (A0/n)*0.52 * Math.sin(ang * 1.5);
             const { px, py, depth } = orbitPos(ang, R);
-            if (front ? depth < 0 : depth >= 0) return;
-            const hue = (n * 30) % 360, nR = 3.5 + (A0/n)*0.02, a = front ? 1.0 : 0.28;
+            if (front ? depth < 0 : depth >= 0) continue;
+
+            const hue = (n * 30) % 360;
+            const nR = 3.5 + (A0/n)*0.02;
+            const a = front ? 1.0 : 0.28;
+
+            if (front) {
+              ctx.beginPath();
+              ctx.strokeStyle = `hsla(${hue}, 80%, 66%, 0.18)`;
+              ctx.lineWidth = 0.7;
+              ctx.moveTo(cx, cy);
+              ctx.lineTo(px, py);
+              ctx.stroke();
+            }
+
             const grd = ctx.createRadialGradient(px, py, 0, px, py, nR * 3);
             grd.addColorStop(0, `hsla(${hue},80%,65%,${a*0.7})`);
             grd.addColorStop(1, `hsla(${hue},80%,65%,0)`);
             ctx.beginPath(); ctx.arc(px, py, nR * 3, 0, Math.PI*2); ctx.fillStyle = grd; ctx.fill();
             ctx.beginPath(); ctx.arc(px, py, nR, 0, Math.PI*2);
             ctx.fillStyle = `hsl(${hue},80%,68%)`; ctx.globalAlpha = a; ctx.fill(); ctx.globalAlpha = 1;
+
+            if (front && n <= 6) {
+              ctx.font = '8px monospace';
+              ctx.fillStyle = 'rgba(255,255,255,0.45)';
+              ctx.textAlign = 'center';
+              ctx.fillText(`${n}x`, px, py - nR - 6);
+            }
           }
         }
       };
