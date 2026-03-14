@@ -3,57 +3,41 @@
 [![Vercel Deployment](https://img.shields.io/badge/Vercel-Black?style=for-the-badge&logo=vercel&logoColor=white)](https://thenullline.vercel.app)
 [![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg?style=for-the-badge)](https://creativecommons.org/licenses/by/4.0/)
 
-> **k · k = 0**
-> *One equation. Scalable devices. Three minds. A thousand ships. A million gardens.*
+This repository contains the public site for The Null Line Project. It combines a document archive with a desktop-like front end: an orbital file selector on the landing page, draggable windows for apps and documents, and dynamic routes for individual texts.
 
-## 🌌 Overview
+## Overview
 
-The Null Line Project is a "photonic" web application dedicated to the systematic exploitation of null billiard dynamics. Built with Next.js and Three.js, this repository serves as a digital archive and interactive portal for the technical specifications of a 1,000-year plan for interstellar civilization.
+The app is built with Next.js and React. The homepage centers on a wheel-style navigator that opens project apps or source documents, while the rest of the site exposes the same writing through direct document routes under `/docs/[slug]`.
 
-## ✨ Key Features
+## What is in this repo
 
-- **3D Photonic Core**: An interactive Three.js simulation of a Phase-Resonator (AEM Trinity Logic), utilizing top-down topological manifold collapse for zero-latency calculation.
-- **Snapping 2D Orbital Wheel**: A custom navigation system where every scroll step precisely snaps an encrypted text to the bottom-most center position.
-- **Multi-Window OS**: Support for multiple simultaneous draggable windows with coordinated Z-indexing, allowing for complex document comparison and simulation control.
-- **Robust Document Engine**: Highly compatible viewers for `.txt`, `.docx`, and `.pdf` files, optimized for esoteric readability.
-- **Harmonic Background Orbits**: Real-time canvas rendering of star polygons ($q/p$) color-coded by vertex frequency.
-- **SEO & AI Indexed**: Every document is accessible via dynamic routes (`/docs/[slug]`) and fully indexable by search engines and AI crawlers.
+- A landing page with the orbital wheel UI and draggable window system
+- Text documents stored in `NullTech/` and mirrored to `public/docs/`
+- Interactive apps such as NullDeck, NullForge, NullHover, the community view, and the photonic visualization
+- API routes for auth and donation-related actions
 
-## 🛠️ Technology Stack
+## Stack
 
-- **Framework**: [Next.js 15](https://nextjs.org/) (App Router)
-- **3D Engine**: [Three.js](https://threejs.org/) with [React Three Fiber](https://r3f.docs.pmnd.rs/)
-- **Animations**: [Framer Motion](https://www.framer.com/motion/)
-- **Icons**: [Lucide React](https://lucide.dev/)
-- **Conversion**: [Mammoth.js](https://github.com/mwilliamson/mammoth.js) (DOCX to HTML)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- Next.js App Router
+- React 19
+- Framer Motion
+- Three.js with React Three Fiber
+- Tailwind CSS 4
+- Mammoth for DOCX conversion
 
-## 🚀 Getting Started
+## Local development
 
-1.  **Clone the repository**:
-    ```bash
-    git clone https://github.com/chromebookwiz/TheNullLine.git
-    cd TheNullLine
-    ```
+1. Clone the repository.
+2. Install dependencies with `npm install`.
+3. Start the dev server with `npm run dev`.
+4. Create a production build with `npm run build`.
 
-2.  **Install dependencies**:
-    ```bash
-    npm install
-    ```
+## Notes
 
-3.  **Run the development server**:
-    ```bash
-    npm run dev
-    ```
+- The landing page wheel is intended to work with mouse wheel, touch swipe, keyboard navigation, and click selection.
+- Documents are available both through the windowed interface and through static-friendly routes in `src/app/docs/[slug]`.
+- The project includes interactive canvases, so production validation should always include a full build.
 
-4.  **Build for production**:
-    ```bash
-    npm run build
-    ```
-
-## 📄 License
+## License
 
 All texts and documents in this repository are licensed under the [Creative Commons Attribution 4.0 International (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/) license.
-
----
-© 2026 The Null Line Project. Some rights reserved.

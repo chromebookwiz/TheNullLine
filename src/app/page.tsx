@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import GeometricBackground from '@/components/GeometricBackground';
 import FileOrbit from '@/components/FileOrbit';
@@ -69,33 +69,40 @@ interface WindowInstance {
 
 export default function Home() {
   const [openWindows, setOpenWindows] = useState<WindowInstance[]>([]);
-  const [maxZIndex, setMaxZIndex] = useState(100);
+  const zIndexRef = useRef(100);
 
-  const bringToFront = (id: string) => {
-    const newZ = maxZIndex + 1;
-    setMaxZIndex(newZ);
-    setOpenWindows(prev => prev.map(w => w.id === id ? { ...w, zIndex: newZ } : w));
-  };
+  const getNextZIndex = useCallback(() => {
+    zIndexRef.current += 1;
+    return zIndexRef.current;
+  }, []);
+
+  const bringToFront = useCallback((id: string) => {
+    const newZ = getNextZIndex();
+    setOpenWindows((prev) => prev.map((windowItem) => windowItem.id === id ? { ...windowItem, zIndex: newZ } : windowItem));
+  }, [getNextZIndex]);
 
 
-  const openWindow = (type: AppWindowType, file?: NullFile) => {
+  const openWindow = useCallback((type: AppWindowType, file?: NullFile) => {
     const id = file ? file.path : type;
-    const existing = openWindows.find(w => w.id === id);
-    if (existing) {
-      bringToFront(id);
-    } else {
-      const newZ = maxZIndex + 1;
-      setMaxZIndex(newZ);
-      setOpenWindows(prev => [...prev, { id, type, file, zIndex: newZ }]);
-    }
-  };
 
-  const closeWindow = (id: string) => {
-    setOpenWindows(prev => prev.filter(w => w.id !== id));
-  };
+    setOpenWindows((prev) => {
+      const existing = prev.find((windowItem) => windowItem.id === id);
+      const newZ = getNextZIndex();
+
+      if (existing) {
+        return prev.map((windowItem) => windowItem.id === id ? { ...windowItem, zIndex: newZ } : windowItem);
+      }
+
+      return [...prev, { id, type, file, zIndex: newZ }];
+    });
+  }, [getNextZIndex]);
+
+  const closeWindow = useCallback((id: string) => {
+    setOpenWindows((prev) => prev.filter((windowItem) => windowItem.id !== id));
+  }, []);
 
 
-  const handleFileSelect = (file: NullFile) => {
+  const handleFileSelect = useCallback((file: NullFile) => {
     if (file.type === 'app') {
       if (file.name.toLowerCase().includes('clicker')) {
         openWindow('clicker');
@@ -120,7 +127,7 @@ export default function Home() {
     } else {
       openWindow('document', file);
     }
-  };
+  }, [openWindow]);
 
   return (
     <main className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden">

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform, type MotionValue } from 'framer-motion';
 import { FileText, File as FileIcon, ChevronRight, Cpu, LayoutGrid } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
@@ -33,6 +33,14 @@ const FILES: NullFile[] = [
   { name: "Community", type: "app", path: "app://community" },
 ];
 
+const normalizeIndex = (index: number, total: number) => {
+  if (total === 0) {
+    return 0;
+  }
+
+  return ((index % total) + total) % total;
+};
+
 
 const FileOrbitComponent = ({ 
   onFileSelect, 
@@ -40,70 +48,212 @@ const FileOrbitComponent = ({
   onFileSelect: (file: NullFile) => void,
 }) => {
   const [hovered, setHovered] = useState<number | null>(null);
-  const [targetIndex, setTargetIndex] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const [currentFolder, setCurrentFolder] = useState<NullFile | null>(null);
+  const [wheelSize, setWheelSize] = useState(520);
   const containerRef = useRef<HTMLDivElement>(null);
+  const wheelCooldownRef = useRef<number | null>(null);
+  const wheelDeltaRef = useRef(0);
+  const touchYRef = useRef<number | null>(null);
 
   // Determine which files to show (root or folder)
   const files = currentFolder?.children || FILES;
   const total = files.length;
+  const activeIndex = normalizeIndex(selectedIndex, total);
+  const activeFile = files[activeIndex];
+  const radius = wheelSize / 2;
+
+  const itemPositions = useMemo(
+    () => files.map((file, i) => {
+      const itemAngle = (i * 360) / total;
+
+      return {
+        file,
+        index: i,
+        left: radius * Math.cos((itemAngle * Math.PI) / 180),
+        top: radius * Math.sin((itemAngle * Math.PI) / 180),
+      };
+    }),
+    [files, radius, total]
+  );
 
   // Motion Values for the rotation
   const rotationRaw = useMotionValue(90); // 90 is the bottom
   // Very stiff spring = near-instant gyroscope response, slight smoothing for scroll/touch
   const rotationSmooth = useSpring(rotationRaw, { stiffness: 800, damping: 40, mass: 0.5 });
 
-  // The active index is targetIndex normalized
-  const activeIndex = ((targetIndex % total) + total) % total;
+  useEffect(() => {
+    const angle = (activeIndex * 360) / total;
+    rotationRaw.set(90 - angle);
+  }, [activeIndex, total, rotationRaw]);
 
   useEffect(() => {
-    // To make targetIndex bottom: rotation = 90 - (targetIndex * 360 / total)
-    const angle = (targetIndex * 360) / total;
-    rotationRaw.set(90 - angle);
-  }, [targetIndex, total, rotationRaw]);
+    const updateWheelSize = () => {
+      const container = containerRef.current;
+      if (!container) {
+        return;
+      }
+
+      const { width, height } = container.getBoundingClientRect();
+      const nextSize = Math.max(300, Math.min(520, Math.min(width * 0.82, height * 0.82)));
+      setWheelSize(Math.round(nextSize));
+    };
+
+    updateWheelSize();
+
+    const container = containerRef.current;
+    if (!container || typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', updateWheelSize);
+      return () => window.removeEventListener('resize', updateWheelSize);
+    }
+
+    const observer = new ResizeObserver(updateWheelSize);
+    observer.observe(container);
+    window.addEventListener('resize', updateWheelSize);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', updateWheelSize);
+    };
+  }, []);
+
+  const stepSelection = useCallback((delta: number) => {
+    setSelectedIndex((prev) => normalizeIndex(prev + delta, total));
+  }, [total]);
+
+  const activateFile = useCallback((file: NullFile) => {
+    if (file.type === 'folder') {
+      setCurrentFolder(file);
+      setSelectedIndex(0);
+      setHovered(null);
+      return;
+    }
+
+    onFileSelect(file);
+  }, [onFileSelect]);
+
+  const goBack = useCallback(() => {
+    setCurrentFolder(null);
+    setSelectedIndex(0);
+    setHovered(null);
+  }, []);
+
+  const queueStep = useCallback((delta: number) => {
+    if (wheelCooldownRef.current !== null) {
+      return;
+    }
+
+    stepSelection(delta);
+    wheelCooldownRef.current = window.setTimeout(() => {
+      wheelCooldownRef.current = null;
+    }, 120);
+  }, [stepSelection]);
 
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
-      if (e.deltaY < 0) {
-        setTargetIndex(prev => prev - 1);
-      } else {
-        setTargetIndex(prev => prev + 1);
+      e.preventDefault();
+      wheelDeltaRef.current += e.deltaY;
+
+      if (Math.abs(wheelDeltaRef.current) >= 24) {
+        queueStep(wheelDeltaRef.current > 0 ? 1 : -1);
+        wheelDeltaRef.current = 0;
       }
     };
 
-    let touchY = 0;
     const handleTouchStart = (e: TouchEvent) => {
-      touchY = e.touches[0].clientY;
+      touchYRef.current = e.touches[0]?.clientY ?? null;
     };
 
     const handleTouchMove = (e: TouchEvent) => {
-      const deltaY = touchY - e.touches[0].clientY;
-      if (Math.abs(deltaY) > 30) {
-        setTargetIndex(prev => prev + (deltaY > 0 ? 1 : -1));
-        touchY = e.touches[0].clientY;
+      if (touchYRef.current === null) {
+        return;
       }
+
+      const currentY = e.touches[0]?.clientY;
+      if (typeof currentY !== 'number') {
+        return;
+      }
+
+      const deltaY = touchYRef.current - currentY;
+      if (Math.abs(deltaY) > 30) {
+        e.preventDefault();
+        queueStep(deltaY > 0 ? 1 : -1);
+        touchYRef.current = currentY;
+      }
+    };
+
+    const handleTouchEnd = () => {
+      touchYRef.current = null;
     };
 
     const container = containerRef.current;
     if (container) {
-      container.addEventListener('wheel', handleWheel, { passive: true });
+      container.addEventListener('wheel', handleWheel, { passive: false });
       container.addEventListener('touchstart', handleTouchStart, { passive: true });
-      container.addEventListener('touchmove', handleTouchMove, { passive: true });
+      container.addEventListener('touchmove', handleTouchMove, { passive: false });
+      container.addEventListener('touchend', handleTouchEnd, { passive: true });
+      container.addEventListener('touchcancel', handleTouchEnd, { passive: true });
     }
     
     return () => {
+      if (wheelCooldownRef.current !== null) {
+        window.clearTimeout(wheelCooldownRef.current);
+      }
+
       if (container) {
         container.removeEventListener('wheel', handleWheel);
         container.removeEventListener('touchstart', handleTouchStart);
         container.removeEventListener('touchmove', handleTouchMove);
+        container.removeEventListener('touchend', handleTouchEnd);
+        container.removeEventListener('touchcancel', handleTouchEnd);
       }
     };
-  }, []);
+  }, [queueStep]);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      stepSelection(1);
+      return;
+    }
+
+    if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      stepSelection(-1);
+      return;
+    }
+
+    if (e.key === 'Home') {
+      e.preventDefault();
+      setSelectedIndex(0);
+      return;
+    }
+
+    if (e.key === 'End') {
+      e.preventDefault();
+      setSelectedIndex(Math.max(total - 1, 0));
+      return;
+    }
+
+    if ((e.key === 'Enter' || e.key === ' ') && activeFile) {
+      e.preventDefault();
+      activateFile(activeFile);
+      return;
+    }
+
+    if (e.key === 'Escape' && currentFolder) {
+      e.preventDefault();
+      goBack();
+    }
+  }, [activeFile, activateFile, currentFolder, goBack, stepSelection, total]);
 
   return (
     <div 
       ref={containerRef}
-      className="relative w-full h-[700px] flex items-center justify-center overflow-hidden"
+      tabIndex={0}
+      onKeyDown={handleKeyDown}
+      aria-label="Orbital file selector"
+      className="relative flex h-[clamp(420px,78vh,700px)] w-full items-center justify-center overflow-hidden outline-none"
       style={{ isolation: 'isolate' }}
     >
       {/* Central Hub - Always on top of the wheel but below windows */}
@@ -114,29 +264,25 @@ const FileOrbitComponent = ({
             whileTap={{ scale: 0.95 }}
             onClick={(e) => {
               e.stopPropagation();
-              const selected = files[activeIndex];
-              if (selected.type === 'folder') {
-                setCurrentFolder(selected);
-                setTargetIndex(0);
-              } else {
-                onFileSelect(selected);
+              if (activeFile) {
+                activateFile(activeFile);
               }
             }}
             className="w-24 h-24 bg-[#FAF9F6]/90 backdrop-blur-xl rounded-full flex items-center justify-center text-black/60 hover:text-black transition-all shadow-[0_0_50px_rgba(0,0,0,0.1)] border border-black/10 pointer-events-auto group"
           >
             <AnimatePresence mode="wait">
               <motion.div
-                key={files[activeIndex].type + files[activeIndex].name}
+                key={activeFile?.type + activeFile?.name}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.2 }}
               >
-                {files[activeIndex].type === 'app' ? (
+                {activeFile?.type === 'app' ? (
                   <LayoutGrid size={36} strokeWidth={1} className="group-hover:rotate-90 transition-transform duration-500" />
-                ) : files[activeIndex].type === 'pdf' ? (
+                ) : activeFile?.type === 'pdf' ? (
                   <FileIcon size={36} strokeWidth={1} />
-                ) : files[activeIndex].type === 'folder' ? (
+                ) : activeFile?.type === 'folder' ? (
                   <ChevronRight size={36} strokeWidth={1} />
                 ) : (
                   <FileText size={36} strokeWidth={1} />
@@ -148,24 +294,42 @@ const FileOrbitComponent = ({
           {currentFolder && (
             <button
               className="absolute top-0 left-1/2 -translate-x-1/2 px-3 py-1 bg-black/10 text-black/60 text-[10px] rounded-full border border-black/10 shadow"
-              onClick={() => { setCurrentFolder(null); setTargetIndex(0); }}
+              onClick={goBack}
             >
               ← Back
             </button>
           )}
-          <div className="absolute top-[120px] flex flex-col items-center w-[400px]">
+          <div className="absolute top-[120px] flex flex-col items-center w-[min(82vw,400px)]">
             <div className="w-px h-16 bg-gradient-to-b from-black/20 to-transparent" />
             <motion.div
               key={activeIndex}
               initial={{ opacity: 0, y: 10, filter: 'blur(10px)' }}
               animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
               transition={{ duration: 0.3, ease: "easeOut" }}
-              className="mt-6 px-8 py-3 bg-[#FAF9F6]/95 backdrop-blur-md rounded-full border border-black/5 shadow-xl"
+              className="mt-6 max-w-full px-5 py-3 bg-[#FAF9F6]/95 backdrop-blur-md rounded-full border border-black/5 shadow-xl"
             >
-              <span className="text-[14px] font-bold tracking-[0.5em] uppercase text-black">
-                ◊.{files[activeIndex].name.toUpperCase().replace(/\s/g, '_')}
+              <span className="block max-w-full truncate text-center text-[12px] md:text-[14px] font-bold tracking-[0.35em] md:tracking-[0.5em] uppercase text-black">
+                ◊.{activeFile?.name.toUpperCase().replace(/\s/g, '_')}
               </span>
             </motion.div>
+          </div>
+          <div className="absolute top-1/2 left-1/2 flex w-[min(92vw,620px)] -translate-x-1/2 -translate-y-1/2 items-center justify-between px-1 md:px-0">
+            <button
+              type="button"
+              onClick={() => stepSelection(-1)}
+              className="pointer-events-auto rounded-full border border-black/10 bg-[#FAF9F6]/90 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.3em] text-black/60 transition hover:text-black"
+              aria-label="Previous item"
+            >
+              Prev
+            </button>
+            <button
+              type="button"
+              onClick={() => stepSelection(1)}
+              className="pointer-events-auto rounded-full border border-black/10 bg-[#FAF9F6]/90 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.3em] text-black/60 transition hover:text-black"
+              aria-label="Next item"
+            >
+              Next
+            </button>
           </div>
         </div>
       </div>
@@ -173,11 +337,15 @@ const FileOrbitComponent = ({
       {/* The Wheel - Container Rotation Strategy */}
       <motion.div 
         style={{ rotate: rotationSmooth }}
-        className="relative w-[520px] h-[520px] rounded-full border border-black/[0.03] flex items-center justify-center pointer-events-none will-change-transform transform-gpu"
+        className="relative rounded-full border border-black/[0.03] flex items-center justify-center pointer-events-none will-change-transform transform-gpu"
+        aria-activedescendant={activeFile?.path}
+        role="listbox"
+        aria-label="Project content wheel"
+        tabIndex={-1}
+        transition={{ type: 'spring', stiffness: 700, damping: 42, mass: 0.55 }}
+        animate={{ width: wheelSize, height: wheelSize }}
       >
-        {files.map((file, i) => {
-          const itemAngle = (i * 360) / total;
-          const radius = 260;
+        {itemPositions.map(({ file, index, left, top }) => {
           return (
             <motion.div
               key={file.path}
@@ -185,23 +353,23 @@ const FileOrbitComponent = ({
               style={{
                 width: 50,
                 height: 50,
-                left: `calc(50% + ${radius * Math.cos((itemAngle * Math.PI) / 180)}px - 25px)`,
-                top: `calc(50% + ${radius * Math.sin((itemAngle * Math.PI) / 180)}px - 25px)`,
+                left: `calc(50% + ${left}px - 25px)`,
+                top: `calc(50% + ${top}px - 25px)`,
               }}
             >
               <OrbitItem 
                 file={file}
-                isSelected={activeIndex === i}
-                isHovered={hovered === i}
+                isSelected={activeIndex === index}
+                isHovered={hovered === index}
                 onSelect={() => {
-                  if (file.type === 'folder') {
-                    setCurrentFolder(file);
-                    setTargetIndex(0);
-                  } else {
-                    onFileSelect(file);
+                  if (activeIndex !== index) {
+                    setSelectedIndex(index);
+                    return;
                   }
+
+                  activateFile(file);
                 }}
-                onHoverChange={(h) => setHovered(h ? i : null)}
+                onHoverChange={(h) => setHovered(h ? index : null)}
                 parentRotation={rotationSmooth}
               />
             </motion.div>
@@ -210,8 +378,8 @@ const FileOrbitComponent = ({
       </motion.div>
 
       {/* Decorative Rings - Under the wheel */}
-      <div className="absolute w-[520px] h-[520px] rounded-full border border-black/[0.02] -z-10" />
-      <div className="absolute w-[530px] h-[530px] rounded-full border border-black/[0.01] -z-10" />
+      <div className="absolute rounded-full border border-black/[0.02] -z-10" style={{ width: wheelSize, height: wheelSize }} />
+      <div className="absolute rounded-full border border-black/[0.01] -z-10" style={{ width: wheelSize + 10, height: wheelSize + 10 }} />
     </div>
   );
 };
@@ -226,6 +394,7 @@ function OrbitItem({
 
   return (
     <motion.button
+      id={file.path}
       style={{ rotate: counterRotate }}
       onMouseEnter={() => onHoverChange(true)}
       onMouseLeave={() => onHoverChange(false)}
@@ -233,6 +402,8 @@ function OrbitItem({
         e.stopPropagation();
         onSelect();
       }}
+      aria-label={file.name}
+      aria-pressed={isSelected}
       className={cn(
         "w-14 h-14 rounded-full esoteric-glass flex items-center justify-center pointer-events-auto transition-all duration-300",
         isSelected ? "border-black/60 text-black shadow-[0_0_30px_rgba(0,0,0,0.15)] scale-125 z-50 bg-white" : 
