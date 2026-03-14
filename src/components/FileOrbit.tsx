@@ -41,6 +41,28 @@ const normalizeIndex = (index: number, total: number) => {
   return ((index % total) + total) % total;
 };
 
+const getClosestWrappedIndex = (currentIndex: number, targetIndex: number, total: number) => {
+  if (total === 0) {
+    return 0;
+  }
+
+  const normalizedTarget = normalizeIndex(targetIndex, total);
+  const cycleBase = Math.floor(currentIndex / total) * total;
+  const candidates = [
+    cycleBase + normalizedTarget - total,
+    cycleBase + normalizedTarget,
+    cycleBase + normalizedTarget + total,
+  ];
+
+  return candidates.reduce((closest, candidate) => {
+    if (Math.abs(candidate - currentIndex) < Math.abs(closest - currentIndex)) {
+      return candidate;
+    }
+
+    return closest;
+  }, candidates[0]);
+};
+
 
 const FileOrbitComponent = ({ 
   onFileSelect, 
@@ -83,9 +105,9 @@ const FileOrbitComponent = ({
   const rotationSmooth = useSpring(rotationRaw, { stiffness: 800, damping: 40, mass: 0.5 });
 
   useEffect(() => {
-    const angle = (activeIndex * 360) / total;
+    const angle = total > 0 ? (selectedIndex * 360) / total : 0;
     rotationRaw.set(90 - angle);
-  }, [activeIndex, total, rotationRaw]);
+  }, [selectedIndex, total, rotationRaw]);
 
   useEffect(() => {
     const updateWheelSize = () => {
@@ -118,7 +140,11 @@ const FileOrbitComponent = ({
   }, []);
 
   const stepSelection = useCallback((delta: number) => {
-    setSelectedIndex((prev) => normalizeIndex(prev + delta, total));
+    if (total === 0) {
+      return;
+    }
+
+    setSelectedIndex((prev) => prev + delta);
   }, [total]);
 
   const activateFile = useCallback((file: NullFile) => {
@@ -225,13 +251,13 @@ const FileOrbitComponent = ({
 
     if (e.key === 'Home') {
       e.preventDefault();
-      setSelectedIndex(0);
+      setSelectedIndex((prev) => getClosestWrappedIndex(prev, 0, total));
       return;
     }
 
     if (e.key === 'End') {
       e.preventDefault();
-      setSelectedIndex(Math.max(total - 1, 0));
+      setSelectedIndex((prev) => getClosestWrappedIndex(prev, Math.max(total - 1, 0), total));
       return;
     }
 
@@ -313,24 +339,6 @@ const FileOrbitComponent = ({
               </span>
             </motion.div>
           </div>
-          <div className="absolute top-1/2 left-1/2 flex w-[min(92vw,620px)] -translate-x-1/2 -translate-y-1/2 items-center justify-between px-1 md:px-0">
-            <button
-              type="button"
-              onClick={() => stepSelection(-1)}
-              className="pointer-events-auto rounded-full border border-black/10 bg-[#FAF9F6]/90 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.3em] text-black/60 transition hover:text-black"
-              aria-label="Previous item"
-            >
-              Prev
-            </button>
-            <button
-              type="button"
-              onClick={() => stepSelection(1)}
-              className="pointer-events-auto rounded-full border border-black/10 bg-[#FAF9F6]/90 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.3em] text-black/60 transition hover:text-black"
-              aria-label="Next item"
-            >
-              Next
-            </button>
-          </div>
         </div>
       </div>
 
@@ -363,7 +371,7 @@ const FileOrbitComponent = ({
                 isHovered={hovered === index}
                 onSelect={() => {
                   if (activeIndex !== index) {
-                    setSelectedIndex(index);
+                    setSelectedIndex((prev) => getClosestWrappedIndex(prev, index, total));
                     return;
                   }
 
